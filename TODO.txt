@@ -1,0 +1,7 @@
+- need to have an encryption interface
+- need to have a deflate interface with default
+- should have a positionable input stream to go back and fix the file header with CRC/sizes
+- could also have a bufferable input stream which holds the deflated bytes until it can write the header and then the bytes
+- should be able to iterate over the entries and then iterate over the directory
+	- then go back and annotate the entries already recorded in the stream
+- should be able to iterate over the directory by skipping the entries
