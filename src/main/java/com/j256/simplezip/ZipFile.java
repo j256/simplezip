@@ -20,6 +20,9 @@ import com.j256.simplezip.format.ZipFileHeader;
  */
 public class ZipFile {
 
+	// XXX: should be maximum zip data read block
+	private static final int BUFFER_SIZE = 8192;
+	
 	private final RewindableInputStream countingInputStream;
 	private final CountingInfo countingInfo = new CountingInfo();
 
@@ -37,7 +40,7 @@ public class ZipFile {
 	}
 
 	public ZipFile(InputStream inputStream) {
-		this.countingInputStream = new RewindableInputStream(inputStream);
+		this.countingInputStream = new RewindableInputStream(inputStream, BUFFER_SIZE);
 	}
 
 	public ZipFileHeader readNextFileHeader() throws IOException {

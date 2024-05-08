@@ -1,7 +1,6 @@
 package com.j256.simplezip.format;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Set;
 import java.util.zip.ZipError;
 
@@ -56,7 +55,8 @@ public class ZipFileHeader {
 		 */
 		int first = IoUtils.readInt(input, "LocalFileHeader.signature");
 		if (first == CentralDirectory.EXPECTED_SIGNATURE) {
-			input
+			input.rewind(4);
+			return null;
 		}
 		builder.setSignature(first);
 		builder.versionNeeded = IoUtils.readShort(input, "LocalFileHeader.versionNeeded");

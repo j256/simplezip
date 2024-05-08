@@ -19,7 +19,7 @@ import com.j256.simplezip.format.CompressionMethod;
 import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 
-public class ArchiveTest {
+public class ZipFileTest {
 
 	@Test
 	public void testStuff() throws IOException {

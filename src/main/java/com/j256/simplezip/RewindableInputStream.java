@@ -2,44 +2,36 @@ package com.j256.simplezip;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 
 /**
- * Buffer that records the bytes that were read, allows us to rewind.
+ * Buffer that keeps around the last read bytes, allowing us to rewind the stream for a certain number of bytes.
  */
 public class RewindableInputStream extends InputStream {
 
-	xxx need to use an internal buffer and copy stuff around;
-	xxx should set up front on the zip-file and reset for each file;
-			
 	private final InputStream delegate;
-	private byte[] lastBuffer;
-	private int lastOffset;
-	private int lastNumRead;
-	private byte[] singleByteBuffer = new byte[1];
-	private byte[] extra;
+	private byte[] buffer;
+	private int offset;
 	private int extraOffset;
-	private int extraMax;
 
-	public RewindableInputStream(InputStream delegate) {
+	public RewindableInputStream(InputStream delegate, int bufSize) {
 		this.delegate = delegate;
+		this.buffer = new byte[bufSize];
 	}
 
 	@Override
 	public int read() throws IOException {
-		if (extra != null) {
-			if (extraOffset < extraMax) {
-				return extra[extraOffset++];
-			}
-			extra = null;
+		if (extraOffset < offset) {
+			int ret = buffer[extraOffset++];
+			return ret;
 		}
-		int ret = delegate.read(singleByteBuffer, 0, singleByteBuffer.length);
+		ensureSpace(1);
+		int ret = delegate.read(buffer, offset, 1);
 		if (ret < 0) {
 			return -1;
-		} else {
-			System.out.println("read byte: " + singleByteBuffer[0]);
-			return singleByteBuffer[0];
 		}
+		ret = (int)(buffer[offset++] & 0xFF);
+		extraOffset++;
+		return ret;
 	}
 
 	@Override
@@ -48,43 +40,58 @@ public class RewindableInputStream extends InputStream {
 	}
 
 	@Override
-	public int read(byte[] buffer, int offset, int length) throws IOException {
-		if (extra != null) {
-			// NOTE: by definition, the extra stuff is not counted
-			if (extraOffset < extraMax) {
-				int left = extraMax - extraOffset;
-				length = Math.min(length, left);
-				System.arraycopy(extra, extraOffset, buffer, offset, length);
-				extraOffset += length;
-				return length;
-			}
-			extra = null;
+	public int read(byte[] outBuffer, int outOffset, int length) throws IOException {
+		if (length == 0) {
+			return 0;
 		}
-		lastBuffer = buffer;
-		lastOffset = offset;
-		int num = delegate.read(buffer, offset, length);
-		lastNumRead = num;
-		return num;
+		int extraRead = 0;
+		while (extraOffset < offset && length > 0) {
+			outBuffer[outOffset++] = buffer[extraOffset++];
+			length--;
+			extraRead++;
+		}
+		if (length == 0) {
+			return extraRead;
+		}
+		ensureSpace(length);
+		int numRead = delegate.read(buffer, offset, length);
+		if (numRead < 0) {
+			if (extraRead == 0) {
+				return -1;
+			} else {
+				return extraRead;
+			}
+		}
+		System.arraycopy(buffer, offset, outBuffer, outOffset, numRead);
+		offset += numRead;
+		extraOffset += numRead;
+		return extraRead + numRead;
 	}
 
 	/**
 	 * Rewind the buffer a certain number of bytes.
 	 */
 	public void rewind(int numBytes) throws IOException {
-		if (numBytes < lastNumRead) {
-			throw new IOException("Trying to rewind " + numBytes + " but last read only has " + lastNumRead);
+		if (numBytes > offset) {
+			throw new IOException("Trying to rewind " + numBytes + " but buffer only has " + offset);
 		}
-		int lastEnd = lastOffset + lastNumRead;
-		int lastStart = lastEnd - numBytes;
-		if (lastStart < lastEnd) {
-			extra = Arrays.copyOfRange(lastBuffer, lastStart, lastEnd);
-			extraOffset = 0;
-			extraMax = numBytes;
-		}
+		extraOffset = offset - numBytes;
 	}
 
 	@Override
 	public void close() throws IOException {
 		delegate.close();
+	}
+
+	private void ensureSpace(int numBytes) {
+		if (offset + numBytes <= buffer.length) {
+			return;
+		}
+		if (numBytes > buffer.length) {
+			int newLength = Math.max(buffer.length * 2, numBytes * 2);
+			buffer = new byte[newLength];
+		}
+		offset = 0;
+		extraOffset = 0;
 	}
 }

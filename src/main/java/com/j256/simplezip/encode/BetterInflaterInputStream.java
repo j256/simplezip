@@ -17,7 +17,8 @@ public class BetterInflaterInputStream extends InputStream {
 	private final byte[] singleByteBuffer = new byte[1];
 	private int remaining;
 
-	public BetterInflaterInputStream(InputStream input, Inflater inflater) {
+	public BetterInflaterInputStream(InputStream delegate, Inflater inflater) {
+		this.delegate = delegate;
 		this.inflater = inflater;
 	}
 
