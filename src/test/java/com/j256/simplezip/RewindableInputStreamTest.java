@@ -100,6 +100,30 @@ public class RewindableInputStreamTest {
 	}
 
 	@Test
+	public void testRewindThenExtendBuffer() throws IOException {
+		byte[] bytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+		ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+
+		RewindableInputStream ris = new RewindableInputStream(bais, 10);
+
+		byte[] readBytes = new byte[10];
+		assertEquals(bytes.length, ris.read(readBytes));
+
+		ris.rewind(4);
+
+		assertEquals(bytes[4], ris.read());
+		assertEquals(bytes[5], ris.read());
+
+		readBytes = new byte[100];
+		assertEquals(2, ris.read(readBytes));
+		assertEquals(bytes[6], readBytes[0]);
+		assertEquals(bytes[7], readBytes[1]);
+		assertEquals(-1, ris.read());
+
+		ris.close();
+	}
+
+	@Test
 	public void testCoverage() throws IOException {
 		byte[] bytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
 		ByteArrayInputStream bais = new ByteArrayInputStream(bytes);

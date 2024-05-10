@@ -26,7 +26,7 @@ public class StoredFileDataDecoder implements FileDataDecoder {
 
 	@Override
 	public int decode(byte[] outputBuffer, int offset, int length) throws IOException {
-		int maxLength = Math.max(dataSize - inputOffset, length);
+		int maxLength = Math.min(dataSize - inputOffset, length);
 		if (maxLength <= 0) {
 			// hit the end of the data
 			return -1;
@@ -36,9 +36,7 @@ public class StoredFileDataDecoder implements FileDataDecoder {
 		if (numRead < 0) {
 			return -1;
 		}
-		if (numRead > 0) {
-			offset += numRead;
-		}
+		inputOffset += numRead;
 		return numRead;
 	}
 
@@ -48,13 +46,18 @@ public class StoredFileDataDecoder implements FileDataDecoder {
 	}
 
 	@Override
+	public void close() {
+		// no-op
+	}
+
+	@Override
 	public int getNumRemainingBytes() {
 		// never any remaining bytes
 		return 0;
 	}
 
 	@Override
-	public void close() {
-		// no-op
+	public boolean isEofReached() {
+		return (inputOffset >= dataSize);
 	}
 }

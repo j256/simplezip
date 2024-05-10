@@ -22,7 +22,7 @@ public class ZipFile {
 
 	// XXX: should be maximum zip data read block
 	private static final int BUFFER_SIZE = 8192;
-	
+
 	private final RewindableInputStream countingInputStream;
 	private final CountingInfo countingInfo = new CountingInfo();
 
@@ -69,6 +69,10 @@ public class ZipFile {
 	/**
 	 * Read file data from the zip stream.
 	 * 
+	 * NOTE: This _must_ be called until it returns -1 which indicates that EOF has been reached. Until the underlying
+	 * decoders return EOF we don't know that we are done and we can't rewind over any pre-fetched bytes to continue to
+	 * process the next file or the directory at the end of the zip file.
+	 * 
 	 * @return The number of bytes written into the buffer or -1 if the end of zipped bytes for this file have been
 	 *         reached. This doesn't mean that the end of the file has been reached.
 	 */
@@ -79,17 +83,21 @@ public class ZipFile {
 		if (currentFileEofReached) {
 			return -1;
 		}
+		if (length == 0) {
+			return 0;
+		}
 
 		if (fileDataDecoder == null) {
 			assignFileDataDecoder();
 		}
 
-		// XXX: need to count to validate the size and need to calculate the crc to validate
+		// read in bytes from our decoder
 		int result = fileDataDecoder.decode(buffer, offset, length);
 		if (result > 0) {
 			// update our counts for the length and crc information
 			countingInfo.update(buffer, offset, result);
-		} else if (result < 0) {
+		}
+		if (result < 0 || fileDataDecoder.isEofReached()) {
 			/*
 			 * Now that we've read all of the decoded data we need to rewind the input stream because the decoder might
 			 * have read more bytes than it needed and then we need to look for the data-descriptor.
@@ -101,6 +109,13 @@ public class ZipFile {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Returns true if the current file's data EOF has been reached. read() should have returned -1.
+	 */
+	public boolean isCurrentFileEofReached() {
+		return currentFileEofReached;
 	}
 
 	/**
@@ -122,7 +137,7 @@ public class ZipFile {
 		return ZipStatus.OK;
 	}
 
-	private void assignFileDataDecoder() {
+	private void assignFileDataDecoder() throws IOException {
 		switch (currentHeader.getCompressionMethod()) {
 			case NONE:
 				this.fileDataDecoder = new StoredFileDataDecoder(currentHeader.getUncompressedSize());

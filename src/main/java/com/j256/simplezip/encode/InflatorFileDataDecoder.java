@@ -12,12 +12,12 @@ import java.util.zip.Inflater;
 public class InflatorFileDataDecoder implements FileDataDecoder {
 
 	private Inflater inflater;
-	private BetterInflaterInputStream inflaterInputStream;
+	private InflaterInputStream inflaterInputStream;
 
 	@Override
-	public void registerInputStream(InputStream inputStream) {
+	public void registerInputStream(InputStream inputStream) throws IOException {
 		this.inflater = new Inflater(true /* no wrap */);
-		this.inflaterInputStream = new BetterInflaterInputStream(inputStream, this.inflater);
+		this.inflaterInputStream = new InflaterInputStream(inputStream, this.inflater);
 	}
 
 	@Override
@@ -43,6 +43,11 @@ public class InflatorFileDataDecoder implements FileDataDecoder {
 
 	@Override
 	public int getNumRemainingBytes() {
-		return inflaterInputStream.getNumRemainingBytes();
+		return inflater.getRemaining();
+	}
+
+	@Override
+	public boolean isEofReached() {
+		return inflater.finished();
 	}
 }

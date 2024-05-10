@@ -21,7 +21,7 @@ public class RewindableInputStream extends InputStream {
 	@Override
 	public int read() throws IOException {
 		if (extraOffset < offset) {
-			int ret = buffer[extraOffset++];
+			int ret = (int) (buffer[extraOffset++] & 0xff);
 			return ret;
 		}
 		ensureSpace(1);
@@ -29,7 +29,7 @@ public class RewindableInputStream extends InputStream {
 		if (ret < 0) {
 			return -1;
 		}
-		ret = (int)(buffer[offset++] & 0xFF);
+		ret = (int) (buffer[offset++] & 0xff);
 		extraOffset++;
 		return ret;
 	}
@@ -45,9 +45,8 @@ public class RewindableInputStream extends InputStream {
 			return 0;
 		}
 		int extraRead = 0;
-		while (extraOffset < offset && length > 0) {
+		for (; extraOffset < offset && length > 0; length--) {
 			outBuffer[outOffset++] = buffer[extraOffset++];
-			length--;
 			extraRead++;
 		}
 		if (length == 0) {
@@ -83,10 +82,16 @@ public class RewindableInputStream extends InputStream {
 		delegate.close();
 	}
 
+	/**
+	 * Ensure we have these many bytes left in the buffer.
+	 * 
+	 * NOTE: we wouldn't be here if there were extra bytes so we don't have to copy anything around
+	 */
 	private void ensureSpace(int numBytes) {
 		if (offset + numBytes <= buffer.length) {
 			return;
 		}
+		// only grow the buffer if the read is more than the buffer size
 		if (numBytes > buffer.length) {
 			int newLength = Math.max(buffer.length * 2, numBytes * 2);
 			buffer = new byte[newLength];

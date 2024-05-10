@@ -18,7 +18,7 @@ public interface FileDataDecoder extends Closeable {
 	 * @param inputStream
 	 *            Stream from which we will be reading encoded bytes.
 	 */
-	public void registerInputStream(InputStream inputStream);
+	public void registerInputStream(InputStream inputStream) throws IOException;
 
 	/**
 	 * Decode a buffer bytes from a Zip file.
@@ -46,6 +46,11 @@ public interface FileDataDecoder extends Closeable {
 	 * Return the number of left over bytes in the last read buffer.
 	 */
 	public int getNumRemainingBytes();
+
+	/**
+	 * Has EOF been reached on the data stream.
+	 */
+	public boolean isEofReached();
 
 	/**
 	 * Visit a buffer of bytes that had been decoded and is to be written to the output stream in

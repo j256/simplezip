@@ -54,6 +54,8 @@ public class ZipFileTest {
 		assertEquals(bytes.length, numRead);
 		assertArrayEquals(bytes, Arrays.copyOf(buffer, numRead));
 
+		assertEquals(-1, zipFile.readFileData(buffer));
+
 		assertNull(zipFile.readNextFileHeader());
 	}
 }

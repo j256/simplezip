@@ -6,29 +6,31 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 /**
- * Re-implementation of an inflator input stream which tracks the read bytes so we can rewind if necessary.
+ * Stream which reads from the Zip input-stream and gives out inflated (uncompressed) bytes.
  * 
  * @author graywatson
  */
-public class BetterInflaterInputStream extends InputStream {
+public class InflaterInputStream extends InputStream {
 
 	private InputStream delegate;
 	private final Inflater inflater;
 	private final byte[] singleByteBuffer = new byte[1];
-	private int remaining;
+	private final byte[] buffer = new byte[10240];
 
-	public BetterInflaterInputStream(InputStream delegate, Inflater inflater) {
+	public InflaterInputStream(InputStream delegate, Inflater inflater) throws IOException {
 		this.delegate = delegate;
 		this.inflater = inflater;
+		// might as well do this
+		fillInflaterBuffer();
 	}
 
 	@Override
 	public int read() throws IOException {
-		int ret = delegate.read(singleByteBuffer, 0, singleByteBuffer.length);
+		int ret = read(singleByteBuffer, 0, singleByteBuffer.length);
 		if (ret < 0) {
 			return -1;
 		} else {
-			return singleByteBuffer[0];
+			return (int) (singleByteBuffer[0] & 0xff);
 		}
 	}
 
@@ -48,22 +50,22 @@ public class BetterInflaterInputStream extends InputStream {
 					// 0 means that it is either finished or needs more input
 				}
 			} catch (DataFormatException dfe) {
-				throw new IOException("Inflater saw data problem with zip stream", dfe);
+				throw new IOException("Inflater had data problem with zip stream", dfe);
 			}
-			if (inflater.finished()) {
-				remaining = inflater.getRemaining();
+			if (inflater.finished() || inflater.needsDictionary()) {
+				// I don't think the needs-dictionary should happen but that's what the Java reference code does
 				return -1;
 			} else if (inflater.needsInput()) {
-				int num = delegate.read(bytes);
-				inflater.setInput(bytes, 0, num);
+				fillInflaterBuffer();
 			}
 		}
 	}
 
 	/**
-	 * What to call at the end of the inflater process that are left over from the inflater reading.
+	 * Read data from the input stream and write to the inflater to fill its buffer.
 	 */
-	public int getNumRemainingBytes() {
-		return remaining;
+	private void fillInflaterBuffer() throws IOException {
+		int num = delegate.read(buffer);
+		inflater.setInput(buffer, 0, num);
 	}
 }
