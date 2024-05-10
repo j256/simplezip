@@ -2,6 +2,7 @@ package com.j256.simplezip;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -15,6 +16,8 @@ import java.util.zip.ZipOutputStream;
 
 import org.junit.Test;
 
+import com.j256.simplezip.format.CentralDirectoryEnd;
+import com.j256.simplezip.format.CentralDirectoryFileHeader;
 import com.j256.simplezip.format.CompressionMethod;
 import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
@@ -53,9 +56,19 @@ public class ZipFileTest {
 
 		assertEquals(bytes.length, numRead);
 		assertArrayEquals(bytes, Arrays.copyOf(buffer, numRead));
-
+		// have to do this
 		assertEquals(-1, zipFile.readFileData(buffer));
 
 		assertNull(zipFile.readNextFileHeader());
+
+		CentralDirectoryFileHeader dirHeader = zipFile.readNextDirectoryFileHeader();
+		assertNotNull(dirHeader);
+		System.out.println("dir " + dirHeader.getFileName() + ", size " + dirHeader.getUncompressedSize() + ", method "
+				+ dirHeader.getCompressionMethod());
+
+		assertNull(zipFile.readNextDirectoryFileHeader());
+		CentralDirectoryEnd end = zipFile.readDirectoryEnd();
+		assertNotNull(end);
+		System.out.println("end: num-records " + end.getNumRecordsTotal() + ", size " + end.getSizeDirectory());
 	}
 }

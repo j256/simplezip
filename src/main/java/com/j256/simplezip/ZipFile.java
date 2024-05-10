@@ -9,6 +9,8 @@ import java.io.InputStream;
 import com.j256.simplezip.encode.FileDataDecoder;
 import com.j256.simplezip.encode.InflatorFileDataDecoder;
 import com.j256.simplezip.encode.StoredFileDataDecoder;
+import com.j256.simplezip.format.CentralDirectoryEnd;
+import com.j256.simplezip.format.CentralDirectoryFileHeader;
 import com.j256.simplezip.format.DataDescriptor;
 import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
@@ -27,7 +29,8 @@ public class ZipFile {
 	private final CountingInfo countingInfo = new CountingInfo();
 
 	private FileDataDecoder fileDataDecoder;
-	private ZipFileHeader currentHeader;
+	private ZipFileHeader currentFileHeader;
+	private CentralDirectoryFileHeader currentDirHeader;
 	private DataDescriptor currentDataDescriptor;
 	private boolean currentFileEofReached;
 
@@ -44,18 +47,27 @@ public class ZipFile {
 	}
 
 	public ZipFileHeader readNextFileHeader() throws IOException {
-		this.currentHeader = ZipFileHeader.read(countingInputStream);
+		this.currentFileHeader = ZipFileHeader.read(countingInputStream);
 		currentFileEofReached = false;
 		currentDataDescriptor = null;
 		countingInfo.reset();
-		return currentHeader;
+		return currentFileHeader;
+	}
+
+	public CentralDirectoryFileHeader readNextDirectoryFileHeader() throws IOException {
+		this.currentDirHeader = CentralDirectoryFileHeader.read(countingInputStream);
+		return currentDirHeader;
+	}
+
+	public CentralDirectoryEnd readDirectoryEnd() throws IOException {
+		return CentralDirectoryEnd.read(countingInputStream);
 	}
 
 	public String getCurrentFileNameAsString() {
-		if (currentHeader == null) {
+		if (currentFileHeader == null) {
 			return null;
 		} else {
-			return currentHeader.getFileName();
+			return currentFileHeader.getFileName();
 		}
 	}
 
@@ -77,7 +89,7 @@ public class ZipFile {
 	 *         reached. This doesn't mean that the end of the file has been reached.
 	 */
 	public int readFileData(byte[] buffer, int offset, int length) throws IOException {
-		if (currentHeader == null) {
+		if (currentFileHeader == null) {
 			throw new IllegalStateException("Need to call readNextHeader() before you can read file data");
 		}
 		if (currentFileEofReached) {
@@ -104,7 +116,7 @@ public class ZipFile {
 			 */
 			countingInputStream.rewind(fileDataDecoder.getNumRemainingBytes());
 			currentFileEofReached = true;
-			if (currentHeader.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR)) {
+			if (currentFileHeader.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR)) {
 				currentDataDescriptor = DataDescriptor.read(countingInputStream, countingInfo);
 			}
 		}
@@ -138,16 +150,17 @@ public class ZipFile {
 	}
 
 	private void assignFileDataDecoder() throws IOException {
-		switch (currentHeader.getCompressionMethod()) {
+		switch (currentFileHeader.getCompressionMethod()) {
 			case NONE:
-				this.fileDataDecoder = new StoredFileDataDecoder(currentHeader.getUncompressedSize());
+				this.fileDataDecoder = new StoredFileDataDecoder(currentFileHeader.getUncompressedSize());
 				break;
 			case DEFLATED:
 				this.fileDataDecoder = new InflatorFileDataDecoder();
 				break;
 			default:
-				throw new IllegalStateException("Unknown compression method: " + currentHeader.getCompressionMethod()
-						+ " (" + currentHeader.getCompressionMethodValue() + ")");
+				throw new IllegalStateException(
+						"Unknown compression method: " + currentFileHeader.getCompressionMethod() + " ("
+								+ currentFileHeader.getCompressionMethodValue() + ")");
 		}
 		fileDataDecoder.registerInputStream(countingInputStream);
 	}

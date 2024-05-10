@@ -71,10 +71,10 @@ public class RewindableInputStream extends InputStream {
 	 * Rewind the buffer a certain number of bytes.
 	 */
 	public void rewind(int numBytes) throws IOException {
-		if (numBytes > offset) {
-			throw new IOException("Trying to rewind " + numBytes + " but buffer only has " + offset);
+		if (numBytes > extraOffset) {
+			throw new IOException("Trying to rewind " + numBytes + " but buffer only has " + extraOffset);
 		}
-		extraOffset = offset - numBytes;
+		extraOffset -= numBytes;
 	}
 
 	@Override

@@ -28,8 +28,8 @@ public class ZipFileHeader {
 	private final int crc32;
 	private final int compressedSize;
 	private final int uncompressedSize;
-	private final byte[] fileName;
-	private final byte[] extra;
+	private final byte[] fileNameBytes;
+	private final byte[] extraBytes;
 
 	public ZipFileHeader(int signature, int versionNeeded, int generalPurposeFlagsValue, int compressionMethod,
 			int lastModFileTime, int lastModFileDate, int crc32, int compressedSize, int uncompressedSize,
@@ -44,8 +44,8 @@ public class ZipFileHeader {
 		this.crc32 = crc32;
 		this.compressedSize = compressedSize;
 		this.uncompressedSize = uncompressedSize;
-		this.fileName = fileName;
-		this.extra = extra;
+		this.fileNameBytes = fileName;
+		this.extraBytes = extra;
 	}
 
 	public static ZipFileHeader read(RewindableInputStream input) throws IOException {
@@ -54,7 +54,7 @@ public class ZipFileHeader {
 		 * WHen reading a file-header we aren't sure if this is a file-header or the start of the central directory.
 		 */
 		int first = IoUtils.readInt(input, "LocalFileHeader.signature");
-		if (first == CentralDirectory.EXPECTED_SIGNATURE) {
+		if (first == CentralDirectoryFileHeader.EXPECTED_SIGNATURE) {
 			input.rewind(4);
 			return null;
 		}
@@ -140,15 +140,15 @@ public class ZipFileHeader {
 	}
 
 	public byte[] getFileNameBytes() {
-		return fileName;
+		return fileNameBytes;
 	}
 
 	public String getFileName() {
-		return new String(fileName);
+		return new String(fileNameBytes);
 	}
 
 	public byte[] getExtra() {
-		return extra;
+		return extraBytes;
 	}
 
 	/**
