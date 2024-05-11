@@ -4,16 +4,39 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Input/output utility methods.
+ * 
+ * @author graywatson
+ */
 public class IoUtils {
 
 	private static final byte[] NO_BYTES = new byte[0];
 
+	/**
+	 * Read a byte from the input stream throwing EOFException if end is reached.
+	 */
+	public static int readByte(InputStream input, String label) throws IOException, EOFException {
+		int value = input.read();
+		if (value < 0) {
+			throw new EOFException("reached unexpected EOF while reading " + label);
+		} else {
+			return value;
+		}
+	}
+
+	/**
+	 * Read a short in little-endian from the input stream throwing EOFException if end is reached.
+	 */
 	public static int readShort(InputStream input, String label) throws IOException {
 		int value = readAddByte(input, label, 0, 0);
 		value = readAddByte(input, label, value, 8);
 		return value;
 	}
 
+	/**
+	 * Read an int in little-endian from the input stream throwing EOFException if end is reached.
+	 */
 	public static int readInt(InputStream input, String label) throws IOException {
 		int value = readAddByte(input, label, 0, 0);
 		value = readAddByte(input, label, value, 8);
@@ -22,6 +45,9 @@ public class IoUtils {
 		return value;
 	}
 
+	/**
+	 * Read a long in little-endian from the input stream throwing EOFException if end is reached.
+	 */
 	public static long readLong(InputStream input, String label) throws IOException {
 		long value = readAddByte(input, label, 0, 0);
 		value = readAddByte(input, label, value, 8);
@@ -34,7 +60,10 @@ public class IoUtils {
 		return value;
 	}
 
-	public static byte[] readBytes(InputStream input, String label, int size) throws IOException {
+	/**
+	 * Read an array of bytes from the input stream throwing EOFException if end is reached.
+	 */
+	public static byte[] readBytes(InputStream input, int size, String label) throws IOException {
 		if (size == 0) {
 			return NO_BYTES;
 		}
@@ -60,14 +89,5 @@ public class IoUtils {
 	private static long readAddByte(InputStream input, String label, long current, int shift) throws IOException {
 		long value = readByte(input, label);
 		return current | (value << shift);
-	}
-
-	private static int readByte(InputStream input, String label) throws IOException, EOFException {
-		int value = input.read();
-		if (value < 0) {
-			throw new EOFException("reached unexpected EOF while reading " + label);
-		} else {
-			return value;
-		}
 	}
 }

@@ -91,9 +91,9 @@ public class CentralDirectoryFileHeader {
 		builder.setRelativeOffsetOfLocalHeader(
 				IoUtils.readInt(input, "CentralDirectoryFileHeader.relativeOffsetOfLocalHeader"));
 
-		builder.setFileNameBytes(IoUtils.readBytes(input, "CentralDirectoryFileHeader.fileName", fileNameLength));
-		builder.setExtraFieldBytes(IoUtils.readBytes(input, "CentralDirectoryFileHeader.extraField", extraFieldLength));
-		builder.setCommentBytes(IoUtils.readBytes(input, "CentralDirectoryFileHeader.comment", commentLength));
+		builder.setFileNameBytes(IoUtils.readBytes(input, fileNameLength, "CentralDirectoryFileHeader.fileName"));
+		builder.setExtraFieldBytes(IoUtils.readBytes(input, extraFieldLength, "CentralDirectoryFileHeader.extraField"));
+		builder.setCommentBytes(IoUtils.readBytes(input, commentLength, "CentralDirectoryFileHeader.comment"));
 
 		return builder.build();
 	}

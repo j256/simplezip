@@ -16,7 +16,7 @@ import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 
 /**
- * Representation of a zip-file.
+ * Representation of a Zip file.
  * 
  * @author graywatson
  */
@@ -72,18 +72,18 @@ public class ZipFile {
 	}
 
 	/**
-	 * Read file data from the zip stream. See {@link #readFileData(ZipFileHeader, byte[], int, int)} for more details.
+	 * Read file data from the Zip stream. See {@link #readFileData(ZipFileHeader, byte[], int, int)} for more details.
 	 */
 	public int readFileData(byte[] buffer) throws IOException {
 		return readFileData(buffer, 0, buffer.length);
 	}
 
 	/**
-	 * Read file data from the zip stream.
+	 * Read file data from the Zip stream.
 	 * 
 	 * NOTE: This _must_ be called until it returns -1 which indicates that EOF has been reached. Until the underlying
 	 * decoders return EOF we don't know that we are done and we can't rewind over any pre-fetched bytes to continue to
-	 * process the next file or the directory at the end of the zip file.
+	 * process the next file or the directory at the end of the Zip file.
 	 * 
 	 * @return The number of bytes written into the buffer or -1 if the end of zipped bytes for this file have been
 	 *         reached. This doesn't mean that the end of the file has been reached.
@@ -112,7 +112,8 @@ public class ZipFile {
 		if (result < 0 || fileDataDecoder.isEofReached()) {
 			/*
 			 * Now that we've read all of the decoded data we need to rewind the input stream because the decoder might
-			 * have read more bytes than it needed and then we need to look for the data-descriptor.
+			 * have read more bytes than it needed and we need to rewind to the start of the data-descriptor or the next
+			 * record.
 			 */
 			countingInputStream.rewind(fileDataDecoder.getNumRemainingBytes());
 			currentFileEofReached = true;
@@ -134,18 +135,18 @@ public class ZipFile {
 	 * After all of the Zip data has been read from the stream there may be an optional data-descriptor depending on
 	 * whether or not the file-header has the {@link GeneralPurposeFlag#DATA_DESCRIPTOR} flag set. If there is no
 	 * descriptor then null is returned here. Once the next header is read this will return null until the end of the
-	 * zip data again has been reached by the next file entry.
+	 * Zip data again has been reached by the next file entry.
 	 */
 	public DataDescriptor getCurrentDataDescriptor() {
 		return currentDataDescriptor;
 	}
 
 	/**
-	 * After the header, the file bytes, and any option data-descriptor has been read, validate that the zip entry was
+	 * After the header, the file bytes, and any option data-descriptor has been read, validate that the Zip entry was
 	 * correct based on the various different length and CRC values stored and calculated.
 	 */
 	public ZipStatus validatePreviousFile() {
-		// XXX:
+		// validate the header section and any trailing data-descriptor
 		return ZipStatus.OK;
 	}
 

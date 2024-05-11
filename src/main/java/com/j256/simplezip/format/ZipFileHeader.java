@@ -69,8 +69,8 @@ public class ZipFileHeader {
 		builder.uncompressedSize = IoUtils.readInt(input, "LocalFileHeader.uncompressedSize");
 		int fileNameLength = IoUtils.readShort(input, "LocalFileHeader.fileNameLength");
 		int extraLength = IoUtils.readShort(input, "LocalFileHeader.extraLength");
-		builder.fileNameBytes = IoUtils.readBytes(input, "LocalFileHeader.fileName", fileNameLength);
-		builder.extraBytes = IoUtils.readBytes(input, "LocalFileHeader.extra", extraLength);
+		builder.fileNameBytes = IoUtils.readBytes(input, fileNameLength, "LocalFileHeader.fileName");
+		builder.extraBytes = IoUtils.readBytes(input, extraLength, "LocalFileHeader.extra");
 		return builder.build();
 	}
 

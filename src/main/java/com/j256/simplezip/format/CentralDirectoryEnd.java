@@ -80,7 +80,7 @@ public class CentralDirectoryEnd {
 		builder.setSizeDirectory(IoUtils.readInt(input, "CentralDirectoryFileHeader.sizeDirectory"));
 		builder.setOffsetDirectory(IoUtils.readInt(input, "CentralDirectoryFileHeader.offsetDirectory"));
 		int commentLength = IoUtils.readShort(input, "CentralDirectoryFileHeader.commentLength");
-		builder.setCommentBytes(IoUtils.readBytes(input, "CentralDirectoryFileHeader.comment", commentLength));
+		builder.setCommentBytes(IoUtils.readBytes(input, commentLength, "CentralDirectoryFileHeader.comment"));
 
 		return builder.build();
 	}
