@@ -49,10 +49,10 @@ public class Zip64ExtraField extends BaseExtraField {
 	 */
 	public static Zip64ExtraField read(RewindableInputStream input, int id, int size) throws IOException {
 		Builder builder = new Zip64ExtraField.Builder();
-		builder.setUncompressedSize(IoUtils.readLong(input, "Zip64ExtraField.uncompressedSize"));
-		builder.setCompressedSize(IoUtils.readLong(input, "Zip64ExtraField.compressedSize"));
-		builder.setOffset(IoUtils.readLong(input, "Zip64ExtraField.offset"));
-		builder.setDiskNumber(IoUtils.readInt(input, "Zip64ExtraField.diskNumber"));
+		builder.uncompressedSize = IoUtils.readLong(input, "Zip64ExtraField.uncompressedSize");
+		builder.compressedSize = IoUtils.readLong(input, "Zip64ExtraField.compressedSize");
+		builder.offset = IoUtils.readLong(input, "Zip64ExtraField.offset");
+		builder.diskNumber = IoUtils.readInt(input, "Zip64ExtraField.diskNumber");
 		return builder.build();
 	}
 

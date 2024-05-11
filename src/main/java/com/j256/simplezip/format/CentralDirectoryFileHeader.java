@@ -71,29 +71,28 @@ public class CentralDirectoryFileHeader {
 			return null;
 		}
 
-		builder.setSignature(signature);
-		builder.setVersionMade(IoUtils.readShort(input, "CentralDirectoryFileHeader.versionMade"));
-		builder.setVersionNeeded(IoUtils.readShort(input, "CentralDirectoryFileHeader.versionNeeded"));
-		builder.setGeneralPurposeFlags(IoUtils.readShort(input, "CentralDirectoryFileHeader.generalPurposeFlags"));
-		builder.setCompressionMethodValue(IoUtils.readShort(input, "CentralDirectoryFileHeader.compressionMethod"));
-		builder.setLastModifiedFileTime(IoUtils.readShort(input, "CentralDirectoryFileHeader.lastModifiedFileTime"));
-		builder.setLastModifiedFileDate(IoUtils.readShort(input, "CentralDirectoryFileHeader.lastModifiedFileDate"));
-		builder.setCrc32(IoUtils.readInt(input, "CentralDirectoryFileHeader.crc32"));
-		builder.setCompressedSize(IoUtils.readInt(input, "CentralDirectoryFileHeader.compressedSize"));
-		builder.setUncompressedSize(IoUtils.readInt(input, "CentralDirectoryFileHeader.uncompressedSize"));
+		builder.signature = signature;
+		builder.versionMade = IoUtils.readShort(input, "CentralDirectoryFileHeader.versionMade");
+		builder.versionNeeded = IoUtils.readShort(input, "CentralDirectoryFileHeader.versionNeeded");
+		builder.generalPurposeFlags = IoUtils.readShort(input, "CentralDirectoryFileHeader.generalPurposeFlags");
+		builder.compressionMethodValue = IoUtils.readShort(input, "CentralDirectoryFileHeader.compressionMethod");
+		builder.lastModifiedFileTime = IoUtils.readShort(input, "CentralDirectoryFileHeader.lastModifiedFileTime");
+		builder.lastModifiedFileDate = IoUtils.readShort(input, "CentralDirectoryFileHeader.lastModifiedFileDate");
+		builder.crc32 = IoUtils.readInt(input, "CentralDirectoryFileHeader.crc32");
+		builder.compressedSize = IoUtils.readInt(input, "CentralDirectoryFileHeader.compressedSize");
+		builder.uncompressedSize = IoUtils.readInt(input, "CentralDirectoryFileHeader.uncompressedSize");
 		int fileNameLength = IoUtils.readShort(input, "CentralDirectoryFileHeader.fileNameLength");
 		int extraFieldLength = IoUtils.readShort(input, "CentralDirectoryFileHeader.extraFieldLength");
 		int commentLength = IoUtils.readShort(input, "CentralDirectoryFileHeader.commentLength");
-		builder.setDiskNumberStart(IoUtils.readShort(input, "CentralDirectoryFileHeader.diskNumberStart"));
-		builder.setInternalFileAttributes(
-				IoUtils.readShort(input, "CentralDirectoryFileHeader.internalFileAttributes"));
-		builder.setExternalFileAttributes(IoUtils.readInt(input, "CentralDirectoryFileHeader.externalFileAttributes"));
-		builder.setRelativeOffsetOfLocalHeader(
-				IoUtils.readInt(input, "CentralDirectoryFileHeader.relativeOffsetOfLocalHeader"));
+		builder.diskNumberStart = IoUtils.readShort(input, "CentralDirectoryFileHeader.diskNumberStart");
+		builder.internalFileAttributes = IoUtils.readShort(input, "CentralDirectoryFileHeader.internalFileAttributes");
+		builder.externalFileAttributes = IoUtils.readInt(input, "CentralDirectoryFileHeader.externalFileAttributes");
+		builder.relativeOffsetOfLocalHeader =
+				IoUtils.readInt(input, "CentralDirectoryFileHeader.relativeOffsetOfLocalHeader");
 
-		builder.setFileNameBytes(IoUtils.readBytes(input, fileNameLength, "CentralDirectoryFileHeader.fileName"));
-		builder.setExtraFieldBytes(IoUtils.readBytes(input, extraFieldLength, "CentralDirectoryFileHeader.extraField"));
-		builder.setCommentBytes(IoUtils.readBytes(input, commentLength, "CentralDirectoryFileHeader.comment"));
+		builder.fileNameBytes = IoUtils.readBytes(input, fileNameLength, "CentralDirectoryFileHeader.fileName");
+		builder.extraFieldBytes = IoUtils.readBytes(input, extraFieldLength, "CentralDirectoryFileHeader.extraField");
+		builder.commentBytes = IoUtils.readBytes(input, commentLength, "CentralDirectoryFileHeader.comment");
 
 		return builder.build();
 	}

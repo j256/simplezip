@@ -28,9 +28,9 @@ public class UnknownExtraField extends BaseExtraField {
 	 */
 	public static UnknownExtraField read(RewindableInputStream input, int id, int extraSize) throws IOException {
 		Builder builder = new UnknownExtraField.Builder();
-		builder.setId(id);
-		builder.setExtraSize(extraSize);
-		builder.setBytes(IoUtils.readBytes(input, extraSize, "UnknownExtraField.bytes"));
+		builder.id = id;
+		builder.extraSize = extraSize;
+		builder.bytes = IoUtils.readBytes(input, extraSize, "UnknownExtraField.bytes");
 		return builder.build();
 	}
 

@@ -72,15 +72,15 @@ public class CentralDirectoryEnd {
 
 		Builder builder = new CentralDirectoryEnd.Builder();
 
-		builder.setSignature(IoUtils.readInt(input, "CentralDirectoryEnd.signature"));
-		builder.setDiskNumber(IoUtils.readShort(input, "CentralDirectoryFileHeader.diskNumber"));
-		builder.setDiskNumberStart(IoUtils.readShort(input, "CentralDirectoryFileHeader.diskNumberStart"));
-		builder.setNumRecordsOnDisk(IoUtils.readShort(input, "CentralDirectoryFileHeader.numRecordsOnDisk"));
-		builder.setNumRecordsTotal(IoUtils.readShort(input, "CentralDirectoryFileHeader.numRecordsTotal"));
-		builder.setSizeDirectory(IoUtils.readInt(input, "CentralDirectoryFileHeader.sizeDirectory"));
-		builder.setOffsetDirectory(IoUtils.readInt(input, "CentralDirectoryFileHeader.offsetDirectory"));
+		builder.signature = IoUtils.readInt(input, "CentralDirectoryEnd.signature");
+		builder.diskNumber = IoUtils.readShort(input, "CentralDirectoryFileHeader.diskNumber");
+		builder.diskNumberStart = IoUtils.readShort(input, "CentralDirectoryFileHeader.diskNumberStart");
+		builder.numRecordsOnDisk = IoUtils.readShort(input, "CentralDirectoryFileHeader.numRecordsOnDisk");
+		builder.numRecordsTotal = IoUtils.readShort(input, "CentralDirectoryFileHeader.numRecordsTotal");
+		builder.sizeDirectory = IoUtils.readInt(input, "CentralDirectoryFileHeader.sizeDirectory");
+		builder.offsetDirectory = IoUtils.readInt(input, "CentralDirectoryFileHeader.offsetDirectory");
 		int commentLength = IoUtils.readShort(input, "CentralDirectoryFileHeader.commentLength");
-		builder.setCommentBytes(IoUtils.readBytes(input, commentLength, "CentralDirectoryFileHeader.comment"));
+		builder.commentBytes = IoUtils.readBytes(input, commentLength, "CentralDirectoryFileHeader.comment");
 
 		return builder.build();
 	}

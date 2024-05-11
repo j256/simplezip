@@ -37,8 +37,8 @@ public class Unix2ExtraField extends BaseExtraField {
 	 */
 	public static Unix2ExtraField read(RewindableInputStream input, int id, int size) throws IOException {
 		Builder builder = new Unix2ExtraField.Builder();
-		builder.setUserId(IoUtils.readShort(input, "Unix2ExtraField.userId"));
-		builder.setGroupId(IoUtils.readShort(input, "Unix2ExtraField.groupId"));
+		builder.userId = IoUtils.readShort(input, "Unix2ExtraField.userId");
+		builder.groupId = IoUtils.readShort(input, "Unix2ExtraField.groupId");
 		return builder.build();
 	}
 

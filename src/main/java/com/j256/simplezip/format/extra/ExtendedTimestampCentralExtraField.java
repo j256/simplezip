@@ -54,9 +54,9 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 	public static ExtendedTimestampCentralExtraField read(RewindableInputStream input, int id, int size)
 			throws IOException {
 		Builder builder = new ExtendedTimestampCentralExtraField.Builder();
-		builder.setFlags(IoUtils.readByte(input, "ExtendedTimestampCentralExtraField.flags"));
+		builder.flags = IoUtils.readByte(input, "ExtendedTimestampCentralExtraField.flags");
 		if (size >= EXPECTED_MINIMUM_SIZE + 8) {
-			builder.setTime(IoUtils.readLong(input, "ExtendedTimestampCentralExtraField.time"));
+			builder.time = IoUtils.readLong(input, "ExtendedTimestampCentralExtraField.time");
 		}
 		return builder.build();
 	}

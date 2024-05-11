@@ -43,9 +43,9 @@ public class DataDescriptor {
 		}
 
 		Builder builder = new DataDescriptor.Builder();
-		builder.setCrc32(IoUtils.readInt(input, "DataDescriptor.crc32"));
-		builder.setCompressedSize(IoUtils.readInt(input, "DataDescriptor.compressedSize"));
-		builder.setUncompressedSize(IoUtils.readInt(input, "DataDescriptor.uncompressedSize"));
+		builder.crc32 = IoUtils.readInt(input, "DataDescriptor.crc32");
+		builder.compressedSize = IoUtils.readInt(input, "DataDescriptor.compressedSize");
+		builder.uncompressedSize = IoUtils.readInt(input, "DataDescriptor.uncompressedSize");
 		return builder.build();
 	}
 

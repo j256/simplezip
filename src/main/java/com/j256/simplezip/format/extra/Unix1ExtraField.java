@@ -56,12 +56,12 @@ public class Unix1ExtraField extends BaseExtraField {
 	 */
 	public static Unix1ExtraField read(RewindableInputStream input, int id, int size) throws IOException {
 		Builder builder = new Unix1ExtraField.Builder();
-		builder.setSize(size);
-		builder.setTimeLastAccessed(IoUtils.readLong(input, "Unix1ExtraField.timeLastAccessed"));
-		builder.setTimeLastModified(IoUtils.readLong(input, "Unix1ExtraField.timeLastModified"));
+		builder.size = size;
+		builder.timeLastAccessed = IoUtils.readLong(input, "Unix1ExtraField.timeLastAccessed");
+		builder.timeLastModified = IoUtils.readLong(input, "Unix1ExtraField.timeLastModified");
 		if (size > EXPECTED_MINIMUM_SIZE) {
-			builder.setUserId(IoUtils.readShort(input, "Unix1ExtraField.userId"));
-			builder.setGroupId(IoUtils.readShort(input, "Unix1ExtraField.groupId"));
+			builder.userId = IoUtils.readShort(input, "Unix1ExtraField.userId");
+			builder.groupId = IoUtils.readShort(input, "Unix1ExtraField.groupId");
 		}
 		return builder.build();
 	}
