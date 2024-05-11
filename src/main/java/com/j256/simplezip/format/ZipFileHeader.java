@@ -29,11 +29,11 @@ public class ZipFileHeader {
 	private final int compressedSize;
 	private final int uncompressedSize;
 	private final byte[] fileNameBytes;
-	private final byte[] extraBytes;
+	private final byte[] extraFieldBytes;
 
 	public ZipFileHeader(int signature, int versionNeeded, int generalPurposeFlagsValue, int compressionMethod,
 			int lastModFileTime, int lastModFileDate, int crc32, int compressedSize, int uncompressedSize,
-			byte[] fileName, byte[] extra) {
+			byte[] fileName, byte[] extraFieldBytes) {
 		this.signature = signature;
 		this.versionNeeded = versionNeeded;
 		this.generalPurposeFlags = GeneralPurposeFlag.fromInt(generalPurposeFlagsValue);
@@ -45,7 +45,7 @@ public class ZipFileHeader {
 		this.compressedSize = compressedSize;
 		this.uncompressedSize = uncompressedSize;
 		this.fileNameBytes = fileName;
-		this.extraBytes = extra;
+		this.extraFieldBytes = extraFieldBytes;
 	}
 
 	public static ZipFileHeader read(RewindableInputStream input) throws IOException {
@@ -58,7 +58,7 @@ public class ZipFileHeader {
 			input.rewind(4);
 			return null;
 		}
-		builder.setSignature(first);
+		builder.signature = first;
 		builder.versionNeeded = IoUtils.readShort(input, "LocalFileHeader.versionNeeded");
 		builder.generalPurposeFlagsValue = IoUtils.readShort(input, "LocalFileHeader.generalPurposeFlags");
 		builder.compressionMethodValue = IoUtils.readShort(input, "LocalFileHeader.compressionMethod");
@@ -70,7 +70,7 @@ public class ZipFileHeader {
 		int fileNameLength = IoUtils.readShort(input, "LocalFileHeader.fileNameLength");
 		int extraLength = IoUtils.readShort(input, "LocalFileHeader.extraLength");
 		builder.fileNameBytes = IoUtils.readBytes(input, fileNameLength, "LocalFileHeader.fileName");
-		builder.extraBytes = IoUtils.readBytes(input, extraLength, "LocalFileHeader.extra");
+		builder.extraFieldBytes = IoUtils.readBytes(input, extraLength, "LocalFileHeader.extra");
 		return builder.build();
 	}
 
@@ -147,8 +147,15 @@ public class ZipFileHeader {
 		return new String(fileNameBytes);
 	}
 
-	public byte[] getExtra() {
-		return extraBytes;
+	public byte[] getExtraFieldBytes() {
+		return extraFieldBytes;
+	}
+
+	@Override
+	public String toString() {
+		return "ZipFileHeader [name=" + getFileName() + ", compSize " + compressedSize + ", uncompSize="
+				+ uncompressedSize + ", extra-#-bytes=" + (extraFieldBytes == null ? "null" : extraFieldBytes.length)
+				+ "]";
 	}
 
 	/**
@@ -165,12 +172,12 @@ public class ZipFileHeader {
 		private int compressedSize;
 		private int uncompressedSize;
 		private byte[] fileNameBytes;
-		private byte[] extraBytes;
+		private byte[] extraFieldBytes;
 
 		public ZipFileHeader build() {
 			return new ZipFileHeader(signature, versionNeeded, generalPurposeFlagsValue, compressionMethodValue,
 					lastModFileTime, lastModFileDate, crc32, compressedSize, uncompressedSize, fileNameBytes,
-					extraBytes);
+					extraFieldBytes);
 		}
 
 		public int getSignature() {
@@ -287,12 +294,12 @@ public class ZipFileHeader {
 			this.fileNameBytes = fileName;
 		}
 
-		public byte[] getExtraBytes() {
-			return extraBytes;
+		public byte[] getExtraFieldBytes() {
+			return extraFieldBytes;
 		}
 
-		public void setExtraBytes(byte[] extra) {
-			this.extraBytes = extra;
+		public void setExtraFieldBytes(byte[] extraFieldBytes) {
+			this.extraFieldBytes = extraFieldBytes;
 		}
 	}
 }
