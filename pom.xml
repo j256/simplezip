@@ -249,10 +249,5 @@
 			<version>${easymock-version}</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.j256.calsync</groupId>
-			<artifactId>cal-sync</artifactId>
-			<version>0.1-SNAPSHOT</version>
-		</dependency>
 	</dependencies>
 </project>
