@@ -2,7 +2,6 @@ package com.j256.simplezip.code;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.zip.Deflater;
 
 /**
@@ -47,7 +46,9 @@ public class DeflaterOutputStream extends OutputStream {
 	public void close() throws IOException {
 		// finish must be called first here
 		deflater.finish();
-		emptyDeflaterBuffer();
+		while (!deflater.finished()) {
+			emptyDeflaterBuffer();
+		}
 		// NOTE: we don't close the output-buffer
 	}
 
@@ -61,7 +62,6 @@ public class DeflaterOutputStream extends OutputStream {
 				break;
 			}
 			delegate.write(writeBuffer, 0, num);
-			System.out.println("writing: " + Arrays.toString(Arrays.copyOfRange(writeBuffer, 0, num)));
 		}
 	}
 }

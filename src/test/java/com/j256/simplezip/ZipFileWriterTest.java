@@ -82,9 +82,9 @@ public class ZipFileWriterTest {
 		baos.reset();
 		ZipFileWriter writer = new ZipFileWriter(baos);
 		writer.writeFileHeader(header);
-		writer.writeDataDescriptor(dataDescriptor);
 		writer.writeFileData(fileBytes);
 		writer.finishFileData();
+		writer.writeDataDescriptor(dataDescriptor);
 		writer.writeDirectoryFileHeader(dirHeader);
 		writer.writeDirectoryEnd(end);
 		writer.close();
