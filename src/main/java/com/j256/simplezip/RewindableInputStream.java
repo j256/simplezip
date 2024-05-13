@@ -5,6 +5,8 @@ import java.io.InputStream;
 
 /**
  * Buffer that keeps around the last read bytes, allowing us to rewind the stream for a certain number of bytes.
+ * 
+ * @author graywatson
  */
 public class RewindableInputStream extends InputStream {
 

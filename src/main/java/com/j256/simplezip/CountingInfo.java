@@ -4,6 +4,8 @@ import java.util.zip.CRC32;
 
 /**
  * Buffer that records the bytes that were read, allows us to rewind.
+ * 
+ * @author graywatson
  */
 public class CountingInfo {
 
