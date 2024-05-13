@@ -49,39 +49,20 @@ public class DataDescriptor {
 		 * next 4 bytes to see if that is also the same CRC value if not then we sort of throw up our hands and assume
 		 * that the first 4 bytes is the CRC without a signature and pray.
 		 */
-		int i1 = IoUtils.readInt(inputStream, "DataDescriptor.signature-or-crc32");
-		int i2 = IoUtils.readInt(inputStream, "DataDescriptor.crc32-or-compressedSize");
-		int i3 = IoUtils.readInt(inputStream, "DataDescriptor.compressedSize-or-uncompressedSize");
-		int i4 = IoUtils.readInt(inputStream, "DataDescriptor.uncompressedSize-or-next");
-
-		if (i1 == OPTIONAL_EXPECTED_SIGNATURE) {
-			if (countingInfo.getCrc32() == i2) {
-				// this looks good
-				builder.signature = i1;
-				builder.crc32 = i2;
-				builder.compressedSize = i3;
-				builder.uncompressedSize = i4;
-			} else if (countingInfo.getByteCount() == i3) {
-				// guess that we have crc, compressed-size, uncompressed-size with the crc matching the signature?
-				builder.crc32 = i1;
-				builder.compressedSize = i2;
-				builder.uncompressedSize = i3;
-			} else {
-				// XXX: crc validation error
-				if (countingInfo.getByteCount() == i4) {
-					// XXX: validation error
-				}
-				builder.signature = i1;
-				builder.crc32 = i2;
-				builder.compressedSize = i3;
-				builder.uncompressedSize = i4;
-			}
+		int first = IoUtils.readInt(inputStream, "DataDescriptor.signature-or-crc32");
+		if (first == OPTIONAL_EXPECTED_SIGNATURE) {
+			builder.signature = first;
+			builder.crc32 = IoUtils.readInt(inputStream, "DataDescriptor.crc32");
 		} else {
 			// guess that we have crc, compressed-size, uncompressed-size with the crc matching the signature
-			builder.crc32 = i1;
-			builder.compressedSize = i2;
-			builder.uncompressedSize = i3;
+			builder.crc32 = first;
 		}
+
+		builder.compressedSize = IoUtils.readInt(inputStream, "DataDescriptor.compressedSize");
+		builder.uncompressedSize = IoUtils.readInt(inputStream, "DataDescriptor.uncompressedSize");
+
+		// XXX: if the sizes are -1 then is there an additional 8+8 byte long sizes?
+
 		return builder.build();
 	}
 
