@@ -50,7 +50,8 @@ public class ZipFileTest {
 		assertTrue(header.getGeneralPurposeFlags().contains(GeneralPurposeFlag.DATA_DESCRIPTOR));
 		assertEquals(CompressionMethod.DEFLATED, header.getCompressionMethod());
 
-		System.out.println("header " + header.getFileName() + ", size " + header.getUncompressedSize() + ", method "
+		System.out.println("header " + header.getFileName() + ", date " + header.getLastModFileDateTime() + ", time "
+				+ header.getLastModFileTimeString() + ", size " + header.getUncompressedSize() + ", method "
 				+ header.getCompressionMethod() + ", extra " + Arrays.toString(header.getExtraFieldBytes()));
 
 		byte[] buffer = new byte[10240];

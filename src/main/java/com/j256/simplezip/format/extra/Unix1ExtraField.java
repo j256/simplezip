@@ -6,8 +6,8 @@ import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
 
 /**
- * Unit extra field #1. This has been superceded by the {@link ExtendedTimestampLocalExtraField} or newer versions of
- * the unix extra fields such as {@link Unix2ExtraField}.
+ * Unit extra field #1. This has been superseded by the {@link ExtendedTimestampLocalExtraField} or newer versions of
+ * the Unix extra fields such as {@link Unix2ExtraField}.
  * 
  * @author graywatson
  */

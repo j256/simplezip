@@ -1,6 +1,7 @@
 package com.j256.simplezip.format;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.zip.ZipError;
 
@@ -46,6 +47,10 @@ public class ZipFileHeader {
 		this.uncompressedSize = uncompressedSize;
 		this.fileNameBytes = fileName;
 		this.extraFieldBytes = extraFieldBytes;
+	}
+
+	public static ZipFileHeader.Builder builder() {
+		return new Builder();
 	}
 
 	public static ZipFileHeader read(RewindableInputStream input) throws IOException {
@@ -123,8 +128,36 @@ public class ZipFileHeader {
 		return lastModFileTime;
 	}
 
+	/**
+	 * Return last modified time as a string in 24-hour HH:MM:SS format.
+	 */
+	public String getLastModFileTimeString() {
+		String result = String.format("%d:%02d:%02d", (lastModFileTime >> 11), ((lastModFileTime >> 5) & 0x3F),
+				((lastModFileTime & 0x1F) * 2));
+		return result;
+	}
+
 	public int getLastModFileDate() {
 		return lastModFileDate;
+	}
+
+	/**
+	 * Return last modified date as a string in YYYY.mm.dd format.
+	 */
+	public String getLastModFileDateString() {
+		String result = String.format("%d.%02d.%02d", ((lastModFileDate & 0x7F) + 1980),
+				((lastModFileDate >> 5) & 0x0F), (lastModFileDate & 0x1F));
+		return result;
+	}
+
+	/**
+	 * Return last modified date and time as a {@link LocalDateTime}.
+	 */
+	public LocalDateTime getLastModFileDateTime() {
+		LocalDateTime localDateTime = LocalDateTime.of(((lastModFileDate & 0x7F) + 1980),
+				((lastModFileDate >> 5) & 0x0F), (lastModFileDate & 0x1F), (lastModFileTime >> 11),
+				((lastModFileTime >> 5) & 0x3F), ((lastModFileTime & 0x1F) * 2));
+		return localDateTime;
 	}
 
 	public int getCrc32() {
@@ -260,6 +293,17 @@ public class ZipFileHeader {
 
 		public void setLastModFileDate(int lastModFileDate) {
 			this.lastModFileDate = lastModFileDate;
+		}
+
+		/**
+		 * Set the lastModFileDate and lastModFileTime as a {@link LocalDateTime}. Warning, the time has a 2 second
+		 * resolution so some normalization will occur.
+		 */
+		public void setLastModifiedDateTime(LocalDateTime localDateTime) {
+			this.lastModFileDate = ((localDateTime.getYear() - 1980) | (localDateTime.getMonthValue() << 5)
+					| (localDateTime.getDayOfMonth()));
+			this.lastModFileTime = ((localDateTime.getHour() << 11) | (localDateTime.getMinute() << 5)
+					| (localDateTime.getSecond() / 2));
 		}
 
 		public int getCrc32() {

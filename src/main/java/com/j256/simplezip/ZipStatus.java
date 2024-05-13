@@ -7,6 +7,7 @@ package com.j256.simplezip;
  */
 public class ZipStatus {
 
+	/** standard all is ok status response */
 	public static final ZipStatus OK = new ZipStatus(ZipStatusId.OK, "ok");
 
 	private final String message;
@@ -26,10 +27,9 @@ public class ZipStatus {
 	}
 
 	/**
-	 * Enumerated status id.
+	 * Enumerated status id for easy determining the source of the validation problem.
 	 */
 	public static enum ZipStatusId {
-
 		HEADER_BAD_SIGNATURE,
 		HEADER_CRC_NO_MATCH,
 		HEADER_LENGTH_SHORT,
@@ -41,6 +41,5 @@ public class ZipStatus {
 		OK,
 		// end
 		;
-
 	}
 }
