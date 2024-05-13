@@ -1,6 +1,7 @@
 package com.j256.simplezip.format.extra;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
@@ -16,14 +17,15 @@ public class Unix1ExtraField extends BaseExtraField {
 	public static final int EXPECTED_ID = 0x5855;
 	public static final int EXPECTED_MINIMUM_SIZE = 2 + 2 + 8 + 8;
 
-	private final long timeLastAccess;
+	private final long timeLastAccessed;
 	private final long timeLastModified;;
 	private final Integer userId;
 	private final Integer groupId;
 
-	public Unix1ExtraField(int extraSize, long timeLastAccess, long timeLastModified, Integer userId, Integer groupId) {
+	public Unix1ExtraField(int extraSize, long timeLastAccessed, long timeLastModified, Integer userId,
+			Integer groupId) {
 		super(EXPECTED_ID, extraSize);
-		this.timeLastAccess = timeLastAccess;
+		this.timeLastAccessed = timeLastAccessed;
 		this.timeLastModified = timeLastModified;
 		this.userId = userId;
 		this.groupId = groupId;
@@ -37,22 +39,35 @@ public class Unix1ExtraField extends BaseExtraField {
 	}
 
 	/**
-	 * Read in the rest of the Zip64ExtraField after the id is read.
+	 * Read from the input-stream.
 	 */
-	public static Unix1ExtraField read(RewindableInputStream input, int id, int size) throws IOException {
+	public static Unix1ExtraField read(RewindableInputStream inputStream, int id, int size) throws IOException {
 		Builder builder = new Unix1ExtraField.Builder();
-		builder.size = size;
-		builder.timeLastAccessed = IoUtils.readLong(input, "Unix1ExtraField.timeLastAccessed");
-		builder.timeLastModified = IoUtils.readLong(input, "Unix1ExtraField.timeLastModified");
+		builder.timeLastAccessed = IoUtils.readLong(inputStream, "Unix1ExtraField.timeLastAccessed");
+		builder.timeLastModified = IoUtils.readLong(inputStream, "Unix1ExtraField.timeLastModified");
 		if (size > EXPECTED_MINIMUM_SIZE) {
-			builder.userId = IoUtils.readShort(input, "Unix1ExtraField.userId");
-			builder.groupId = IoUtils.readShort(input, "Unix1ExtraField.groupId");
+			builder.userId = IoUtils.readShort(inputStream, "Unix1ExtraField.userId");
+			builder.groupId = IoUtils.readShort(inputStream, "Unix1ExtraField.groupId");
 		}
 		return builder.build();
 	}
 
-	public long getTimeLastAccess() {
-		return timeLastAccess;
+	/**
+	 * Write to the output-stream.
+	 */
+	@Override
+	public void write(OutputStream inputStream) throws IOException {
+		super.write(inputStream);
+		IoUtils.writeLong(inputStream, timeLastAccessed);
+		IoUtils.writeLong(inputStream, timeLastModified);
+		if (userId != null && groupId != null) {
+			IoUtils.writeShort(inputStream, userId);
+			IoUtils.writeShort(inputStream, groupId);
+		}
+	}
+
+	public long getTimeLastAccessed() {
+		return timeLastAccessed;
 	}
 
 	public long getTimeLastModified() {
@@ -81,22 +96,17 @@ public class Unix1ExtraField extends BaseExtraField {
 	 * Builder for the Unix1ExtraField.
 	 */
 	public static class Builder {
-		private int size;
 		private long timeLastAccessed;
 		private long timeLastModified;;
 		private Integer userId;
 		private Integer groupId;
 
 		public Unix1ExtraField build() {
+			int size = EXPECTED_MINIMUM_SIZE;
+			if (userId != null && groupId != null) {
+				size += 2 + 2;
+			}
 			return new Unix1ExtraField(size, timeLastAccessed, timeLastModified, userId, groupId);
-		}
-
-		public int getSize() {
-			return size;
-		}
-
-		public void setSize(int size) {
-			this.size = size;
 		}
 
 		public long getTimeLastAccessed() {

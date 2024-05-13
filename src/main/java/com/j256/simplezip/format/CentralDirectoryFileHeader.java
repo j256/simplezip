@@ -1,6 +1,7 @@
 package com.j256.simplezip.format;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
@@ -65,44 +66,80 @@ public class CentralDirectoryFileHeader {
 		return new Builder();
 	}
 
-	public static CentralDirectoryFileHeader read(RewindableInputStream input) throws IOException {
+	/**
+	 * Read one from the input-stream.
+	 */
+	public static CentralDirectoryFileHeader read(RewindableInputStream inputStream) throws IOException {
 
 		Builder builder = new CentralDirectoryFileHeader.Builder();
 
-		int signature = IoUtils.readInt(input, "CentralDirectoryFileHeader.signature");
+		int signature = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.signature");
 		if (signature < 0) {
 			return null;
 		}
 
 		if (signature == CentralDirectoryEnd.EXPECTED_SIGNATURE) {
-			input.rewind(4);
+			inputStream.rewind(4);
 			return null;
 		}
 
 		builder.signature = signature;
-		builder.versionMade = IoUtils.readShort(input, "CentralDirectoryFileHeader.versionMade");
-		builder.versionNeeded = IoUtils.readShort(input, "CentralDirectoryFileHeader.versionNeeded");
-		builder.generalPurposeFlags = IoUtils.readShort(input, "CentralDirectoryFileHeader.generalPurposeFlags");
-		builder.compressionMethodValue = IoUtils.readShort(input, "CentralDirectoryFileHeader.compressionMethod");
-		builder.lastModifiedFileTime = IoUtils.readShort(input, "CentralDirectoryFileHeader.lastModifiedFileTime");
-		builder.lastModifiedFileDate = IoUtils.readShort(input, "CentralDirectoryFileHeader.lastModifiedFileDate");
-		builder.crc32 = IoUtils.readInt(input, "CentralDirectoryFileHeader.crc32");
-		builder.compressedSize = IoUtils.readInt(input, "CentralDirectoryFileHeader.compressedSize");
-		builder.uncompressedSize = IoUtils.readInt(input, "CentralDirectoryFileHeader.uncompressedSize");
-		int fileNameLength = IoUtils.readShort(input, "CentralDirectoryFileHeader.fileNameLength");
-		int extraFieldLength = IoUtils.readShort(input, "CentralDirectoryFileHeader.extraFieldLength");
-		int commentLength = IoUtils.readShort(input, "CentralDirectoryFileHeader.commentLength");
-		builder.diskNumberStart = IoUtils.readShort(input, "CentralDirectoryFileHeader.diskNumberStart");
-		builder.internalFileAttributes = IoUtils.readShort(input, "CentralDirectoryFileHeader.internalFileAttributes");
-		builder.externalFileAttributes = IoUtils.readInt(input, "CentralDirectoryFileHeader.externalFileAttributes");
+		builder.versionMade = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.versionMade");
+		builder.versionNeeded = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.versionNeeded");
+		builder.generalPurposeFlags = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.generalPurposeFlags");
+		builder.compressionMethodValue = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.compressionMethod");
+		builder.lastModifiedFileTime =
+				IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.lastModifiedFileTime");
+		builder.lastModifiedFileDate =
+				IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.lastModifiedFileDate");
+		builder.crc32 = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.crc32");
+		builder.compressedSize = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.compressedSize");
+		builder.uncompressedSize = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.uncompressedSize");
+		int fileNameLength = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.fileNameLength");
+		int extraFieldLength = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.extraFieldLength");
+		int commentLength = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.commentLength");
+		builder.diskNumberStart = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.diskNumberStart");
+		builder.internalFileAttributes =
+				IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.internalFileAttributes");
+		builder.externalFileAttributes =
+				IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.externalFileAttributes");
 		builder.relativeOffsetOfLocalHeader =
-				IoUtils.readInt(input, "CentralDirectoryFileHeader.relativeOffsetOfLocalHeader");
+				IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.relativeOffsetOfLocalHeader");
 
-		builder.fileNameBytes = IoUtils.readBytes(input, fileNameLength, "CentralDirectoryFileHeader.fileName");
-		builder.extraFieldBytes = IoUtils.readBytes(input, extraFieldLength, "CentralDirectoryFileHeader.extraField");
-		builder.commentBytes = IoUtils.readBytes(input, commentLength, "CentralDirectoryFileHeader.comment");
+		builder.fileNameBytes = IoUtils.readBytes(inputStream, fileNameLength, "CentralDirectoryFileHeader.fileName");
+		builder.extraFieldBytes =
+				IoUtils.readBytes(inputStream, extraFieldLength, "CentralDirectoryFileHeader.extraField");
+		builder.commentBytes = IoUtils.readBytes(inputStream, commentLength, "CentralDirectoryFileHeader.comment");
 
 		return builder.build();
+	}
+
+	/**
+	 * Write to the output-stream.
+	 */
+	public void write(OutputStream outputStream) throws IOException {
+
+		IoUtils.writeInt(outputStream, EXPECTED_SIGNATURE);
+		IoUtils.writeShort(outputStream, versionMade);
+		IoUtils.writeShort(outputStream, versionNeeded);
+		IoUtils.writeShort(outputStream, generalPurposeFlags);
+		IoUtils.writeShort(outputStream, compressionMethodValue);
+		IoUtils.writeShort(outputStream, lastModifiedFileTime);
+		IoUtils.writeShort(outputStream, lastModifiedFileDate);
+		IoUtils.writeInt(outputStream, crc32);
+		IoUtils.writeInt(outputStream, compressedSize);
+		IoUtils.writeInt(outputStream, uncompressedSize);
+
+		IoUtils.writeShortBytesLength(outputStream, fileNameBytes);
+		IoUtils.writeShortBytesLength(outputStream, extraFieldBytes);
+		IoUtils.writeShortBytesLength(outputStream, commentBytes);
+		IoUtils.writeShort(outputStream, diskNumberStart);
+		IoUtils.writeShort(outputStream, internalFileAttributes);
+		IoUtils.writeInt(outputStream, externalFileAttributes);
+		IoUtils.writeInt(outputStream, relativeOffsetOfLocalHeader);
+		IoUtils.writeBytes(outputStream, fileNameBytes);
+		IoUtils.writeBytes(outputStream, extraFieldBytes);
+		IoUtils.writeBytes(outputStream, commentBytes);
 	}
 
 	public int getSignature() {

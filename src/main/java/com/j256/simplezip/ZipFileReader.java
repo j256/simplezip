@@ -1,14 +1,16 @@
 package com.j256.simplezip;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
-import com.j256.simplezip.encode.FileDataDecoder;
-import com.j256.simplezip.encode.InflatorFileDataDecoder;
-import com.j256.simplezip.encode.StoredFileDataDecoder;
+import com.j256.simplezip.code.FileDataDecoder;
+import com.j256.simplezip.code.InflatorFileDataDecoder;
+import com.j256.simplezip.code.StoredFileDataDecoder;
 import com.j256.simplezip.format.CentralDirectoryEnd;
 import com.j256.simplezip.format.CentralDirectoryFileHeader;
 import com.j256.simplezip.format.DataDescriptor;
@@ -16,11 +18,11 @@ import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 
 /**
- * Representation of a Zip file.
+ * Read in a zip file.
  * 
  * @author graywatson
  */
-public class ZipFileReader {
+public class ZipFileReader implements Closeable {
 
 	// XXX: should be maximum zip data read block
 	private static final int BUFFER_SIZE = 8192;
@@ -69,6 +71,25 @@ public class ZipFileReader {
 		} else {
 			return currentFileHeader.getFileName();
 		}
+	}
+
+	/**
+	 * Read in file data from the Zip stream and write it to the output-steam.
+	 * 
+	 * @return THe number of bytes written into the output-stream.
+	 */
+	public long readFileData(OutputStream outputStream) throws IOException {
+		long byteCount = 0;
+		byte[] buffer = new byte[10240];
+		while (true) {
+			int numRead = readFileData(buffer, 0, buffer.length);
+			if (numRead < 0) {
+				break;
+			}
+			outputStream.write(buffer, 0, numRead);
+			byteCount += numRead;
+		}
+		return byteCount;
 	}
 
 	/**
@@ -125,6 +146,23 @@ public class ZipFileReader {
 	}
 
 	/**
+	 * After the header, the file bytes, and any option data-descriptor has been read, validate that the Zip entry was
+	 * correct based on the various different length and CRC values stored and calculated.
+	 */
+	public ZipStatus validatePreviousFile() {
+		// XXX: validate the header section and any trailing data-descriptor
+		return ZipStatus.OK;
+	}
+
+	/**
+	 * Close the associated input-stream.
+	 */
+	@Override
+	public void close() throws IOException {
+		countingInputStream.close();
+	}
+
+	/**
 	 * Returns true if the current file's data EOF has been reached. read() should have returned -1.
 	 */
 	public boolean isCurrentFileEofReached() {
@@ -139,15 +177,6 @@ public class ZipFileReader {
 	 */
 	public DataDescriptor getCurrentDataDescriptor() {
 		return currentDataDescriptor;
-	}
-
-	/**
-	 * After the header, the file bytes, and any option data-descriptor has been read, validate that the Zip entry was
-	 * correct based on the various different length and CRC values stored and calculated.
-	 */
-	public ZipStatus validatePreviousFile() {
-		// XXX: validate the header section and any trailing data-descriptor
-		return ZipStatus.OK;
 	}
 
 	private void assignFileDataDecoder() throws IOException {

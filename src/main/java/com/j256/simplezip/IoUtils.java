@@ -3,6 +3,7 @@ package com.j256.simplezip;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Input/output utility methods.
@@ -81,13 +82,82 @@ public class IoUtils {
 		return bytes;
 	}
 
+	/**
+	 * Write a byte to the output stream.
+	 */
+	public static void writeByte(OutputStream output, int value) throws IOException {
+		output.write(value);
+	}
+
+	/**
+	 * Write a short in little-endian to the output stream.
+	 */
+	public static void writeShort(OutputStream output, int value) throws IOException {
+		writeByte(output, value, 0);
+		writeByte(output, value, 8);
+	}
+
+	/**
+	 * Write an int in little-endian to the output stream.
+	 */
+	public static void writeInt(OutputStream output, int value) throws IOException {
+		writeByte(output, value, 0);
+		writeByte(output, value, 8);
+		writeByte(output, value, 16);
+		writeByte(output, value, 24);
+	}
+
+	/**
+	 * Write a long in little-endian to the output stream.
+	 */
+	public static void writeLong(OutputStream output, long value) throws IOException {
+		writeByte(output, value, 0);
+		writeByte(output, value, 8);
+		writeByte(output, value, 16);
+		writeByte(output, value, 24);
+		writeByte(output, value, 32);
+		writeByte(output, value, 40);
+		writeByte(output, value, 48);
+		writeByte(output, value, 56);
+	}
+
+	/**
+	 * Write the length of bytes as a little-endian short to the output stream.
+	 */
+	public static void writeShortBytesLength(OutputStream output, byte[] bytes) throws IOException {
+		if (bytes == null) {
+			writeShort(output, 0);
+		} else {
+			writeShort(output, bytes.length);
+		}
+	}
+
+	/**
+	 * Write an array of bytes to the output stream.
+	 */
+	public static void writeBytes(OutputStream output, byte[] bytes) throws IOException {
+		if (bytes != null && bytes.length > 0) {
+			output.write(bytes);
+		}
+	}
+
 	private static int readAddByte(InputStream input, String label, int current, int shift) throws IOException {
 		int value = readByte(input, label);
 		return current | (value << shift);
 	}
 
-	private static long readAddByte(InputStream input, String label, long current, int shift) throws IOException {
+	private static long readAddByte(InputStream input, String label, long current, long shift) throws IOException {
 		long value = readByte(input, label);
 		return current | (value << shift);
+	}
+
+	private static void writeByte(OutputStream output, int value, int shift) throws IOException {
+		int b = ((value >> shift) & 0xFF);
+		output.write(b);
+	}
+
+	private static void writeByte(OutputStream output, long value, long shift) throws IOException {
+		int b = (int) ((value >> shift) & 0xFF);
+		output.write(b);
 	}
 }

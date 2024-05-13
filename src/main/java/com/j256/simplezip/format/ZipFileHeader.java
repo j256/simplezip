@@ -1,6 +1,7 @@
 package com.j256.simplezip.format;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.zip.ZipError;
@@ -56,30 +57,52 @@ public class ZipFileHeader {
 		return new Builder();
 	}
 
-	public static ZipFileHeader read(RewindableInputStream input) throws IOException {
+	/**
+	 * Read from the input stream.
+	 */
+	public static ZipFileHeader read(RewindableInputStream inputStream) throws IOException {
 		Builder builder = new ZipFileHeader.Builder();
 		/*
 		 * WHen reading a file-header we aren't sure if this is a file-header or the start of the central directory.
 		 */
-		int first = IoUtils.readInt(input, "LocalFileHeader.signature");
+		int first = IoUtils.readInt(inputStream, "LocalFileHeader.signature");
 		if (first == CentralDirectoryFileHeader.EXPECTED_SIGNATURE) {
-			input.rewind(4);
+			inputStream.rewind(4);
 			return null;
 		}
 		builder.signature = first;
-		builder.versionNeeded = IoUtils.readShort(input, "LocalFileHeader.versionNeeded");
-		builder.generalPurposeFlagsValue = IoUtils.readShort(input, "LocalFileHeader.generalPurposeFlags");
-		builder.compressionMethodValue = IoUtils.readShort(input, "LocalFileHeader.compressionMethod");
-		builder.lastModFileTime = IoUtils.readShort(input, "LocalFileHeader.lastModFileTime");
-		builder.lastModFileDate = IoUtils.readShort(input, "LocalFileHeader.lastModFileDate");
-		builder.crc32 = IoUtils.readInt(input, "LocalFileHeader.crc32");
-		builder.compressedSize = IoUtils.readInt(input, "LocalFileHeader.compressedSize");
-		builder.uncompressedSize = IoUtils.readInt(input, "LocalFileHeader.uncompressedSize");
-		int fileNameLength = IoUtils.readShort(input, "LocalFileHeader.fileNameLength");
-		int extraLength = IoUtils.readShort(input, "LocalFileHeader.extraLength");
-		builder.fileNameBytes = IoUtils.readBytes(input, fileNameLength, "LocalFileHeader.fileName");
-		builder.extraFieldBytes = IoUtils.readBytes(input, extraLength, "LocalFileHeader.extra");
+		builder.versionNeeded = IoUtils.readShort(inputStream, "LocalFileHeader.versionNeeded");
+		builder.generalPurposeFlagsValue = IoUtils.readShort(inputStream, "LocalFileHeader.generalPurposeFlags");
+		builder.compressionMethodValue = IoUtils.readShort(inputStream, "LocalFileHeader.compressionMethod");
+		builder.lastModFileTime = IoUtils.readShort(inputStream, "LocalFileHeader.lastModFileTime");
+		builder.lastModFileDate = IoUtils.readShort(inputStream, "LocalFileHeader.lastModFileDate");
+		builder.crc32 = IoUtils.readInt(inputStream, "LocalFileHeader.crc32");
+		builder.compressedSize = IoUtils.readInt(inputStream, "LocalFileHeader.compressedSize");
+		builder.uncompressedSize = IoUtils.readInt(inputStream, "LocalFileHeader.uncompressedSize");
+		int fileNameLength = IoUtils.readShort(inputStream, "LocalFileHeader.fileNameLength");
+		int extraLength = IoUtils.readShort(inputStream, "LocalFileHeader.extraLength");
+		builder.fileNameBytes = IoUtils.readBytes(inputStream, fileNameLength, "LocalFileHeader.fileName");
+		builder.extraFieldBytes = IoUtils.readBytes(inputStream, extraLength, "LocalFileHeader.extra");
 		return builder.build();
+	}
+
+	/**
+	 * Write to the input stream.
+	 */
+	public void write(OutputStream outputStream) throws IOException {
+		IoUtils.writeInt(outputStream, EXPECTED_SIGNATURE);
+		IoUtils.writeShort(outputStream, versionNeeded);
+		IoUtils.writeShort(outputStream, generalPurposeFlagsValue);
+		IoUtils.writeShort(outputStream, compressionMethodValue);
+		IoUtils.writeShort(outputStream, lastModFileTime);
+		IoUtils.writeShort(outputStream, lastModFileDate);
+		IoUtils.writeInt(outputStream, crc32);
+		IoUtils.writeInt(outputStream, compressedSize);
+		IoUtils.writeInt(outputStream, uncompressedSize);
+		IoUtils.writeShortBytesLength(outputStream, fileNameBytes);
+		IoUtils.writeShortBytesLength(outputStream, extraFieldBytes);
+		IoUtils.writeBytes(outputStream, fileNameBytes);
+		IoUtils.writeBytes(outputStream, extraFieldBytes);
 	}
 
 	/**
@@ -148,7 +171,7 @@ public class ZipFileHeader {
 	 * Return last modified date as a string in YYYY.mm.dd format.
 	 */
 	public String getLastModFileDateString() {
-		String result = String.format("%d.%02d.%02d", ((lastModFileDate & 0x7F) + 1980),
+		String result = String.format("%d.%02d.%02d", (((lastModFileDate >> 9) & 0x7F) + 1980),
 				((lastModFileDate >> 5) & 0x0F), (lastModFileDate & 0x1F));
 		return result;
 	}
@@ -157,7 +180,7 @@ public class ZipFileHeader {
 	 * Return last modified date and time as a {@link LocalDateTime}.
 	 */
 	public LocalDateTime getLastModFileDateTime() {
-		LocalDateTime localDateTime = LocalDateTime.of(((lastModFileDate & 0x7F) + 1980),
+		LocalDateTime localDateTime = LocalDateTime.of((((lastModFileDate >> 9) & 0x7F) + 1980),
 				((lastModFileDate >> 5) & 0x0F), (lastModFileDate & 0x1F), (lastModFileTime >> 11),
 				((lastModFileTime >> 5) & 0x3F), ((lastModFileTime & 0x1F) * 2));
 		return localDateTime;
@@ -303,7 +326,7 @@ public class ZipFileHeader {
 		 * resolution so some normalization will occur.
 		 */
 		public void setLastModifiedDateTime(LocalDateTime localDateTime) {
-			this.lastModFileDate = ((localDateTime.getYear() - 1980) | (localDateTime.getMonthValue() << 5)
+			this.lastModFileDate = (((localDateTime.getYear() - 1980) << 9) | (localDateTime.getMonthValue() << 5)
 					| (localDateTime.getDayOfMonth()));
 			this.lastModFileTime = ((localDateTime.getHour() << 11) | (localDateTime.getMinute() << 5)
 					| (localDateTime.getSecond() / 2));

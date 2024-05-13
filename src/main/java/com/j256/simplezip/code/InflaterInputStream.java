@@ -1,7 +1,8 @@
-package com.j256.simplezip.encode;
+package com.j256.simplezip.code;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
@@ -12,7 +13,7 @@ import java.util.zip.Inflater;
  */
 public class InflaterInputStream extends InputStream {
 
-	private InputStream delegate;
+	private final InputStream delegate;
 	private final Inflater inflater;
 	private final byte[] singleByteBuffer = new byte[1];
 	private final byte[] buffer = new byte[10240];
@@ -67,5 +68,6 @@ public class InflaterInputStream extends InputStream {
 	private void fillInflaterBuffer() throws IOException {
 		int num = delegate.read(buffer);
 		inflater.setInput(buffer, 0, num);
+		System.out.println("reading: " + Arrays.toString(Arrays.copyOfRange(buffer, 0, num)));
 	}
 }

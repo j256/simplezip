@@ -1,6 +1,7 @@
 package com.j256.simplezip.format.extra;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
@@ -38,13 +39,25 @@ public class Zip64ExtraField extends BaseExtraField {
 	/**
 	 * Read in the rest of the Zip64ExtraField after the id is read.
 	 */
-	public static Zip64ExtraField read(RewindableInputStream input, int id, int size) throws IOException {
+	public static Zip64ExtraField read(RewindableInputStream inputStream, int id, int size) throws IOException {
 		Builder builder = new Zip64ExtraField.Builder();
-		builder.uncompressedSize = IoUtils.readLong(input, "Zip64ExtraField.uncompressedSize");
-		builder.compressedSize = IoUtils.readLong(input, "Zip64ExtraField.compressedSize");
-		builder.offset = IoUtils.readLong(input, "Zip64ExtraField.offset");
-		builder.diskNumber = IoUtils.readInt(input, "Zip64ExtraField.diskNumber");
+		builder.uncompressedSize = IoUtils.readLong(inputStream, "Zip64ExtraField.uncompressedSize");
+		builder.compressedSize = IoUtils.readLong(inputStream, "Zip64ExtraField.compressedSize");
+		builder.offset = IoUtils.readLong(inputStream, "Zip64ExtraField.offset");
+		builder.diskNumber = IoUtils.readInt(inputStream, "Zip64ExtraField.diskNumber");
 		return builder.build();
+	}
+
+	/**
+	 * Write to the output-stream.
+	 */
+	@Override
+	public void write(OutputStream inputStream) throws IOException {
+		super.write(inputStream);
+		IoUtils.writeLong(inputStream, uncompressedSize);
+		IoUtils.writeLong(inputStream, compressedSize);
+		IoUtils.writeLong(inputStream, offset);
+		IoUtils.writeInt(inputStream, diskNumber);
 	}
 
 	public long getUncompressedSize() {

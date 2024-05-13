@@ -1,4 +1,4 @@
-package com.j256.simplezip.encode;
+package com.j256.simplezip.code;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,11 +38,6 @@ public class StoredFileDataDecoder implements FileDataDecoder {
 		}
 		inputOffset += numRead;
 		return numRead;
-	}
-
-	@Override
-	public int decode(byte[] outputBuffer) throws IOException {
-		return decode(outputBuffer, 0, outputBuffer.length);
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package com.j256.simplezip.format;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import com.j256.simplezip.CountingInfo;
 import com.j256.simplezip.IoUtils;
@@ -36,7 +37,11 @@ public class DataDescriptor {
 		return new Builder();
 	}
 
-	public static DataDescriptor read(RewindableInputStream input, CountingInfo countingInfo) throws IOException {
+	/**
+	 * Read from the input-stream.
+	 */
+	public static DataDescriptor read(RewindableInputStream inputStream, CountingInfo countingInfo) throws IOException {
+		Builder builder = new DataDescriptor.Builder();
 		/*
 		 * This is a little strange since there is an optional magic value according to Wikipedia. If the first value
 		 * doesn't match the expected then we assume it is the CRC. If it does match the expected value then check the
@@ -44,16 +49,50 @@ public class DataDescriptor {
 		 * next 4 bytes to see if that is also the same CRC value if not then we sort of throw up our hands and assume
 		 * that the first 4 bytes is the CRC without a signature and pray.
 		 */
-		int first = IoUtils.readInt(input, "DataDescriptor.signature");
-		if (first == OPTIONAL_EXPECTED_SIGNATURE) {
+		int i1 = IoUtils.readInt(inputStream, "DataDescriptor.signature-or-crc32");
+		int i2 = IoUtils.readInt(inputStream, "DataDescriptor.crc32-or-compressedSize");
+		int i3 = IoUtils.readInt(inputStream, "DataDescriptor.compressedSize-or-uncompressedSize");
+		int i4 = IoUtils.readInt(inputStream, "DataDescriptor.uncompressedSize-or-next");
 
+		if (i1 == OPTIONAL_EXPECTED_SIGNATURE) {
+			if (countingInfo.getCrc32() == i2) {
+				// this looks good
+				builder.signature = i1;
+				builder.crc32 = i2;
+				builder.compressedSize = i3;
+				builder.uncompressedSize = i4;
+			} else if (countingInfo.getByteCount() == i3) {
+				// guess that we have crc, compressed-size, uncompressed-size with the crc matching the signature?
+				builder.crc32 = i1;
+				builder.compressedSize = i2;
+				builder.uncompressedSize = i3;
+			} else {
+				// XXX: crc validation error
+				if (countingInfo.getByteCount() == i4) {
+					// XXX: validation error
+				}
+				builder.signature = i1;
+				builder.crc32 = i2;
+				builder.compressedSize = i3;
+				builder.uncompressedSize = i4;
+			}
+		} else {
+			// guess that we have crc, compressed-size, uncompressed-size with the crc matching the signature
+			builder.crc32 = i1;
+			builder.compressedSize = i2;
+			builder.uncompressedSize = i3;
 		}
-
-		Builder builder = new DataDescriptor.Builder();
-		builder.crc32 = IoUtils.readInt(input, "DataDescriptor.crc32");
-		builder.compressedSize = IoUtils.readInt(input, "DataDescriptor.compressedSize");
-		builder.uncompressedSize = IoUtils.readInt(input, "DataDescriptor.uncompressedSize");
 		return builder.build();
+	}
+
+	/**
+	 * Write to the output-stream.
+	 */
+	public void write(OutputStream outputStream) throws IOException {
+		IoUtils.writeInt(outputStream, OPTIONAL_EXPECTED_SIGNATURE);
+		IoUtils.writeInt(outputStream, crc32);
+		IoUtils.writeInt(outputStream, compressedSize);
+		IoUtils.writeInt(outputStream, uncompressedSize);
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package com.j256.simplezip.format.extra;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
@@ -20,9 +21,9 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 	private static final int TIME_CREATED_FLAG = (1 << 2);
 
 	private final int flags;
-	private final long time;
+	private final Long time;
 
-	public ExtendedTimestampCentralExtraField(int size, int flags, long time) {
+	public ExtendedTimestampCentralExtraField(int size, int flags, Long time) {
 		super(EXPECTED_ID, size);
 		this.flags = flags;
 		this.time = time;
@@ -38,21 +39,33 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 	/**
 	 * Read in the rest of the Zip64ExtraField after the id is read.
 	 */
-	public static ExtendedTimestampCentralExtraField read(RewindableInputStream input, int id, int size)
+	public static ExtendedTimestampCentralExtraField read(RewindableInputStream inputStream, int id, int size)
 			throws IOException {
 		Builder builder = new ExtendedTimestampCentralExtraField.Builder();
-		builder.flags = IoUtils.readByte(input, "ExtendedTimestampCentralExtraField.flags");
+		builder.flags = IoUtils.readByte(inputStream, "ExtendedTimestampCentralExtraField.flags");
 		if (size >= EXPECTED_MINIMUM_SIZE + 8) {
-			builder.time = IoUtils.readLong(input, "ExtendedTimestampCentralExtraField.time");
+			builder.time = IoUtils.readLong(inputStream, "ExtendedTimestampCentralExtraField.time");
 		}
 		return builder.build();
+	}
+
+	/**
+	 * Write to the output-stream.
+	 */
+	@Override
+	public void write(OutputStream inputStream) throws IOException {
+		super.write(inputStream);
+		IoUtils.writeByte(inputStream, flags);
+		if (time != null) {
+			IoUtils.writeLong(inputStream, time);
+		}
 	}
 
 	public int getFlags() {
 		return flags;
 	}
 
-	public long getTime() {
+	public Long getTime() {
 		return time;
 	}
 
@@ -73,20 +86,15 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 	 */
 	public static class Builder {
 
-		private int size;
 		private int flags;
-		private long time;;
+		private Long time;;
 
 		public ExtendedTimestampCentralExtraField build() {
+			int size = EXPECTED_MINIMUM_SIZE;
+			if (time != null) {
+				size += 8;
+			}
 			return new ExtendedTimestampCentralExtraField(size, flags, time);
-		}
-
-		public int getSize() {
-			return size;
-		}
-
-		public void setSize(int size) {
-			this.size = size;
 		}
 
 		public int getFlags() {
@@ -97,11 +105,11 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 			this.flags = flags;
 		}
 
-		public long getTime() {
+		public Long getTime() {
 			return time;
 		}
 
-		public void setTime(long time) {
+		public void setTime(Long time) {
 			this.time = time;
 		}
 

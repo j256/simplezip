@@ -9,10 +9,10 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.junit.Test;
@@ -24,7 +24,7 @@ import com.j256.simplezip.format.DataDescriptor;
 import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 
-public class ZipFileReaderTest {
+public class ZipFileWriterTest {
 
 	@Test
 	public void testStuff() throws IOException {
@@ -33,13 +33,13 @@ public class ZipFileReaderTest {
 		ZipEntry zipEntry = new ZipEntry(fileName);
 		ZipOutputStream zos = new ZipOutputStream(baos);
 		zos.putNextEntry(zipEntry);
-		byte[] bytes = new byte[] { 1, 2, 3 };
-		zos.write(bytes);
+		byte[] fileBytes = new byte[] { 1, 2, 3 };
+		zos.write(fileBytes);
 		zos.closeEntry();
 		zos.close();
 
-		InputStream input = new ByteArrayInputStream(baos.toByteArray());
-		ZipFileReader zipFile = new ZipFileReader(input);
+		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+		ZipFileReader zipFile = new ZipFileReader(bais);
 
 		ZipFileHeader header = zipFile.readNextFileHeader();
 		assertEquals(fileName, header.getFileName());
@@ -50,34 +50,52 @@ public class ZipFileReaderTest {
 		assertTrue(header.getGeneralPurposeFlags().contains(GeneralPurposeFlag.DATA_DESCRIPTOR));
 		assertEquals(CompressionMethod.DEFLATED, header.getCompressionMethod());
 
-		System.out.println("header " + header.getFileName() + ", date " + header.getLastModFileDateTime() + ", time "
-				+ header.getLastModFileTimeString() + ", size " + header.getUncompressedSize() + ", method "
-				+ header.getCompressionMethod() + ", extra " + Arrays.toString(header.getExtraFieldBytes()));
+		byte[] buffer = new byte[10240];
+		int numRead = zipFile.readFileData(buffer);
 
-		baos.reset();
-		long numRead = zipFile.readFileData(baos);
-		assertEquals(bytes.length, numRead);
-		assertArrayEquals(bytes, baos.toByteArray());
+		assertEquals(fileBytes.length, numRead);
+		assertArrayEquals(fileBytes, Arrays.copyOf(buffer, numRead));
+		// have to do this
+		assertEquals(-1, zipFile.readFileData(buffer));
 
 		DataDescriptor dataDescriptor = zipFile.getCurrentDataDescriptor();
 		assertNotNull(dataDescriptor);
-		assertEquals(bytes.length, dataDescriptor.getUncompressedSize());
+		assertEquals(fileBytes.length, dataDescriptor.getUncompressedSize());
 		CRC32 crc32 = new CRC32();
-		crc32.update(bytes);
+		crc32.update(fileBytes);
 		assertEquals(crc32.getValue(), dataDescriptor.getCrc32());
 
 		assertNull(zipFile.readNextFileHeader());
 
 		CentralDirectoryFileHeader dirHeader = zipFile.readNextDirectoryFileHeader();
 		assertNotNull(dirHeader);
-		System.out.println("dir " + dirHeader.getFileName() + ", size " + dirHeader.getUncompressedSize() + ", method "
-				+ dirHeader.getCompressionMethod() + ", extra " + Arrays.toString(dirHeader.getExtraFieldBytes()));
 
 		assertNull(zipFile.readNextDirectoryFileHeader());
 		CentralDirectoryEnd end = zipFile.readDirectoryEnd();
 		assertNotNull(end);
-		System.out.println("end: num-records " + end.getNumRecordsTotal() + ", size " + end.getSizeDirectory());
-
 		zipFile.close();
+
+		/*
+		 * Write out our zip-file.
+		 */
+
+		baos.reset();
+		ZipFileWriter writer = new ZipFileWriter(baos);
+		writer.writeFileHeader(header);
+		writer.writeDataDescriptor(dataDescriptor);
+		writer.writeFileData(fileBytes);
+		writer.finishFileData();
+		writer.writeDirectoryFileHeader(dirHeader);
+		writer.writeDirectoryEnd(end);
+		writer.close();
+
+		bais = new ByteArrayInputStream(baos.toByteArray());
+
+		// now try to read it back in with the jdk stuff
+		ZipInputStream zis = new ZipInputStream(bais);
+		zipEntry = zis.getNextEntry();
+		assertNotNull(zipEntry);
+		assertNull(zis.getNextEntry());
+		zis.close();
 	}
 }

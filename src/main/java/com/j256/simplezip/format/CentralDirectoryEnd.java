@@ -1,6 +1,7 @@
 package com.j256.simplezip.format;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
@@ -43,21 +44,45 @@ public class CentralDirectoryEnd {
 		return new Builder();
 	}
 
-	public static CentralDirectoryEnd read(RewindableInputStream input) throws IOException {
-	
+	/**
+	 * Read one from the input-stream.
+	 */
+	public static CentralDirectoryEnd read(RewindableInputStream inputStream) throws IOException {
+
 		Builder builder = new CentralDirectoryEnd.Builder();
-	
-		builder.signature = IoUtils.readInt(input, "CentralDirectoryEnd.signature");
-		builder.diskNumber = IoUtils.readShort(input, "CentralDirectoryFileHeader.diskNumber");
-		builder.diskNumberStart = IoUtils.readShort(input, "CentralDirectoryFileHeader.diskNumberStart");
-		builder.numRecordsOnDisk = IoUtils.readShort(input, "CentralDirectoryFileHeader.numRecordsOnDisk");
-		builder.numRecordsTotal = IoUtils.readShort(input, "CentralDirectoryFileHeader.numRecordsTotal");
-		builder.sizeDirectory = IoUtils.readInt(input, "CentralDirectoryFileHeader.sizeDirectory");
-		builder.offsetDirectory = IoUtils.readInt(input, "CentralDirectoryFileHeader.offsetDirectory");
-		int commentLength = IoUtils.readShort(input, "CentralDirectoryFileHeader.commentLength");
-		builder.commentBytes = IoUtils.readBytes(input, commentLength, "CentralDirectoryFileHeader.comment");
-	
+
+		builder.signature = IoUtils.readInt(inputStream, "CentralDirectoryEnd.signature");
+		builder.diskNumber = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.diskNumber");
+		builder.diskNumberStart = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.diskNumberStart");
+		builder.numRecordsOnDisk = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.numRecordsOnDisk");
+		builder.numRecordsTotal = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.numRecordsTotal");
+		builder.sizeDirectory = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.sizeDirectory");
+		builder.offsetDirectory = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.offsetDirectory");
+		int commentLength = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.commentLength");
+		builder.commentBytes = IoUtils.readBytes(inputStream, commentLength, "CentralDirectoryFileHeader.comment");
+
 		return builder.build();
+	}
+
+	/**
+	 * Write to the output-stream.
+	 */
+	public void write(OutputStream outputStream) throws IOException {
+		IoUtils.writeInt(outputStream, EXPECTED_SIGNATURE);
+		IoUtils.writeShort(outputStream, diskNumber);
+		IoUtils.writeShort(outputStream, diskNumberStart);
+		IoUtils.writeShort(outputStream, numRecordsOnDisk);
+		IoUtils.writeShort(outputStream, numRecordsTotal);
+		IoUtils.writeInt(outputStream, sizeDirectory);
+		IoUtils.writeInt(outputStream, offsetDirectory);
+		if (commentBytes == null) {
+			IoUtils.writeShort(outputStream, 0);
+		} else {
+			IoUtils.writeShort(outputStream, commentBytes.length);
+		}
+		if (commentBytes != null) {
+			IoUtils.writeBytes(outputStream, commentBytes);
+		}
 	}
 
 	public int getSignature() {
@@ -92,6 +117,9 @@ public class CentralDirectoryEnd {
 		return commentBytes;
 	}
 
+	/**
+	 * Builder for the {@link CentralDirectoryEnd}.
+	 */
 	public static class Builder {
 		private int signature;
 		private int diskNumber;

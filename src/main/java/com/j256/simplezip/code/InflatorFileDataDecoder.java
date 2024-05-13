@@ -1,4 +1,4 @@
-package com.j256.simplezip.encode;
+package com.j256.simplezip.code;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,12 +11,11 @@ import java.util.zip.Inflater;
  */
 public class InflatorFileDataDecoder implements FileDataDecoder {
 
-	private Inflater inflater;
+	private final Inflater inflater = new Inflater(true /* no wrap */);
 	private InflaterInputStream inflaterInputStream;
 
 	@Override
 	public void registerInputStream(InputStream inputStream) throws IOException {
-		this.inflater = new Inflater(true /* no wrap */);
 		this.inflaterInputStream = new InflaterInputStream(inputStream, this.inflater);
 	}
 
@@ -28,11 +27,6 @@ public class InflatorFileDataDecoder implements FileDataDecoder {
 		} else {
 			return numRead;
 		}
-	}
-
-	@Override
-	public int decode(byte[] outputBuffer) throws IOException {
-		return decode(outputBuffer, 0, outputBuffer.length);
 	}
 
 	@Override

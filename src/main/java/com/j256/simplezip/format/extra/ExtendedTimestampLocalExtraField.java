@@ -1,6 +1,7 @@
 package com.j256.simplezip.format.extra;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
@@ -38,14 +39,26 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 	/**
 	 * Read in the rest of the Zip64ExtraField after the id is read.
 	 */
-	public static ExtendedTimestampLocalExtraField read(RewindableInputStream input, int id, int size)
+	public static ExtendedTimestampLocalExtraField read(RewindableInputStream inputStream, int id, int size)
 			throws IOException {
 		Builder builder = new ExtendedTimestampLocalExtraField.Builder();
-		builder.flags = IoUtils.readByte(input, "ExtendedTimestampLocalExtraField.flags");
-		builder.timeLastModified = IoUtils.readLong(input, "ExtendedTimestampLocalExtraField.timeLastModified");
-		builder.timeLastAccessed = IoUtils.readLong(input, "ExtendedTimestampLocalExtraField.timeLastAccessed");
-		builder.timeCreated = IoUtils.readLong(input, "ExtendedTimestampLocalExtraField.timeCreated");
+		builder.flags = IoUtils.readByte(inputStream, "ExtendedTimestampLocalExtraField.flags");
+		builder.timeLastModified = IoUtils.readLong(inputStream, "ExtendedTimestampLocalExtraField.timeLastModified");
+		builder.timeLastAccessed = IoUtils.readLong(inputStream, "ExtendedTimestampLocalExtraField.timeLastAccessed");
+		builder.timeCreated = IoUtils.readLong(inputStream, "ExtendedTimestampLocalExtraField.timeCreated");
 		return builder.build();
+	}
+
+	/**
+	 * Write to the output-stream.
+	 */
+	@Override
+	public void write(OutputStream inputStream) throws IOException {
+		super.write(inputStream);
+		IoUtils.writeByte(inputStream, flags);
+		IoUtils.writeLong(inputStream, timeLastAccessed);
+		IoUtils.writeLong(inputStream, timeLastModified);
+		IoUtils.writeLong(inputStream, timeCreated);
 	}
 
 	public int getFlags() {
