@@ -267,6 +267,22 @@ public class CentralDirectoryFileHeader {
 			this.versionMade = versionMade;
 		}
 
+		public Platform getPlatform() {
+			return Platform.fromValue((versionMade >> 8) & 0xFF);
+		}
+
+		public void setPlatform(Platform platform) {
+			this.versionMade = ((this.versionMade & 0xFF) | (platform.getValue() << 8));
+		}
+
+		public ZipVersion getZipVersion() {
+			return ZipVersion.fromValue(versionMade & 0xFF);
+		}
+
+		public void setZipVersion(ZipVersion version) {
+			this.versionMade = ((this.versionMade & 0xFF00) | version.getValue());
+		}
+
 		public int getVersionNeeded() {
 			return versionNeeded;
 		}

@@ -24,7 +24,8 @@ import com.j256.simplezip.format.ZipFileHeader;
  */
 public class ZipFileWriter implements Closeable {
 
-	private final OutputStream outputStream;
+	private final CountingOutputStream countingOutputStream;
+
 	private ZipFileHeader currentFileHeader;
 	private FileDataEncoder fileDataEncoder;
 
@@ -37,27 +38,18 @@ public class ZipFileWriter implements Closeable {
 	}
 
 	public ZipFileWriter(OutputStream outputStream) {
-		this.outputStream = outputStream;
+		this.countingOutputStream = new CountingOutputStream(outputStream);
 	}
 
+	/**
+	 * Write a file-header which starts the zip-file.
+	 */
 	public void writeFileHeader(ZipFileHeader fileHeader) throws IOException {
 		// XXX: need to record file info for the central directory
 		// also need to save the bytes so we can calc crc and size up front if wanted
-		fileHeader.write(outputStream);
+		fileHeader.write(countingOutputStream);
 		currentFileHeader = fileHeader;
-	}
-
-	public void writeDataDescriptor(DataDescriptor dataDescriptor) throws IOException {
-		// XXX: should write this if the header was set, etc.
-		dataDescriptor.write(outputStream);
-	}
-
-	public void writeDirectoryFileHeader(CentralDirectoryFileHeader dirHeader) throws IOException {
-		dirHeader.write(outputStream);
-	}
-
-	public void writeDirectoryEnd(CentralDirectoryEnd dirEnd) throws IOException {
-		dirEnd.write(outputStream);
+		countingOutputStream.resetFileInfo();
 	}
 
 	/**
@@ -106,13 +98,36 @@ public class ZipFileWriter implements Closeable {
 		}
 		fileDataEncoder.close();
 		fileDataEncoder = null;
+		// xxx: need to do something with the file info now
+	}
+
+	/**
+	 * Write a data-descriptor after the file data has been written.
+	 */
+	public void writeDataDescriptor(DataDescriptor dataDescriptor) throws IOException {
+		// XXX: should write this if the header was set, etc.
+		dataDescriptor.write(countingOutputStream);
+	}
+
+	/**
+	 * Write a central-directory file-header after all of the files have been written.
+	 */
+	public void writeDirectoryFileHeader(CentralDirectoryFileHeader dirHeader) throws IOException {
+		dirHeader.write(countingOutputStream);
+	}
+
+	/**
+	 * Write a central-directory end at the end of the Zip file.
+	 */
+	public void writeDirectoryEnd(CentralDirectoryEnd dirEnd) throws IOException {
+		dirEnd.write(countingOutputStream);
 	}
 
 	/**
 	 * Flush the associated output stream.
 	 */
 	public void flush() throws IOException {
-		outputStream.flush();
+		countingOutputStream.flush();
 	}
 
 	/**
@@ -120,7 +135,7 @@ public class ZipFileWriter implements Closeable {
 	 */
 	@Override
 	public void close() throws IOException {
-		outputStream.close();
+		countingOutputStream.close();
 	}
 
 	private void assignFileDataEncoder() {
@@ -137,6 +152,6 @@ public class ZipFileWriter implements Closeable {
 						"Unknown compression method: " + currentFileHeader.getCompressionMethod() + " ("
 								+ currentFileHeader.getCompressionMethodValue() + ")");
 		}
-		fileDataEncoder.registerOutputStream(outputStream);
+		fileDataEncoder.registerOutputStream(countingOutputStream);
 	}
 }

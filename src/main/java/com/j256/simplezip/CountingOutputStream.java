@@ -35,7 +35,7 @@ public class CountingOutputStream extends OutputStream {
 	/**
 	 * Reset the per-file counts.
 	 */
-	public void resetFile() {
+	public void resetFileInfo() {
 		fileInfo.reset();
 	}
 

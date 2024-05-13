@@ -1,7 +1,7 @@
 package com.j256.simplezip.format;
 
 /**
- * Encoded as "version made by" in the files.
+ * Encoded as "version made by" in the {@link CentralDirectoryFileHeader#getVersionMade()}.
  * 
  * @author graywatson
  */
@@ -40,5 +40,26 @@ public enum Platform {
 
 	public int getValue() {
 		return value;
+	}
+
+	/**
+	 * Detect our platform by looking at various JDK attributes.
+	 */
+	public static Platform detectPlatform() {
+		String os = System.getProperty("os.name");
+		System.out.println("os = " + os);
+		return OTHER;
+	}
+
+	/**
+	 * Given an integer, return the associated platform..
+	 */
+	public static Platform fromValue(int value) {
+		for (Platform platform : values()) {
+			if (platform.value == value) {
+				return platform;
+			}
+		}
+		return OTHER;
 	}
 }

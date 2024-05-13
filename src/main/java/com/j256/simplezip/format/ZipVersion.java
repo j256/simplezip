@@ -5,7 +5,7 @@ package com.j256.simplezip.format;
  * 
  * @author graywatson
  */
-public enum Version {
+public enum ZipVersion {
 
 	V1_0(1, 0),
 	V1_1(1, 1),
@@ -21,15 +21,20 @@ public enum Version {
 	V6_0(6, 0),
 	V6_1(6, 1),
 	V6_2(6, 2),
+	UNKNOWN(99, 99),
 	// end
 	;
 
+	private static final ZipVersion DEFAULT_VERSION = V4_5;
+
 	private final int major;
 	private final int minor;
+	private final int value;
 
-	private Version(int major, int minor) {
+	private ZipVersion(int major, int minor) {
 		this.major = major;
 		this.minor = minor;
+		this.value = major * 10 + minor;
 	}
 
 	public int getMajor() {
@@ -38,5 +43,32 @@ public enum Version {
 
 	public int getMinor() {
 		return minor;
+	}
+
+	/**
+	 * Return the encoded byte value of this version.
+	 */
+	public int getValue() {
+		return value;
+	}
+
+	/**
+	 * Detect our platform by looking at various JDK attributes.
+	 */
+	public static ZipVersion detectPlatform() {
+		// XXX no idea how to do this. can pick the lowest one based on how complicated the Zip features used
+		return DEFAULT_VERSION;
+	}
+
+	/**
+	 * Given an integer, return the associated platform..
+	 */
+	public static ZipVersion fromValue(int value) {
+		for (ZipVersion version : values()) {
+			if (version.value == value) {
+				return version;
+			}
+		}
+		return UNKNOWN;
 	}
 }
