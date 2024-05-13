@@ -20,7 +20,7 @@ import com.j256.simplezip.format.ZipFileHeader;
  * 
  * @author graywatson
  */
-public class ZipFile {
+public class ZipFileReader {
 
 	// XXX: should be maximum zip data read block
 	private static final int BUFFER_SIZE = 8192;
@@ -34,15 +34,15 @@ public class ZipFile {
 	private DataDescriptor currentDataDescriptor;
 	private boolean currentFileEofReached;
 
-	public ZipFile(String path) throws FileNotFoundException {
+	public ZipFileReader(String path) throws FileNotFoundException {
 		this(new File(path));
 	}
 
-	public ZipFile(File file) throws FileNotFoundException {
+	public ZipFileReader(File file) throws FileNotFoundException {
 		this(new FileInputStream(file));
 	}
 
-	public ZipFile(InputStream inputStream) {
+	public ZipFileReader(InputStream inputStream) {
 		this.countingInputStream = new RewindableInputStream(inputStream, BUFFER_SIZE);
 	}
 
@@ -146,7 +146,7 @@ public class ZipFile {
 	 * correct based on the various different length and CRC values stored and calculated.
 	 */
 	public ZipStatus validatePreviousFile() {
-		// validate the header section and any trailing data-descriptor
+		// XXX: validate the header section and any trailing data-descriptor
 		return ZipStatus.OK;
 	}
 

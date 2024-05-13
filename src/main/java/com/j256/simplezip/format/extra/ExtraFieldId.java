@@ -1,6 +1,11 @@
-package com.j256.simplezip.format;
+package com.j256.simplezip.format.extra;
 
-public enum HeaderId {
+/**
+ * Id of the extra byte information.
+ * 
+ * @author graywatson
+ */
+public enum ExtraFieldId {
 
 	ZIP64_EXTENDED(0x1),
 	AV_INFO(0x7),
@@ -47,7 +52,7 @@ public enum HeaderId {
 
 	private final int value;
 
-	private HeaderId(int value) {
+	private ExtraFieldId(int value) {
 		this.value = value;
 	}
 

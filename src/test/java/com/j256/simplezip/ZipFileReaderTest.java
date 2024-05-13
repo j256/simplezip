@@ -24,7 +24,7 @@ import com.j256.simplezip.format.DataDescriptor;
 import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 
-public class ZipFileTest {
+public class ZipFileReaderTest {
 
 	@Test
 	public void testStuff() throws IOException {
@@ -39,7 +39,7 @@ public class ZipFileTest {
 		zos.close();
 
 		InputStream input = new ByteArrayInputStream(baos.toByteArray());
-		ZipFile zipFile = new ZipFile(input);
+		ZipFileReader zipFile = new ZipFileReader(input);
 
 		ZipFileHeader header = zipFile.readNextFileHeader();
 		assertEquals(fileName, header.getFileName());
