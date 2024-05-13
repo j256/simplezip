@@ -14,6 +14,7 @@ public class CentralDirectoryFileHeader {
 
 	/** signature that is expected to be at the start of the central directory */
 	public static final int EXPECTED_SIGNATURE = 0x2014b50;
+	private static final int INTERNAL_ATTRIBUTES_TEXT_FILE = (1 << 0);
 
 	private int signature;
 	private int versionMade;
@@ -55,6 +56,13 @@ public class CentralDirectoryFileHeader {
 		this.fileNameBytes = fileNameBytes;
 		this.extraFieldBytes = extraFieldBytes;
 		this.commentBytes = commentBytes;
+	}
+
+	/**
+	 * Make a builder for this class.
+	 */
+	public static Builder builder() {
+		return new Builder();
 	}
 
 	public static CentralDirectoryFileHeader read(RewindableInputStream input) throws IOException {
@@ -149,6 +157,13 @@ public class CentralDirectoryFileHeader {
 		return internalFileAttributes;
 	}
 
+	/**
+	 * Return whether this is a text file or not based on the internalFileAttributes.
+	 */
+	public boolean isTextFile() {
+		return ((internalFileAttributes & INTERNAL_ATTRIBUTES_TEXT_FILE) != 0);
+	}
+
 	public int getExternalFileAttributes() {
 		return externalFileAttributes;
 	}
@@ -177,6 +192,9 @@ public class CentralDirectoryFileHeader {
 		return new String(commentBytes);
 	}
 
+	/**
+	 * Builder for the {@link CentralDirectoryFileHeader}.
+	 */
 	public static class Builder {
 		private int signature;
 		private int versionMade;
@@ -298,6 +316,24 @@ public class CentralDirectoryFileHeader {
 
 		public void setInternalFileAttributes(int internalFileAttributes) {
 			this.internalFileAttributes = internalFileAttributes;
+		}
+
+		/**
+		 * Gets from the internalFileAttributes.
+		 */
+		public boolean isTextFile() {
+			return ((internalFileAttributes & INTERNAL_ATTRIBUTES_TEXT_FILE) != 0);
+		}
+
+		/**
+		 * Set in the internalFileAttributes.
+		 */
+		public void setTextFile(boolean textFile) {
+			if (textFile) {
+				internalFileAttributes |= INTERNAL_ATTRIBUTES_TEXT_FILE;
+			} else {
+				internalFileAttributes &= ~INTERNAL_ATTRIBUTES_TEXT_FILE;
+			}
 		}
 
 		public int getExternalFileAttributes() {
