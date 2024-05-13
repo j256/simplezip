@@ -36,6 +36,30 @@ public class CentralDirectoryEnd {
 		this.commentBytes = commentBytes;
 	}
 
+	/**
+	 * Make a builder for this class.
+	 */
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	public static CentralDirectoryEnd read(RewindableInputStream input) throws IOException {
+	
+		Builder builder = new CentralDirectoryEnd.Builder();
+	
+		builder.signature = IoUtils.readInt(input, "CentralDirectoryEnd.signature");
+		builder.diskNumber = IoUtils.readShort(input, "CentralDirectoryFileHeader.diskNumber");
+		builder.diskNumberStart = IoUtils.readShort(input, "CentralDirectoryFileHeader.diskNumberStart");
+		builder.numRecordsOnDisk = IoUtils.readShort(input, "CentralDirectoryFileHeader.numRecordsOnDisk");
+		builder.numRecordsTotal = IoUtils.readShort(input, "CentralDirectoryFileHeader.numRecordsTotal");
+		builder.sizeDirectory = IoUtils.readInt(input, "CentralDirectoryFileHeader.sizeDirectory");
+		builder.offsetDirectory = IoUtils.readInt(input, "CentralDirectoryFileHeader.offsetDirectory");
+		int commentLength = IoUtils.readShort(input, "CentralDirectoryFileHeader.commentLength");
+		builder.commentBytes = IoUtils.readBytes(input, commentLength, "CentralDirectoryFileHeader.comment");
+	
+		return builder.build();
+	}
+
 	public int getSignature() {
 		return signature;
 	}
@@ -66,23 +90,6 @@ public class CentralDirectoryEnd {
 
 	public byte[] getCommentBytes() {
 		return commentBytes;
-	}
-
-	public static CentralDirectoryEnd read(RewindableInputStream input) throws IOException {
-
-		Builder builder = new CentralDirectoryEnd.Builder();
-
-		builder.signature = IoUtils.readInt(input, "CentralDirectoryEnd.signature");
-		builder.diskNumber = IoUtils.readShort(input, "CentralDirectoryFileHeader.diskNumber");
-		builder.diskNumberStart = IoUtils.readShort(input, "CentralDirectoryFileHeader.diskNumberStart");
-		builder.numRecordsOnDisk = IoUtils.readShort(input, "CentralDirectoryFileHeader.numRecordsOnDisk");
-		builder.numRecordsTotal = IoUtils.readShort(input, "CentralDirectoryFileHeader.numRecordsTotal");
-		builder.sizeDirectory = IoUtils.readInt(input, "CentralDirectoryFileHeader.sizeDirectory");
-		builder.offsetDirectory = IoUtils.readInt(input, "CentralDirectoryFileHeader.offsetDirectory");
-		int commentLength = IoUtils.readShort(input, "CentralDirectoryFileHeader.commentLength");
-		builder.commentBytes = IoUtils.readBytes(input, commentLength, "CentralDirectoryFileHeader.comment");
-
-		return builder.build();
 	}
 
 	public static class Builder {

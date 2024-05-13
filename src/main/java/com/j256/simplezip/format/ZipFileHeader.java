@@ -49,7 +49,10 @@ public class ZipFileHeader {
 		this.extraFieldBytes = extraFieldBytes;
 	}
 
-	public static ZipFileHeader.Builder builder() {
+	/**
+	 * Make a builder for this class.
+	 */
+	public static Builder builder() {
 		return new Builder();
 	}
 

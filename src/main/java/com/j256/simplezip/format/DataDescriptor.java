@@ -7,8 +7,8 @@ import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
 
 /**
- * Data descriptor immediately after the {@link FileData}. Only written if {@link GeneralPurposeFlag#DATA_DESCRIPTOR} is
- * set in the {@link ZipFileHeader}.
+ * Optional data descriptor immediately after the {@link FileData}. Only written if
+ * {@link GeneralPurposeFlag#DATA_DESCRIPTOR} is set in the {@link ZipFileHeader}.
  * 
  * @author graywatson
  */
@@ -29,6 +29,13 @@ public class DataDescriptor {
 		this.uncompressedSize = uncompressedSize;
 	}
 
+	/**
+	 * Make a builder for this class.
+	 */
+	public static Builder builder() {
+		return new Builder();
+	}
+
 	public static DataDescriptor read(RewindableInputStream input, CountingInfo countingInfo) throws IOException {
 		/*
 		 * This is a little strange since there is an optional magic value according to Wikipedia. If the first value
@@ -47,13 +54,6 @@ public class DataDescriptor {
 		builder.compressedSize = IoUtils.readInt(input, "DataDescriptor.compressedSize");
 		builder.uncompressedSize = IoUtils.readInt(input, "DataDescriptor.uncompressedSize");
 		return builder.build();
-	}
-
-	/**
-	 * Make a builder for this class.
-	 */
-	public static Builder builder() {
-		return new Builder();
 	}
 
 	/**

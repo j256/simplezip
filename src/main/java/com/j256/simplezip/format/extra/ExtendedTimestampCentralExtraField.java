@@ -28,6 +28,26 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 		this.time = time;
 	}
 
+	/**
+	 * Make a builder for this class.
+	 */
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	/**
+	 * Read in the rest of the Zip64ExtraField after the id is read.
+	 */
+	public static ExtendedTimestampCentralExtraField read(RewindableInputStream input, int id, int size)
+			throws IOException {
+		Builder builder = new ExtendedTimestampCentralExtraField.Builder();
+		builder.flags = IoUtils.readByte(input, "ExtendedTimestampCentralExtraField.flags");
+		if (size >= EXPECTED_MINIMUM_SIZE + 8) {
+			builder.time = IoUtils.readLong(input, "ExtendedTimestampCentralExtraField.time");
+		}
+		return builder.build();
+	}
+
 	public int getFlags() {
 		return flags;
 	}
@@ -46,19 +66,6 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 
 	public boolean isTimeCreated() {
 		return ((flags & TIME_CREATED_FLAG) != 0);
-	}
-
-	/**
-	 * Read in the rest of the Zip64ExtraField after the id is read.
-	 */
-	public static ExtendedTimestampCentralExtraField read(RewindableInputStream input, int id, int size)
-			throws IOException {
-		Builder builder = new ExtendedTimestampCentralExtraField.Builder();
-		builder.flags = IoUtils.readByte(input, "ExtendedTimestampCentralExtraField.flags");
-		if (size >= EXPECTED_MINIMUM_SIZE + 8) {
-			builder.time = IoUtils.readLong(input, "ExtendedTimestampCentralExtraField.time");
-		}
-		return builder.build();
 	}
 
 	/**

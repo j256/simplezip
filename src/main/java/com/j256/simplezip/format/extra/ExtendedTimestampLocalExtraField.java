@@ -28,6 +28,26 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 		this.timeCreated = timeCreated;
 	}
 
+	/**
+	 * Make a builder for this class.
+	 */
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	/**
+	 * Read in the rest of the Zip64ExtraField after the id is read.
+	 */
+	public static ExtendedTimestampLocalExtraField read(RewindableInputStream input, int id, int size)
+			throws IOException {
+		Builder builder = new ExtendedTimestampLocalExtraField.Builder();
+		builder.flags = IoUtils.readByte(input, "ExtendedTimestampLocalExtraField.flags");
+		builder.timeLastModified = IoUtils.readLong(input, "ExtendedTimestampLocalExtraField.timeLastModified");
+		builder.timeLastAccessed = IoUtils.readLong(input, "ExtendedTimestampLocalExtraField.timeLastAccessed");
+		builder.timeCreated = IoUtils.readLong(input, "ExtendedTimestampLocalExtraField.timeCreated");
+		return builder.build();
+	}
+
 	public int getFlags() {
 		return flags;
 	}
@@ -42,19 +62,6 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 
 	public long getTimeCreated() {
 		return timeCreated;
-	}
-
-	/**
-	 * Read in the rest of the Zip64ExtraField after the id is read.
-	 */
-	public static ExtendedTimestampLocalExtraField read(RewindableInputStream input, int id, int size)
-			throws IOException {
-		Builder builder = new ExtendedTimestampLocalExtraField.Builder();
-		builder.flags = IoUtils.readByte(input, "ExtendedTimestampLocalExtraField.flags");
-		builder.timeLastModified = IoUtils.readLong(input, "ExtendedTimestampLocalExtraField.timeLastModified");
-		builder.timeLastAccessed = IoUtils.readLong(input, "ExtendedTimestampLocalExtraField.timeLastAccessed");
-		builder.timeCreated = IoUtils.readLong(input, "ExtendedTimestampLocalExtraField.timeCreated");
-		return builder.build();
 	}
 
 	/**

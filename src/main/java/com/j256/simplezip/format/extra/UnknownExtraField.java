@@ -19,8 +19,11 @@ public class UnknownExtraField extends BaseExtraField {
 		this.bytes = bytes;
 	}
 
-	public byte[] getBytes() {
-		return bytes;
+	/**
+	 * Make a builder for this class.
+	 */
+	public static Builder builder() {
+		return new Builder();
 	}
 
 	/**
@@ -32,6 +35,10 @@ public class UnknownExtraField extends BaseExtraField {
 		builder.extraSize = extraSize;
 		builder.bytes = IoUtils.readBytes(input, extraSize, "UnknownExtraField.bytes");
 		return builder.build();
+	}
+
+	public byte[] getBytes() {
+		return bytes;
 	}
 
 	/**

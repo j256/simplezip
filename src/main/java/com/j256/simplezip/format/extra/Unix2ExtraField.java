@@ -24,12 +24,11 @@ public class Unix2ExtraField extends BaseExtraField {
 		this.groupId = groupId;
 	}
 
-	public int getUserId() {
-		return userId;
-	}
-
-	public int getGroupId() {
-		return groupId;
+	/**
+	 * Make a builder for this class.
+	 */
+	public static Builder builder() {
+		return new Builder();
 	}
 
 	/**
@@ -40,6 +39,14 @@ public class Unix2ExtraField extends BaseExtraField {
 		builder.userId = IoUtils.readShort(input, "Unix2ExtraField.userId");
 		builder.groupId = IoUtils.readShort(input, "Unix2ExtraField.groupId");
 		return builder.build();
+	}
+
+	public int getUserId() {
+		return userId;
+	}
+
+	public int getGroupId() {
+		return groupId;
 	}
 
 	/**

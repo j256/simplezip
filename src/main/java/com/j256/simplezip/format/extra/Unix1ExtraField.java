@@ -29,26 +29,11 @@ public class Unix1ExtraField extends BaseExtraField {
 		this.groupId = groupId;
 	}
 
-	public long getTimeLastAccess() {
-		return timeLastAccess;
-	}
-
-	public long getTimeLastModified() {
-		return timeLastModified;
-	}
-
 	/**
-	 * Optional user-id. null if not set.
+	 * Make a builder for this class.
 	 */
-	public Integer getUserId() {
-		return userId;
-	}
-
-	/**
-	 * Optional group-id. null if not set.
-	 */
-	public Integer getGroupId() {
-		return groupId;
+	public static Builder builder() {
+		return new Builder();
 	}
 
 	/**
@@ -64,6 +49,32 @@ public class Unix1ExtraField extends BaseExtraField {
 			builder.groupId = IoUtils.readShort(input, "Unix1ExtraField.groupId");
 		}
 		return builder.build();
+	}
+
+	public long getTimeLastAccess() {
+		return timeLastAccess;
+	}
+
+	public long getTimeLastModified() {
+		return timeLastModified;
+	}
+
+	/**
+	 * Optional user-id.
+	 * 
+	 * @return user-id or null if not set.
+	 */
+	public Integer getUserId() {
+		return userId;
+	}
+
+	/**
+	 * Optional group-id.
+	 * 
+	 * @return group-id or null if not set.
+	 */
+	public Integer getGroupId() {
+		return groupId;
 	}
 
 	/**
