@@ -1,5 +1,10 @@
 package com.j256.simplezip.format;
 
+/**
+ * Compression method from the {@link ZipFileHeader}.
+ * 
+ * @author graywatson
+ */
 public enum CompressionMethod {
 
 	NONE(0),

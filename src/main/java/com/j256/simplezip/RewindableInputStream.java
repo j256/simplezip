@@ -15,9 +15,9 @@ public class RewindableInputStream extends InputStream {
 	private int offset;
 	private int extraOffset;
 
-	public RewindableInputStream(InputStream delegate, int bufSize) {
+	public RewindableInputStream(InputStream delegate, int initialBufferSize) {
 		this.delegate = delegate;
-		this.buffer = new byte[bufSize];
+		this.buffer = new byte[initialBufferSize];
 	}
 
 	@Override
