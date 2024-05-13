@@ -28,6 +28,25 @@ public class Zip64ExtraField extends BaseExtraField {
 		this.diskNumber = diskNumber;
 	}
 
+	/**
+	 * Make a builder for this class.
+	 */
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	/**
+	 * Read in the rest of the Zip64ExtraField after the id is read.
+	 */
+	public static Zip64ExtraField read(RewindableInputStream input, int id, int size) throws IOException {
+		Builder builder = new Zip64ExtraField.Builder();
+		builder.uncompressedSize = IoUtils.readLong(input, "Zip64ExtraField.uncompressedSize");
+		builder.compressedSize = IoUtils.readLong(input, "Zip64ExtraField.compressedSize");
+		builder.offset = IoUtils.readLong(input, "Zip64ExtraField.offset");
+		builder.diskNumber = IoUtils.readInt(input, "Zip64ExtraField.diskNumber");
+		return builder.build();
+	}
+
 	public long getUncompressedSize() {
 		return uncompressedSize;
 	}
@@ -42,18 +61,6 @@ public class Zip64ExtraField extends BaseExtraField {
 
 	public int getDiskNumber() {
 		return diskNumber;
-	}
-
-	/**
-	 * Read in the rest of the Zip64ExtraField after the id is read.
-	 */
-	public static Zip64ExtraField read(RewindableInputStream input, int id, int size) throws IOException {
-		Builder builder = new Zip64ExtraField.Builder();
-		builder.uncompressedSize = IoUtils.readLong(input, "Zip64ExtraField.uncompressedSize");
-		builder.compressedSize = IoUtils.readLong(input, "Zip64ExtraField.compressedSize");
-		builder.offset = IoUtils.readLong(input, "Zip64ExtraField.offset");
-		builder.diskNumber = IoUtils.readInt(input, "Zip64ExtraField.diskNumber");
-		return builder.build();
 	}
 
 	/**
