@@ -49,15 +49,15 @@ public class Zip64ExtraField extends BaseExtraField {
 	}
 
 	/**
-	 * Write to the output-stream.
+	 * Write extra-field to the output-stream.
 	 */
 	@Override
-	public void write(OutputStream inputStream) throws IOException {
-		super.write(inputStream);
-		IoUtils.writeLong(inputStream, uncompressedSize);
-		IoUtils.writeLong(inputStream, compressedSize);
-		IoUtils.writeLong(inputStream, offset);
-		IoUtils.writeInt(inputStream, diskNumber);
+	public void write(OutputStream outputStream) throws IOException {
+		super.write(outputStream);
+		IoUtils.writeLong(outputStream, uncompressedSize);
+		IoUtils.writeLong(outputStream, compressedSize);
+		IoUtils.writeLong(outputStream, offset);
+		IoUtils.writeInt(outputStream, diskNumber);
 	}
 
 	public long getUncompressedSize() {

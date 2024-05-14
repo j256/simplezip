@@ -22,7 +22,7 @@ import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 
 /**
- * Write out a Zip file to either a {@link File} or an {@link OutputStream}.
+ * Write out a Zip-file to either a {@link File} or an {@link OutputStream}.
  * 
  * @author graywatson
  */
@@ -36,7 +36,8 @@ public class ZipFileWriter implements Closeable {
 	private DataDescriptor.Builder dataDescriptorBuilder = DataDescriptor.builder();
 	private CentralDirectoryFileHeader.Builder dirFileBuilder = CentralDirectoryFileHeader.builder();
 	private List<CentralDirectoryFileHeader> dirFileHeaders = new ArrayList<>();
-	private boolean finished;
+	private boolean fileFinished = true;
+	private boolean zipFinished;
 	private long fileStartOffset;
 	private int fileCount;
 
@@ -66,6 +67,12 @@ public class ZipFileWriter implements Closeable {
 	 * Write a file-header which starts the Zip-file.
 	 */
 	public void writeFileHeader(ZipFileHeader fileHeader) throws IOException {
+		if (zipFinished) {
+			throw new IllegalStateException("Cannot write another file-header if the zip has been finished");
+		}
+		if (!fileFinished) {
+			throw new IllegalStateException("Need to call finishFileData() before writing the next file-header");
+		}
 		// XXX: need to record file info for the central directory
 		// also need to save the bytes so we can calc crc and size up front if wanted
 		fileHeader.write(countingOutputStream);
@@ -73,6 +80,7 @@ public class ZipFileWriter implements Closeable {
 		uncompressedFileInfo.reset();
 		dirFileBuilder.reset();
 		dirFileBuilder.setFileHeader(fileHeader);
+		fileFinished = false;
 		fileCount++;
 	}
 
@@ -81,6 +89,9 @@ public class ZipFileWriter implements Closeable {
 	 * contained in the {@link ZipFileHeader}. You can set these mostly optional fields here.
 	 */
 	public void addDirectoryFileInfo(CentralDirectoryFileInfo fileInfo) {
+		if (zipFinished) {
+			throw new IllegalStateException("Cannot add directory file-info if the zip has been finished");
+		}
 		dirFileBuilder.addFileInfo(fileInfo);
 	}
 
@@ -138,6 +149,10 @@ public class ZipFileWriter implements Closeable {
 		if (currentFileHeader == null) {
 			throw new IllegalStateException("Need to call writeFileHeader() before you can write file data");
 		}
+		if (zipFinished) {
+			// might not be able to get here but let's be careful out there
+			throw new IllegalStateException("Cannot write file-data if the zip has been finished");
+		}
 		if (fileDataEncoder == null) {
 			assignFileDataEncoder();
 			fileStartOffset = countingOutputStream.getTotalByteCount();
@@ -155,6 +170,9 @@ public class ZipFileWriter implements Closeable {
 	 * size was specified in the header.
 	 */
 	public void finishFileData() throws IOException {
+		if (zipFinished) {
+			throw new IllegalStateException("Cannot finish file-data if the zip has been finished");
+		}
 		if (fileDataEncoder == null) {
 			throw new IllegalStateException("Need to call writeFileData() before you can finish");
 		}
@@ -173,6 +191,7 @@ public class ZipFileWriter implements Closeable {
 		}
 		dirFileHeaders.add(dirFileBuilder.build());
 		fileDataEncoder = null;
+		fileFinished = true;
 	}
 
 	/**
@@ -197,6 +216,13 @@ public class ZipFileWriter implements Closeable {
 	 */
 	public void finishZip(byte[] commentBytes) throws IOException {
 
+		if (zipFinished) {
+			return;
+		}
+		if (!fileFinished) {
+			finishFileData();
+		}
+
 		// start our directory end
 		CentralDirectoryEnd.Builder dirEndBuilder = CentralDirectoryEnd.builder();
 		dirEndBuilder.setDirectoryOffset(countingOutputStream.getTotalByteCount());
@@ -218,7 +244,7 @@ public class ZipFileWriter implements Closeable {
 		int size = (int) (countingOutputStream.getTotalByteCount() - startOffset);
 		dirEndBuilder.setDirectorySize(size);
 		dirEndBuilder.build().write(countingOutputStream);
-		finished = true;
+		zipFinished = true;
 	}
 
 	/**
@@ -234,14 +260,14 @@ public class ZipFileWriter implements Closeable {
 	 */
 	@Override
 	public void close() throws IOException {
-		if (!finished) {
+		if (!zipFinished) {
 			finishZip((byte[]) null);
 		}
 		countingOutputStream.close();
 	}
 
 	private void assignFileDataEncoder() {
-		switch (currentFileHeader.getCompressionMethod()) {
+		switch (currentFileHeader.getCompressionMethodAsEnum()) {
 			case NONE:
 				this.fileDataEncoder = new StoredFileDataEncoder(countingOutputStream);
 				break;
@@ -251,8 +277,8 @@ public class ZipFileWriter implements Closeable {
 				break;
 			default:
 				throw new IllegalStateException(
-						"Unknown compression method: " + currentFileHeader.getCompressionMethod() + " ("
-								+ currentFileHeader.getCompressionMethodValue() + ")");
+						"Unknown compression method: " + currentFileHeader.getCompressionMethodAsEnum() + " ("
+								+ currentFileHeader.getCompressionMethod() + ")");
 		}
 	}
 }

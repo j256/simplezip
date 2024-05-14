@@ -38,12 +38,12 @@ Here's some simple code that runs through all of the Zip-file parts.
 Here's some equally simple code that allows you to write out a Zip-file.
 
 	ZipFileWriter zipWriter = new ZipFileWriter(baos);
-	ZipFileHeader.Builder fileBuilder = ZipFileHeader.builder();
-	fileBuilder.setGeneralPurposeFlags(
+	ZipFileHeader.Builder headerBuilder = ZipFileHeader.builder();
+	headerBuilder.setGeneralPurposeFlags(
 		GeneralPurposeFlag.DEFLATING_NORMAL, GeneralPurposeFlag.DATA_DESCRIPTOR);
-	fileBuilder.setCompressionMethod(CompressionMethod.DEFLATED);
-	fileBuilder.setLastModifiedDateTime(LocalDateTime.now());
-	fileBuilder.setFileName("hello.txt");
+	headerBuilder.setCompressionMethod(CompressionMethod.DEFLATED);
+	headerBuilder.setLastModifiedDateTime(LocalDateTime.now());
+	headerBuilder.setFileName("hello.txt");
 	// write a file-header to the zip-file
 	zipWriter.writeFileHeader(fileBuilder.build());
 	// can add additional central-directory info to the file

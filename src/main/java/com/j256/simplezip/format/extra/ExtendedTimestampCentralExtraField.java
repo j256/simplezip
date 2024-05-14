@@ -14,11 +14,11 @@ import com.j256.simplezip.RewindableInputStream;
 public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 
 	public static final int EXPECTED_ID = 0x5455;
-	public static final int EXPECTED_MINIMUM_SIZE = 2 + 2 + 1;
+	public static final int EXPECTED_MINIMUM_SIZE = 1;
 
-	private static final int TIME_MODIFIED_FLAG = (1 << 0);
-	private static final int TIME_ACCESSED_FLAG = (1 << 1);
-	private static final int TIME_CREATED_FLAG = (1 << 2);
+	public static final int TIME_MODIFIED_FLAG = (1 << 0);
+	public static final int TIME_ACCESSED_FLAG = (1 << 1);
+	public static final int TIME_CREATED_FLAG = (1 << 2);
 
 	private final int flags;
 	private final Long time;
@@ -50,14 +50,14 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 	}
 
 	/**
-	 * Write to the output-stream.
+	 * Write extra-field to the output-stream.
 	 */
 	@Override
-	public void write(OutputStream inputStream) throws IOException {
-		super.write(inputStream);
-		IoUtils.writeByte(inputStream, flags);
+	public void write(OutputStream outputStream) throws IOException {
+		super.write(outputStream);
+		IoUtils.writeByte(outputStream, flags);
 		if (time != null) {
-			IoUtils.writeLong(inputStream, time);
+			IoUtils.writeLong(outputStream, time);
 		}
 	}
 
@@ -116,6 +116,10 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 			this.time = time;
 		}
 
+		public boolean isTimeModified() {
+			return ((flags & TIME_MODIFIED_FLAG) != 0);
+		}
+
 		public void setTimeModified(boolean timeModified) {
 			if (timeModified) {
 				this.flags |= TIME_MODIFIED_FLAG;
@@ -124,12 +128,20 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 			}
 		}
 
+		public boolean isTimeAccessed() {
+			return ((flags & TIME_ACCESSED_FLAG) != 0);
+		}
+
 		public void setTimeAccessed(boolean timeAccessed) {
 			if (timeAccessed) {
 				this.flags |= TIME_ACCESSED_FLAG;
 			} else {
 				this.flags &= ~TIME_ACCESSED_FLAG;
 			}
+		}
+
+		public boolean isTimeCreated() {
+			return ((flags & TIME_CREATED_FLAG) != 0);
 		}
 
 		public void setTimeCreated(boolean timeCreated) {

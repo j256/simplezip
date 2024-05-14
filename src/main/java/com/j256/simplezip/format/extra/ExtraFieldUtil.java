@@ -15,7 +15,7 @@ public class ExtraFieldUtil {
 	/**
 	 * Read in an extra field returning either for a local file or the central directory.
 	 */
-	public <T extends BaseExtraField> T readExtraField(RewindableInputStream input, boolean fileHeader)
+	public static <T extends BaseExtraField> T readExtraField(RewindableInputStream input, boolean fileHeader)
 			throws IOException {
 		/*
 		 * WHen reading a file-header we aren't sure if this is a file-header or the start of the central directory.
@@ -38,6 +38,7 @@ public class ExtraFieldUtil {
 						return extra;
 					}
 				}
+				break;
 			}
 			case Unix1ExtraField.EXPECTED_ID: {
 				if (size >= Unix1ExtraField.EXPECTED_MINIMUM_SIZE) {
@@ -45,6 +46,7 @@ public class ExtraFieldUtil {
 					T extra = (T) Unix1ExtraField.read(input, id, size);
 					return extra;
 				}
+				break;
 			}
 			case Unix2ExtraField.EXPECTED_ID: {
 				if (size >= Unix2ExtraField.EXPECTED_SIZE) {
@@ -52,6 +54,7 @@ public class ExtraFieldUtil {
 					T extra = (T) Unix2ExtraField.read(input, id, size);
 					return extra;
 				}
+				break;
 			}
 			case Zip64ExtraField.EXPECTED_ID: {
 				if (size == Zip64ExtraField.EXPECTED_SIZE) {
@@ -59,6 +62,7 @@ public class ExtraFieldUtil {
 					T extra = (T) Zip64ExtraField.read(input, id, size);
 					return extra;
 				}
+				break;
 			}
 			default: {
 				// created below

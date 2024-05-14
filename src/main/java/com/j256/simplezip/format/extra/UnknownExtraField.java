@@ -33,18 +33,17 @@ public class UnknownExtraField extends BaseExtraField {
 	public static UnknownExtraField read(RewindableInputStream inputStream, int id, int extraSize) throws IOException {
 		Builder builder = new UnknownExtraField.Builder();
 		builder.id = id;
-		builder.extraSize = extraSize;
 		builder.bytes = IoUtils.readBytes(inputStream, extraSize, "UnknownExtraField.bytes");
 		return builder.build();
 	}
 
 	/**
-	 * Write to the output-stream.
+	 * Write extra-field to the output-stream.
 	 */
 	@Override
-	public void write(OutputStream inputStream) throws IOException {
-		super.write(inputStream);
-		IoUtils.writeBytes(inputStream, bytes);
+	public void write(OutputStream outputStream) throws IOException {
+		super.write(outputStream);
+		IoUtils.writeBytes(outputStream, bytes);
 	}
 
 	public byte[] getBytes() {
@@ -56,10 +55,15 @@ public class UnknownExtraField extends BaseExtraField {
 	 */
 	public static class Builder {
 		private int id;
-		private int extraSize;
 		private byte[] bytes;
 
 		public UnknownExtraField build() {
+			int extraSize;
+			if (bytes == null) {
+				extraSize = 0;
+			} else {
+				extraSize = bytes.length;
+			}
 			return new UnknownExtraField(id, extraSize, bytes);
 		}
 
@@ -69,14 +73,6 @@ public class UnknownExtraField extends BaseExtraField {
 
 		public void setId(int id) {
 			this.id = id;
-		}
-
-		public int getExtraSize() {
-			return extraSize;
-		}
-
-		public void setExtraSize(int extraSize) {
-			this.extraSize = extraSize;
 		}
 
 		public byte[] getBytes() {

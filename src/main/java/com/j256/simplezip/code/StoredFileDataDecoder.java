@@ -30,6 +30,7 @@ public class StoredFileDataDecoder implements FileDataDecoder {
 
 		int numRead = inputStream.read(outputBuffer, offset, maxLength);
 		if (numRead < 0) {
+			// may not be able to get here but let's be careful out there
 			return -1;
 		}
 		inputOffset += numRead;

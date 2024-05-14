@@ -21,7 +21,7 @@ public class CentralDirectoryFileHeader {
 	private final int versionMade;
 	private final int versionNeeded;
 	private final int generalPurposeFlags;
-	private final int compressionMethodValue;
+	private final int compressionMethod;
 	private final int lastModifiedFileTime;
 	private final int lastModifiedFileDate;
 	private final long crc32;
@@ -36,14 +36,13 @@ public class CentralDirectoryFileHeader {
 	private final byte[] commentBytes;
 
 	public CentralDirectoryFileHeader(int versionMade, int versionNeeded, int generalPurposeFlags,
-			int compressionMethodValue, int lastModifiedFileTime, int lastModifiedFileDate, long crc32,
-			int compressedSize, int uncompressedSize, int diskNumberStart, int internalFileAttributes,
-			int externalFileAttributes, int relativeOffsetOfLocalHeader, byte[] fileNameBytes, byte[] extraFieldBytes,
-			byte[] commentBytes) {
+			int compressionMethod, int lastModifiedFileTime, int lastModifiedFileDate, long crc32, int compressedSize,
+			int uncompressedSize, int diskNumberStart, int internalFileAttributes, int externalFileAttributes,
+			int relativeOffsetOfLocalHeader, byte[] fileNameBytes, byte[] extraFieldBytes, byte[] commentBytes) {
 		this.versionMade = versionMade;
 		this.versionNeeded = versionNeeded;
 		this.generalPurposeFlags = generalPurposeFlags;
-		this.compressionMethodValue = compressionMethodValue;
+		this.compressionMethod = compressionMethod;
 		this.lastModifiedFileTime = lastModifiedFileTime;
 		this.lastModifiedFileDate = lastModifiedFileDate;
 		this.crc32 = crc32;
@@ -82,7 +81,7 @@ public class CentralDirectoryFileHeader {
 		builder.versionMade = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.versionMade");
 		builder.versionNeeded = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.versionNeeded");
 		builder.generalPurposeFlags = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.generalPurposeFlags");
-		builder.compressionMethodValue = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.compressionMethod");
+		builder.compressionMethod = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.compressionMethod");
 		builder.lastModifiedFileTime =
 				IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.lastModifiedFileTime");
 		builder.lastModifiedFileDate =
@@ -118,7 +117,7 @@ public class CentralDirectoryFileHeader {
 		IoUtils.writeShort(outputStream, versionMade);
 		IoUtils.writeShort(outputStream, versionNeeded);
 		IoUtils.writeShort(outputStream, generalPurposeFlags);
-		IoUtils.writeShort(outputStream, compressionMethodValue);
+		IoUtils.writeShort(outputStream, compressionMethod);
 		IoUtils.writeShort(outputStream, lastModifiedFileTime);
 		IoUtils.writeShort(outputStream, lastModifiedFileDate);
 		IoUtils.writeInt(outputStream, crc32);
@@ -163,12 +162,12 @@ public class CentralDirectoryFileHeader {
 		return generalPurposeFlags;
 	}
 
-	public CompressionMethod getCompressionMethod() {
-		return CompressionMethod.fromValue(compressionMethodValue);
+	public int getCompressionMethod() {
+		return compressionMethod;
 	}
 
-	public int getCompressionMethodValue() {
-		return compressionMethodValue;
+	public CompressionMethod getCompressionMethodAsEnum() {
+		return CompressionMethod.fromValue(compressionMethod);
 	}
 
 	public int getLastModifiedFileTime() {
@@ -241,7 +240,7 @@ public class CentralDirectoryFileHeader {
 		private int versionMade;
 		private int versionNeeded = ZipVersion.detectVersion().getValue();
 		private int generalPurposeFlags;
-		private int compressionMethodValue;
+		private int compressionMethod;
 		private int lastModifiedFileTime;
 		private int lastModifiedFileDate;
 		private long crc32;
@@ -263,7 +262,7 @@ public class CentralDirectoryFileHeader {
 			builder.versionMade = header.versionMade;
 			builder.versionNeeded = header.versionNeeded;
 			builder.generalPurposeFlags = header.generalPurposeFlags;
-			builder.compressionMethodValue = header.compressionMethodValue;
+			builder.compressionMethod = header.compressionMethod;
 			builder.lastModifiedFileTime = header.lastModifiedFileTime;
 			builder.lastModifiedFileDate = header.lastModifiedFileDate;
 			builder.crc32 = header.crc32;
@@ -283,8 +282,8 @@ public class CentralDirectoryFileHeader {
 		 * Create a builder from an existing file-header.
 		 */
 		public void setFileHeader(ZipFileHeader header) {
-			this.generalPurposeFlags = header.getGeneralPurposeFlagsValue();
-			this.compressionMethodValue = header.getCompressionMethodValue();
+			this.generalPurposeFlags = header.getGeneralPurposeFlags();
+			this.compressionMethod = header.getCompressionMethod();
 			this.lastModifiedFileTime = header.getLastModifiedFileTime();
 			this.lastModifiedFileDate = header.getLastModifiedFileDate();
 			this.crc32 = header.getCrc32();
@@ -301,7 +300,7 @@ public class CentralDirectoryFileHeader {
 			versionMade = 0;
 			versionNeeded = ZipVersion.detectVersion().getValue();
 			generalPurposeFlags = 0;
-			compressionMethodValue = 0;
+			compressionMethod = 0;
 			lastModifiedFileTime = 0;
 			lastModifiedFileDate = 0;
 			crc32 = 0;
@@ -341,10 +340,10 @@ public class CentralDirectoryFileHeader {
 		 * Builder an instance of the central-directory file-header.
 		 */
 		public CentralDirectoryFileHeader build() {
-			return new CentralDirectoryFileHeader(versionMade, versionNeeded, generalPurposeFlags,
-					compressionMethodValue, lastModifiedFileTime, lastModifiedFileDate, crc32, compressedSize,
-					uncompressedSize, diskNumberStart, internalFileAttributes, externalFileAttributes,
-					relativeOffsetOfLocalHeader, fileNameBytes, extraFieldBytes, commentBytes);
+			return new CentralDirectoryFileHeader(versionMade, versionNeeded, generalPurposeFlags, compressionMethod,
+					lastModifiedFileTime, lastModifiedFileDate, crc32, compressedSize, uncompressedSize,
+					diskNumberStart, internalFileAttributes, externalFileAttributes, relativeOffsetOfLocalHeader,
+					fileNameBytes, extraFieldBytes, commentBytes);
 		}
 
 		public int getVersionMade() {
@@ -387,20 +386,20 @@ public class CentralDirectoryFileHeader {
 			this.generalPurposeFlags = generalPurposeFlags;
 		}
 
-		public int getCompressionMethodValue() {
-			return compressionMethodValue;
+		public int getCompressionMethod() {
+			return compressionMethod;
 		}
 
-		public void setCompressionMethodValue(int compressionMethodValue) {
-			this.compressionMethodValue = compressionMethodValue;
+		public void setCompressionMethod(int compressionMethod) {
+			this.compressionMethod = compressionMethod;
 		}
 
-		public CompressionMethod getCompressionMethod() {
-			return CompressionMethod.fromValue(compressionMethodValue);
+		public CompressionMethod getCompressionMethodAsEnum() {
+			return CompressionMethod.fromValue(compressionMethod);
 		}
 
-		public void setCompressionMethodValue(CompressionMethod compressionMethod) {
-			this.compressionMethodValue = compressionMethod.getValue();
+		public void setCompressionMethod(CompressionMethod compressionMethod) {
+			this.compressionMethod = compressionMethod.getValue();
 		}
 
 		public int getLastModifiedFileTime() {

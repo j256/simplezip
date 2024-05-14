@@ -94,9 +94,9 @@ public class DataDescriptor {
 		private int uncompressedSize;
 
 		/**
-		 * Create a builder from an existing directory-end
+		 * Create a builder from an existing entry.
 		 */
-		public static Builder fromEnd(DataDescriptor dataDescriptor) {
+		public static Builder fromDescriptor(DataDescriptor dataDescriptor) {
 			Builder builder = new Builder();
 			builder.crc32 = dataDescriptor.crc32;
 			builder.compressedSize = dataDescriptor.compressedSize;

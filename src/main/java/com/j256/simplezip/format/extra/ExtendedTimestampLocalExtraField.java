@@ -14,7 +14,7 @@ import com.j256.simplezip.RewindableInputStream;
 public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 
 	public static final int EXPECTED_ID = 0x5455;
-	public static final int EXPECTED_SIZE = 2 + 2 + 1 + 8 + 8 + 8;
+	public static final int EXPECTED_SIZE = 1 + 8 + 8 + 8;
 
 	private final int flags;
 	private final long timeLastModified;;
@@ -50,15 +50,15 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 	}
 
 	/**
-	 * Write to the output-stream.
+	 * Write extra-field to the output-stream.
 	 */
 	@Override
-	public void write(OutputStream inputStream) throws IOException {
-		super.write(inputStream);
-		IoUtils.writeByte(inputStream, flags);
-		IoUtils.writeLong(inputStream, timeLastAccessed);
-		IoUtils.writeLong(inputStream, timeLastModified);
-		IoUtils.writeLong(inputStream, timeCreated);
+	public void write(OutputStream outputStream) throws IOException {
+		super.write(outputStream);
+		IoUtils.writeByte(outputStream, flags);
+		IoUtils.writeLong(outputStream, timeLastAccessed);
+		IoUtils.writeLong(outputStream, timeLastModified);
+		IoUtils.writeLong(outputStream, timeCreated);
 	}
 
 	public int getFlags() {

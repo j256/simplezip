@@ -3,12 +3,12 @@ package com.j256.simplezip.format;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Set;
 import java.util.zip.Deflater;
 
 import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
-import com.j256.simplezip.ZipStatus;
 
 /**
  * Header of Zip file entries.
@@ -20,9 +20,9 @@ public class ZipFileHeader {
 	private static int EXPECTED_SIGNATURE = 0x4034b50;
 
 	private final int versionNeeded;
-	private final Set<GeneralPurposeFlag> generalPurposeFlags;
-	private final int generalPurposeFlagsValue;
-	private final int compressionMethodValue;
+	private final int generalPurposeFlags;
+	private final Set<GeneralPurposeFlag> generalPurposeFlagEnums;
+	private final int compressionMethod;
 	private final int lastModifiedFileTime;
 	private final int lastModifiedFileDate;
 	private final long crc32;
@@ -31,13 +31,13 @@ public class ZipFileHeader {
 	private final byte[] fileNameBytes;
 	private final byte[] extraFieldBytes;
 
-	public ZipFileHeader(int versionNeeded, int generalPurposeFlagsValue, int compressionMethod,
-			int lastModifiedFileTime, int lastModifiedFileDate, long crc32, int compressedSize, int uncompressedSize,
-			byte[] fileName, byte[] extraFieldBytes) {
+	public ZipFileHeader(int versionNeeded, int generalPurposeFlags, int compressionMethod, int lastModifiedFileTime,
+			int lastModifiedFileDate, long crc32, int compressedSize, int uncompressedSize, byte[] fileName,
+			byte[] extraFieldBytes) {
 		this.versionNeeded = versionNeeded;
-		this.generalPurposeFlags = GeneralPurposeFlag.fromInt(generalPurposeFlagsValue);
-		this.generalPurposeFlagsValue = generalPurposeFlagsValue;
-		this.compressionMethodValue = compressionMethod;
+		this.generalPurposeFlags = generalPurposeFlags;
+		this.generalPurposeFlagEnums = GeneralPurposeFlag.fromInt(generalPurposeFlags);
+		this.compressionMethod = compressionMethod;
 		this.lastModifiedFileTime = lastModifiedFileTime;
 		this.lastModifiedFileDate = lastModifiedFileDate;
 		this.crc32 = crc32;
@@ -63,13 +63,13 @@ public class ZipFileHeader {
 		 * WHen reading a file-header we aren't sure if this is a file-header or the start of the central directory.
 		 */
 		int first = IoUtils.readInt(inputStream, "LocalFileHeader.signature");
-		if (first == CentralDirectoryFileHeader.EXPECTED_SIGNATURE) {
+		if (first != EXPECTED_SIGNATURE) {
 			inputStream.rewind(4);
 			return null;
 		}
 		builder.versionNeeded = IoUtils.readShort(inputStream, "LocalFileHeader.versionNeeded");
-		builder.generalPurposeFlagsValue = IoUtils.readShort(inputStream, "LocalFileHeader.generalPurposeFlags");
-		builder.compressionMethodValue = IoUtils.readShort(inputStream, "LocalFileHeader.compressionMethod");
+		builder.generalPurposeFlags = IoUtils.readShort(inputStream, "LocalFileHeader.generalPurposeFlags");
+		builder.compressionMethod = IoUtils.readShort(inputStream, "LocalFileHeader.compressionMethod");
 		builder.lastModifiedFileTime = IoUtils.readShort(inputStream, "LocalFileHeader.lastModFileTime");
 		builder.lastModifiedFileDate = IoUtils.readShort(inputStream, "LocalFileHeader.lastModFileDate");
 		builder.crc32 = IoUtils.readInt(inputStream, "LocalFileHeader.crc32");
@@ -88,8 +88,8 @@ public class ZipFileHeader {
 	public void write(OutputStream outputStream) throws IOException {
 		IoUtils.writeInt(outputStream, EXPECTED_SIGNATURE);
 		IoUtils.writeShort(outputStream, versionNeeded);
-		IoUtils.writeShort(outputStream, generalPurposeFlagsValue);
-		IoUtils.writeShort(outputStream, compressionMethodValue);
+		IoUtils.writeShort(outputStream, generalPurposeFlags);
+		IoUtils.writeShort(outputStream, compressionMethod);
 		IoUtils.writeShort(outputStream, lastModifiedFileTime);
 		IoUtils.writeShort(outputStream, lastModifiedFileDate);
 		IoUtils.writeInt(outputStream, crc32);
@@ -102,29 +102,22 @@ public class ZipFileHeader {
 	}
 
 	/**
-	 * Validate the returned header.
-	 */
-	public ZipStatus validate() {
-		return ZipStatus.OK;
-	}
-
-	/**
 	 * Return whether the header has this flag.
 	 */
 	public boolean hasFlag(GeneralPurposeFlag flag) {
-		return generalPurposeFlags.contains(flag);
+		return generalPurposeFlagEnums.contains(flag);
 	}
 
 	public int getVersionNeeded() {
 		return versionNeeded;
 	}
 
-	public int getGeneralPurposeFlagsValue() {
-		return generalPurposeFlagsValue;
+	public int getGeneralPurposeFlags() {
+		return generalPurposeFlags;
 	}
 
-	public Set<GeneralPurposeFlag> getGeneralPurposeFlags() {
-		return generalPurposeFlags;
+	public Set<GeneralPurposeFlag> getGeneralPurposeFlagAsEnums() {
+		return generalPurposeFlagEnums;
 	}
 
 	/**
@@ -132,7 +125,7 @@ public class ZipFileHeader {
 	 */
 	public int getCompressionLevel() {
 		int level = Deflater.DEFAULT_COMPRESSION;
-		for (GeneralPurposeFlag flag : GeneralPurposeFlag.fromInt(compressionMethodValue)) {
+		for (GeneralPurposeFlag flag : GeneralPurposeFlag.fromInt(compressionMethod)) {
 			switch (flag) {
 				case DEFLATING_MAXIMUM:
 					return Deflater.BEST_COMPRESSION;
@@ -151,12 +144,12 @@ public class ZipFileHeader {
 		return level;
 	}
 
-	public CompressionMethod getCompressionMethod() {
-		return CompressionMethod.fromValue(compressionMethodValue);
+	public int getCompressionMethod() {
+		return compressionMethod;
 	}
 
-	public int getCompressionMethodValue() {
-		return compressionMethodValue;
+	public CompressionMethod getCompressionMethodAsEnum() {
+		return CompressionMethod.fromValue(compressionMethod);
 	}
 
 	public int getLastModifiedFileTime() {
@@ -232,8 +225,8 @@ public class ZipFileHeader {
 	public static class Builder {
 		private int versionNeeded;
 		/** NOTE: we turn on the data-descriptor flag by default until a size or crc32 is set */
-		private int generalPurposeFlagsValue = GeneralPurposeFlag.DATA_DESCRIPTOR.getValue();
-		private int compressionMethodValue;
+		private int generalPurposeFlags = GeneralPurposeFlag.DATA_DESCRIPTOR.getValue();
+		private int compressionMethod = CompressionMethod.DEFLATED.getValue();
 		private int lastModifiedFileTime;
 		private int lastModifiedFileDate;
 		private long crc32;
@@ -243,9 +236,43 @@ public class ZipFileHeader {
 		private byte[] extraFieldBytes;
 
 		public ZipFileHeader build() {
-			return new ZipFileHeader(versionNeeded, generalPurposeFlagsValue, compressionMethodValue,
-					lastModifiedFileTime, lastModifiedFileDate, crc32, compressedSize, uncompressedSize, fileNameBytes,
-					extraFieldBytes);
+			return new ZipFileHeader(versionNeeded, generalPurposeFlags, compressionMethod, lastModifiedFileTime,
+					lastModifiedFileDate, crc32, compressedSize, uncompressedSize, fileNameBytes, extraFieldBytes);
+		}
+
+		/**
+		 * Start a builder from a previous Zip file-header.
+		 */
+		public static Builder fromHeader(ZipFileHeader header) {
+			Builder builder = new Builder();
+			builder.versionNeeded = header.versionNeeded;
+			builder.generalPurposeFlags = header.generalPurposeFlags;
+			builder.compressionMethod = header.compressionMethod;
+			builder.lastModifiedFileTime = header.lastModifiedFileTime;
+			builder.lastModifiedFileDate = header.lastModifiedFileDate;
+			builder.crc32 = header.crc32;
+			builder.compressedSize = header.compressedSize;
+			builder.uncompressedSize = header.uncompressedSize;
+			builder.fileNameBytes = header.fileNameBytes;
+			builder.extraFieldBytes = header.extraFieldBytes;
+			return builder;
+		}
+
+		/**
+		 * Clear all fields in the builder.
+		 */
+		public void reset() {
+			Builder builder = new Builder();
+			builder.versionNeeded = 0;
+			builder.generalPurposeFlags = 0;
+			builder.compressionMethod = 0;
+			builder.lastModifiedFileTime = 0;
+			builder.lastModifiedFileDate = 0;
+			builder.crc32 = 0;
+			builder.compressedSize = 0;
+			builder.uncompressedSize = 0;
+			builder.fileNameBytes = null;
+			builder.extraFieldBytes = null;
 		}
 
 		public int getVersionNeeded() {
@@ -256,63 +283,63 @@ public class ZipFileHeader {
 			this.versionNeeded = versionNeeded;
 		}
 
-		public int getGeneralPurposeFlagsValue() {
-			return generalPurposeFlagsValue;
+		public int getGeneralPurposeFlags() {
+			return generalPurposeFlags;
 		}
 
 		/**
-		 * Sets the general-purpose-flags as a set of enums. This overrides the value set by
-		 * {@link #setGeneralPurposeFlags(Set)}.
+		 * Sets the general-purpose-flags as a integer value. This overrides the value set by
+		 * {@link #addGeneralPurposeFlags(Set)}.
 		 */
-		public void setGeneralPurposeFlagsValue(int generalPurposeFlagsValue) {
-			this.generalPurposeFlagsValue = generalPurposeFlagsValue;
+		public void setGeneralPurposeFlags(int generalPurposeFlags) {
+			this.generalPurposeFlags = generalPurposeFlags;
 		}
 
 		/**
 		 * Adds to the current general-purpose-flags the value associated with this flag enum.
 		 */
 		public void addGeneralPurposeFlag(GeneralPurposeFlag flag) {
-			this.generalPurposeFlagsValue |= flag.getValue();
+			this.generalPurposeFlags |= flag.getValue();
 		}
 
-		public Set<GeneralPurposeFlag> getGeneralPurposeFlags() {
-			return GeneralPurposeFlag.fromInt(generalPurposeFlagsValue);
+		public Set<GeneralPurposeFlag> getGeneralPurposeFlagAsEnums() {
+			return GeneralPurposeFlag.fromInt(generalPurposeFlags);
 		}
 
 		/**
 		 * Sets the general-purpose-flags as a set of enums. This overrides the value set by
 		 * {@link #setGeneralPurposeFlagsValue(int)}.
 		 */
-		public void setGeneralPurposeFlags(Set<GeneralPurposeFlag> generalPurposeFlags) {
-			for (GeneralPurposeFlag flag : generalPurposeFlags) {
-				generalPurposeFlagsValue |= flag.getValue();
+		public void addGeneralPurposeFlags(Collection<GeneralPurposeFlag> generalPurposeFlagSet) {
+			for (GeneralPurposeFlag flag : generalPurposeFlagSet) {
+				generalPurposeFlags |= flag.getValue();
 			}
 		}
 
 		/**
 		 * Sets the general-purpose-flags as an array of enums. This overrides the value set by
-		 * {@link #setGeneralPurposeFlagsValue(int)}.
+		 * {@link #setGeneralPurposeFlags(int)}.
 		 */
-		public void setGeneralPurposeFlags(GeneralPurposeFlag... generalPurposeFlags) {
-			for (GeneralPurposeFlag flag : generalPurposeFlags) {
-				generalPurposeFlagsValue |= flag.getValue();
+		public void addGeneralPurposeFlags(GeneralPurposeFlag... generalPurposeFlagEnums) {
+			for (GeneralPurposeFlag flag : generalPurposeFlagEnums) {
+				generalPurposeFlags |= flag.getValue();
 			}
 		}
 
-		public CompressionMethod getCompressionMethod() {
-			return CompressionMethod.fromValue(compressionMethodValue);
+		public int getCompressionMethod() {
+			return compressionMethod;
+		}
+
+		public void setCompressionMethod(int compressionMethod) {
+			this.compressionMethod = compressionMethod;
+		}
+
+		public CompressionMethod getCompressionMethodAsEnum() {
+			return CompressionMethod.fromValue(compressionMethod);
 		}
 
 		public void setCompressionMethod(CompressionMethod method) {
-			this.compressionMethodValue = method.getValue();
-		}
-
-		public int getCompressionMethodValue() {
-			return compressionMethodValue;
-		}
-
-		public void setCompressionMethodValue(int compressionMethod) {
-			this.compressionMethodValue = compressionMethod;
+			this.compressionMethod = method.getValue();
 		}
 
 		public int getLastModifiedFileTime() {
@@ -349,7 +376,7 @@ public class ZipFileHeader {
 		public void setCrc32(long crc32) {
 			if (crc32 != 0) {
 				// turn off the data-descriptor if we have a crc or size
-				generalPurposeFlagsValue &= ~GeneralPurposeFlag.DATA_DESCRIPTOR.getValue();
+				generalPurposeFlags &= ~GeneralPurposeFlag.DATA_DESCRIPTOR.getValue();
 			}
 			this.crc32 = crc32;
 		}
@@ -361,7 +388,7 @@ public class ZipFileHeader {
 		public void setCompressedSize(int compressedSize) {
 			if (compressedSize != 0) {
 				// turn off the data-descriptor if we have a crc or size
-				generalPurposeFlagsValue &= ~GeneralPurposeFlag.DATA_DESCRIPTOR.getValue();
+				generalPurposeFlags &= ~GeneralPurposeFlag.DATA_DESCRIPTOR.getValue();
 			}
 			this.compressedSize = compressedSize;
 		}
@@ -373,7 +400,7 @@ public class ZipFileHeader {
 		public void setUncompressedSize(int uncompressedSize) {
 			if (uncompressedSize != 0) {
 				// turn off the data-descriptor if we have a crc or size
-				generalPurposeFlagsValue &= ~GeneralPurposeFlag.DATA_DESCRIPTOR.getValue();
+				generalPurposeFlags &= ~GeneralPurposeFlag.DATA_DESCRIPTOR.getValue();
 			}
 			this.uncompressedSize = uncompressedSize;
 		}

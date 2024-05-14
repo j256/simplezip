@@ -77,10 +77,9 @@ public class CentralDirectoryEnd {
 		IoUtils.writeInt(outputStream, (int) directoryOffset);
 		if (commentBytes == null) {
 			IoUtils.writeShort(outputStream, 0);
+			// no comment-bytes
 		} else {
 			IoUtils.writeShort(outputStream, commentBytes.length);
-		}
-		if (commentBytes != null) {
 			IoUtils.writeBytes(outputStream, commentBytes);
 		}
 	}
@@ -113,6 +112,14 @@ public class CentralDirectoryEnd {
 		return commentBytes;
 	}
 
+	public String getComment() {
+		if (commentBytes == null) {
+			return null;
+		} else {
+			return new String(commentBytes);
+		}
+	}
+
 	/**
 	 * Builder for the {@link CentralDirectoryEnd}.
 	 */
@@ -126,33 +133,8 @@ public class CentralDirectoryEnd {
 		private byte[] commentBytes;
 
 		/**
-		 * Create a builder from an existing directory-end
+		 * Build a copy of our directory end.
 		 */
-		public static Builder fromEnd(CentralDirectoryEnd end) {
-			Builder builder = new Builder();
-			builder.diskNumber = end.diskNumber;
-			builder.diskNumberStart = end.diskNumberStart;
-			builder.numRecordsOnDisk = end.numRecordsOnDisk;
-			builder.numRecordsTotal = end.numRecordsTotal;
-			builder.directorySize = end.directorySize;
-			builder.directoryOffset = end.directoryOffset;
-			builder.commentBytes = end.commentBytes;
-			return builder;
-		}
-
-		/**
-		 * Reset the builder in case you want to reuse.
-		 */
-		public void reset() {
-			diskNumber = CentralDirectoryFileHeader.DEFAULT_DISK_NUMBER;
-			diskNumberStart = CentralDirectoryFileHeader.DEFAULT_DISK_NUMBER;
-			numRecordsOnDisk = 0;
-			numRecordsTotal = 0;
-			directorySize = 0;
-			directoryOffset = 0;
-			commentBytes = null;
-		}
-
 		public CentralDirectoryEnd build() {
 			return new CentralDirectoryEnd(diskNumber, diskNumberStart, numRecordsOnDisk, numRecordsTotal,
 					directorySize, directoryOffset, commentBytes);

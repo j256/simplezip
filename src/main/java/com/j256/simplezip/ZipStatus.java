@@ -1,7 +1,7 @@
 package com.j256.simplezip;
 
 /**
- * Information about the status of the Zip-file processing.
+ * The status of the Zip-file processing. Used to report on validation and other problems.
  * 
  * @author graywatson
  */

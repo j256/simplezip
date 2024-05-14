@@ -15,7 +15,7 @@ import com.j256.simplezip.RewindableInputStream;
 public class Unix1ExtraField extends BaseExtraField {
 
 	public static final int EXPECTED_ID = 0x5855;
-	public static final int EXPECTED_MINIMUM_SIZE = 2 + 2 + 8 + 8;
+	public static final int EXPECTED_MINIMUM_SIZE = 8 + 8;
 
 	private final long timeLastAccessed;
 	private final long timeLastModified;;
@@ -53,16 +53,16 @@ public class Unix1ExtraField extends BaseExtraField {
 	}
 
 	/**
-	 * Write to the output-stream.
+	 * Write extra-field to the output-stream.
 	 */
 	@Override
-	public void write(OutputStream inputStream) throws IOException {
-		super.write(inputStream);
-		IoUtils.writeLong(inputStream, timeLastAccessed);
-		IoUtils.writeLong(inputStream, timeLastModified);
+	public void write(OutputStream outputStream) throws IOException {
+		super.write(outputStream);
+		IoUtils.writeLong(outputStream, timeLastAccessed);
+		IoUtils.writeLong(outputStream, timeLastModified);
 		if (userId != null && groupId != null) {
-			IoUtils.writeShort(inputStream, userId);
-			IoUtils.writeShort(inputStream, groupId);
+			IoUtils.writeShort(outputStream, userId);
+			IoUtils.writeShort(outputStream, groupId);
 		}
 	}
 

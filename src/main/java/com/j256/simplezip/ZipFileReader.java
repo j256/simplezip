@@ -18,7 +18,7 @@ import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 
 /**
- * Read in a zip file either from a {@link File} or an {@link InputStream}.
+ * Read in a Zip-file either from a {@link File} or an {@link InputStream}.
  * 
  * @author graywatson
  */
@@ -67,6 +67,24 @@ public class ZipFileReader implements Closeable {
 		currentDataDescriptor = null;
 		countingInfo.reset();
 		return currentFileHeader;
+	}
+
+	/**
+	 * Skip over the file data in the zip.
+	 * 
+	 * @return The number of bytes skipped.
+	 */
+	public long skipFileData() throws IOException {
+		long byteCount = 0;
+		byte[] buffer = new byte[10240];
+		while (true) {
+			int numRead = readFileData(buffer, 0, buffer.length);
+			if (numRead < 0) {
+				break;
+			}
+			byteCount += numRead;
+		}
+		return byteCount;
 	}
 
 	/**
@@ -133,10 +151,11 @@ public class ZipFileReader implements Closeable {
 			 * record.
 			 */
 			countingInputStream.rewind(fileDataDecoder.getNumRemainingBytes());
-			currentFileEofReached = true;
+			fileDataDecoder.close();
 			if (currentFileHeader.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR)) {
 				currentDataDescriptor = DataDescriptor.read(countingInputStream, countingInfo);
 			}
+			currentFileEofReached = true;
 		}
 		return result;
 	}
@@ -157,15 +176,6 @@ public class ZipFileReader implements Closeable {
 	 */
 	public CentralDirectoryEnd readDirectoryEnd() throws IOException {
 		return CentralDirectoryEnd.read(countingInputStream);
-	}
-
-	/**
-	 * After the header, the file bytes, and any option data-descriptor has been read, validate that the Zip entry was
-	 * correct based on the various different length and CRC values stored and calculated.
-	 */
-	public ZipStatus validatePreviousFile() {
-		// XXX: validate the header section and any trailing data-descriptor
-		return ZipStatus.OK;
 	}
 
 	/**
@@ -190,7 +200,7 @@ public class ZipFileReader implements Closeable {
 	/**
 	 * Returns true if the current file's data EOF has been reached. read() should have returned -1.
 	 */
-	public boolean isCurrentFileEofReached() {
+	public boolean isFileDataEofReached() {
 		return currentFileEofReached;
 	}
 
@@ -205,7 +215,7 @@ public class ZipFileReader implements Closeable {
 	}
 
 	private void assignFileDataDecoder() throws IOException {
-		switch (currentFileHeader.getCompressionMethod()) {
+		switch (currentFileHeader.getCompressionMethodAsEnum()) {
 			case NONE:
 				this.fileDataDecoder =
 						new StoredFileDataDecoder(countingInputStream, currentFileHeader.getUncompressedSize());
@@ -215,8 +225,8 @@ public class ZipFileReader implements Closeable {
 				break;
 			default:
 				throw new IllegalStateException(
-						"Unknown compression method: " + currentFileHeader.getCompressionMethod() + " ("
-								+ currentFileHeader.getCompressionMethodValue() + ")");
+						"Unknown compression method: " + currentFileHeader.getCompressionMethodAsEnum() + " ("
+								+ currentFileHeader.getCompressionMethod() + ")");
 		}
 	}
 }

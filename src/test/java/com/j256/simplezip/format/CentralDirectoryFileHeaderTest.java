@@ -23,8 +23,8 @@ public class CentralDirectoryFileHeaderTest {
 		builder.setGeneralPurposeFlags(generalPurposeFlags);
 		assertEquals(generalPurposeFlags, builder.getGeneralPurposeFlags());
 		int compressionMethodValue = 6334324;
-		builder.setCompressionMethodValue(compressionMethodValue);
-		assertEquals(compressionMethodValue, builder.getCompressionMethodValue());
+		builder.setCompressionMethod(compressionMethodValue);
+		assertEquals(compressionMethodValue, builder.getCompressionMethod());
 		int lastModifiedFileTime = 322342434;
 		builder.setLastModifiedFileTime(lastModifiedFileTime);
 		assertEquals(lastModifiedFileTime, builder.getLastModifiedFileTime());
@@ -76,7 +76,7 @@ public class CentralDirectoryFileHeaderTest {
 		assertEquals(versionMade, fileHeader.getVersionMade());
 		assertEquals(versionNeeded, fileHeader.getVersionNeeded());
 		assertEquals(generalPurposeFlags, fileHeader.getGeneralPurposeFlags());
-		assertEquals(compressionMethodValue, fileHeader.getCompressionMethodValue());
+		assertEquals(compressionMethodValue, fileHeader.getCompressionMethod());
 		assertEquals(lastModifiedFileTime, fileHeader.getLastModifiedFileTime());
 		assertEquals(lastModifiedFileDate, fileHeader.getLastModifiedFileDate());
 		assertEquals(crc32, fileHeader.getCrc32());
@@ -114,11 +114,11 @@ public class CentralDirectoryFileHeaderTest {
 		Builder builder = CentralDirectoryFileHeader.builder();
 
 		CompressionMethod method = CompressionMethod.DEFLATED;
-		builder.setCompressionMethodValue(method);
-		assertEquals(method, builder.getCompressionMethod());
+		builder.setCompressionMethod(method);
+		assertEquals(method, builder.getCompressionMethodAsEnum());
 
 		CentralDirectoryFileHeader fileHeader = builder.build();
-		assertEquals(method, fileHeader.getCompressionMethod());
+		assertEquals(method, fileHeader.getCompressionMethodAsEnum());
 	}
 
 	@Test
@@ -168,7 +168,7 @@ public class CentralDirectoryFileHeaderTest {
 		int generalPurposeFlags = 565479567;
 		builder.setGeneralPurposeFlags(generalPurposeFlags);
 		int compressionMethodValue = 6334324;
-		builder.setCompressionMethodValue(compressionMethodValue);
+		builder.setCompressionMethod(compressionMethodValue);
 		int lastModifiedFileTime = 322342434;
 		builder.setLastModifiedFileTime(lastModifiedFileTime);
 		int lastModifiedFileDate = 8567056;
@@ -202,7 +202,7 @@ public class CentralDirectoryFileHeaderTest {
 		assertEquals(versionMade, builder.getVersionMade());
 		assertEquals(versionNeeded, builder.getVersionNeeded());
 		assertEquals(generalPurposeFlags, builder.getGeneralPurposeFlags());
-		assertEquals(compressionMethodValue, builder.getCompressionMethodValue());
+		assertEquals(compressionMethodValue, builder.getCompressionMethod());
 		assertEquals(lastModifiedFileTime, builder.getLastModifiedFileTime());
 		assertEquals(lastModifiedFileDate, builder.getLastModifiedFileDate());
 		assertEquals(crc32, builder.getCrc32());

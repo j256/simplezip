@@ -3,7 +3,7 @@ package com.j256.simplezip;
 import java.util.zip.CRC32;
 
 /**
- * Buffer that records the bytes that were read, allows us to rewind.
+ * Storage for the count and {@link CRC32} of a stream bytes.
  * 
  * @author graywatson
  */
@@ -11,14 +11,6 @@ public class CountingInfo {
 
 	private long byteCount;
 	private final CRC32 crc32 = new CRC32();
-
-	/**
-	 * Update the count with a single byte.
-	 */
-	public void update(int b) {
-		byteCount++;
-		crc32.update(b);
-	}
 
 	/**
 	 * Update the count with a buffer of bytes.
@@ -32,8 +24,8 @@ public class CountingInfo {
 	 * Reset the count so we can count something else.
 	 */
 	public void reset() {
-		crc32.reset();
 		byteCount = 0;
+		crc32.reset();
 	}
 
 	/**
