@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.zip.Deflater;
 
 import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
@@ -124,6 +125,30 @@ public class ZipFileHeader {
 
 	public Set<GeneralPurposeFlag> getGeneralPurposeFlags() {
 		return generalPurposeFlags;
+	}
+
+	/**
+	 * Read the compression level from that flags.
+	 */
+	public int getCompressionLevel() {
+		int level = Deflater.DEFAULT_COMPRESSION;
+		for (GeneralPurposeFlag flag : GeneralPurposeFlag.fromInt(compressionMethodValue)) {
+			switch (flag) {
+				case DEFLATING_MAXIMUM:
+					return Deflater.BEST_COMPRESSION;
+				case DEFLATING_NORMAL:
+					return Deflater.DEFAULT_COMPRESSION;
+				case DEFLATING_FAST:
+					// i guess this is right
+					return Deflater.DEFAULT_COMPRESSION + Deflater.BEST_SPEED / 2;
+				case DEFLATING_SUPER_FAST:
+					return Deflater.BEST_SPEED;
+				default:
+					// not a compression speed thing
+					break;
+			}
+		}
+		return level;
 	}
 
 	public CompressionMethod getCompressionMethod() {

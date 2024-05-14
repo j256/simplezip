@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.Deflater;
 
 import com.j256.simplezip.code.DeflatorFileDataEncoder;
 import com.j256.simplezip.code.FileDataEncoder;
@@ -240,8 +239,7 @@ public class ZipFileWriter implements Closeable {
 				this.fileDataEncoder = new StoredFileDataEncoder();
 				break;
 			case DEFLATED:
-				// XXX: how to set the set the level
-				this.fileDataEncoder = new DeflatorFileDataEncoder(Deflater.DEFAULT_COMPRESSION);
+				this.fileDataEncoder = new DeflatorFileDataEncoder(currentFileHeader.getCompressionLevel());
 				break;
 			default:
 				throw new IllegalStateException(
