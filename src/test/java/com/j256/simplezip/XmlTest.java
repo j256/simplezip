@@ -12,10 +12,10 @@ import java.util.zip.ZipOutputStream;
 
 import org.junit.Test;
 
-public class AbInitioXmlTest {
+public class XmlTest {
 
 	public static void main(String[] args) throws IOException {
-		URL jarUrl = AbInitioXmlTest.class.getResource("/outer.jar");
+		URL jarUrl = XmlTest.class.getResource("/outer.jar");
 		assertNotNull(jarUrl.openStream());
 		URLClassLoader classLoader = new URLClassLoader(new URL[] { jarUrl });
 		assertNotNull(classLoader.findResource("foo.zip"));
