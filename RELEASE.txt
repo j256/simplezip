@@ -1,0 +1,14 @@
+-------------------------------------------------------------------------------
+
+The following set of tasks should be performed when the library gets released.
+
+1) Maybe update the version numbers in the pom.xml
+2) Consider updating the copyright heads in LICENSE.txt
+3) Run release.sh script.  It will publish to sonos.
+4) Close and release sonos package.
+5) create release on github for X.X.X from that tag
+    https://github.com/j256/simplezip/tags
+6) Log into 256 server and download latest release.
+7) Explode docs.
+
+-------------------------------------------------------------------------------
