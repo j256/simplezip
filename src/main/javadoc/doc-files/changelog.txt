@@ -1,3 +1,6 @@
+0.4: 5/14/2024
+	* Fixed sizes and crc which were wrong.  Was tricked by a bad test.  Whoops. 
+
 0.3: 5/14/2024
 	* Increased the ZipFileWriter intelligence significantly.
 	* Data-descriptor is now written automagically.
