@@ -18,13 +18,11 @@ public class DataDescriptor {
 	/** optional signature at the start of the data-descriptor */
 	private static final int OPTIONAL_EXPECTED_SIGNATURE = 0x8074b50;
 
-	private final int signature;
-	private final int crc32;
+	private final long crc32;
 	private final int compressedSize;
 	private final int uncompressedSize;
 
-	public DataDescriptor(int signature, int crc32, int compressedSize, int uncompressedSize) {
-		this.signature = signature;
+	public DataDescriptor(long crc32, int compressedSize, int uncompressedSize) {
 		this.crc32 = crc32;
 		this.compressedSize = compressedSize;
 		this.uncompressedSize = uncompressedSize;
@@ -51,7 +49,6 @@ public class DataDescriptor {
 		 */
 		int first = IoUtils.readInt(inputStream, "DataDescriptor.signature-or-crc32");
 		if (first == OPTIONAL_EXPECTED_SIGNATURE) {
-			builder.signature = first;
 			builder.crc32 = IoUtils.readInt(inputStream, "DataDescriptor.crc32");
 		} else {
 			// guess that we have crc, compressed-size, uncompressed-size with the crc matching the signature
@@ -76,14 +73,7 @@ public class DataDescriptor {
 		IoUtils.writeInt(outputStream, uncompressedSize);
 	}
 
-	/**
-	 * Returns the optional signature which should either match the expected value or be 0 if it didm't exist.
-	 */
-	public int getSignature() {
-		return signature;
-	}
-
-	public int getCrc32() {
+	public long getCrc32() {
 		return crc32;
 	}
 
@@ -99,28 +89,39 @@ public class DataDescriptor {
 	 * Builder for the DataDescriptor class.
 	 */
 	public static class Builder {
-		private int signature;
-		private int crc32;
+		private long crc32;
 		private int compressedSize;
 		private int uncompressedSize;
 
+		/**
+		 * Create a builder from an existing directory-end
+		 */
+		public static Builder fromEnd(DataDescriptor dataDescriptor) {
+			Builder builder = new Builder();
+			builder.crc32 = dataDescriptor.crc32;
+			builder.compressedSize = dataDescriptor.compressedSize;
+			builder.uncompressedSize = dataDescriptor.uncompressedSize;
+			return builder;
+		}
+
+		/**
+		 * Reset the builder in case you want to reuse.
+		 */
+		public void reset() {
+			crc32 = 0;
+			compressedSize = 0;
+			uncompressedSize = 0;
+		}
+
 		public DataDescriptor build() {
-			return new DataDescriptor(signature, crc32, compressedSize, uncompressedSize);
+			return new DataDescriptor(crc32, compressedSize, uncompressedSize);
 		}
 
-		public int getSignature() {
-			return signature;
-		}
-
-		public void setSignature(int signature) {
-			this.signature = signature;
-		}
-
-		public int getCrc32() {
+		public long getCrc32() {
 			return crc32;
 		}
 
-		public void setCrc32(int crc32) {
+		public void setCrc32(long crc32) {
 			this.crc32 = crc32;
 		}
 

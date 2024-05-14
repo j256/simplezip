@@ -1,7 +1,10 @@
 - need to have an encryption interface
-- need to have a deflate interface with default
-- should have a positionable input stream to go back and fix the file header with CRC/sizes
 - could also have a bufferable input stream which holds the deflated bytes until it can write the header and then the bytes
+	- should dump to disk after X bytes and give up after Y bytes and just write data-descriptor
+- need to publish some sort of header without the details so that they can get filled in by the writer
+- need to write the directory end all with writer supplied information
+- need to figure out the dos and the unix permissions
+- need to figure out how to do the extra blocks, maybe hashmap of name/values?
 - should be able to iterate over the entries and then iterate over the directory
 	- then go back and annotate the entries already recorded in the stream
-- should be able to iterate over the directory by skipping the entries
+- need a validation process to check all data and report back if file-header or other crc's or sanity checks is off

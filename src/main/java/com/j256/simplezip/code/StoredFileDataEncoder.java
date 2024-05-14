@@ -11,6 +11,7 @@ import java.io.OutputStream;
 public class StoredFileDataEncoder implements FileDataEncoder {
 
 	private OutputStream outputStream;
+	private long numBytes;
 
 	@Override
 	public void registerOutputStream(OutputStream outputStream) {
@@ -20,10 +21,16 @@ public class StoredFileDataEncoder implements FileDataEncoder {
 	@Override
 	public void encode(byte[] inputBuffer, int offset, int length) throws IOException {
 		outputStream.write(inputBuffer, offset, length);
+		numBytes += length;
 	}
 
 	@Override
 	public void close() {
 		// no-op
+	}
+
+	@Override
+	public long getNumBytesWritten() {
+		return numBytes;
 	}
 }

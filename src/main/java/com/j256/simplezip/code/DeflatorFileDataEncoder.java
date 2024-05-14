@@ -13,6 +13,7 @@ public class DeflatorFileDataEncoder implements FileDataEncoder {
 
 	private final Deflater deflater;
 	private DeflaterOutputStream enflaterOutputStream;
+	private long numBytes;
 
 	public DeflatorFileDataEncoder(int level) {
 		deflater = new Deflater(level, true /* no wrap */);
@@ -26,6 +27,7 @@ public class DeflatorFileDataEncoder implements FileDataEncoder {
 	@Override
 	public void encode(byte[] outputBuffer, int offset, int length) throws IOException {
 		enflaterOutputStream.write(outputBuffer, offset, length);
+		numBytes += length;
 	}
 
 	@Override
@@ -33,5 +35,10 @@ public class DeflatorFileDataEncoder implements FileDataEncoder {
 		enflaterOutputStream.close();
 		// deflater end must be called after the close
 		deflater.end();
+	}
+
+	@Override
+	public long getNumBytesWritten() {
+		return numBytes;
 	}
 }

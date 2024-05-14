@@ -21,13 +21,13 @@ public class ZipFileHeaderTest {
 
 		Builder builder = ZipFileHeader.builder();
 		builder.setLastModifiedDateTime(input);
-		int date = builder.getLastModFileDate();
-		int time = builder.getLastModFileTime();
+		int date = builder.getLastModifiedFileDate();
+		int time = builder.getLastModifiedFileTime();
 		ZipFileHeader header = builder.build();
 
 		LocalDateTime output = header.getLastModFileDateTime();
 		assertEquals(input, output);
-		assertEquals(date, header.getLastModFileDate());
-		assertEquals(time, header.getLastModFileTime());
+		assertEquals(date, header.getLastModifiedFileDate());
+		assertEquals(time, header.getLastModifiedFileTime());
 	}
 }

@@ -100,7 +100,7 @@ public class IoUtils {
 	/**
 	 * Write an int in little-endian to the output stream.
 	 */
-	public static void writeInt(OutputStream output, int value) throws IOException {
+	public static void writeInt(OutputStream output, long value) throws IOException {
 		writeByte(output, value, 0);
 		writeByte(output, value, 8);
 		writeByte(output, value, 16);

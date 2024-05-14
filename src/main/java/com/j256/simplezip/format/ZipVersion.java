@@ -25,7 +25,7 @@ public enum ZipVersion {
 	// end
 	;
 
-	private static final ZipVersion DEFAULT_VERSION = V4_5;
+	private static final ZipVersion DEFAULT_VERSION = V2_0;
 
 	private final int major;
 	private final int minor;
@@ -55,7 +55,7 @@ public enum ZipVersion {
 	/**
 	 * Detect our platform by looking at various JDK attributes.
 	 */
-	public static ZipVersion detectPlatform() {
+	public static ZipVersion detectVersion() {
 		// XXX no idea how to do this. can pick the lowest one based on how complicated the Zip features used
 		return DEFAULT_VERSION;
 	}

@@ -16,6 +16,7 @@ import com.j256.simplezip.code.StoredFileDataEncoder;
 import com.j256.simplezip.format.CentralDirectoryEnd;
 import com.j256.simplezip.format.CentralDirectoryFileHeader;
 import com.j256.simplezip.format.DataDescriptor;
+import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 
 /**
@@ -29,6 +30,9 @@ public class ZipFileWriter implements Closeable {
 
 	private ZipFileHeader currentFileHeader;
 	private FileDataEncoder fileDataEncoder;
+	private CentralDirectoryEnd.Builder dirEndBuilder = CentralDirectoryEnd.builder();
+	private DataDescriptor.Builder dataDescriptorBuilder = DataDescriptor.builder();
+	private int fileCount = 0;
 
 	/**
 	 * Start writing a Zip-file to a file-path. You must call {@link #close()} to close the stream when you are done.
@@ -61,6 +65,7 @@ public class ZipFileWriter implements Closeable {
 		fileHeader.write(countingOutputStream);
 		currentFileHeader = fileHeader;
 		countingOutputStream.resetFileInfo();
+		fileCount++;
 	}
 
 	/**
@@ -127,36 +132,66 @@ public class ZipFileWriter implements Closeable {
 	/**
 	 * Called at the end of the file data. Must be called after the {@link #writeFileData(byte[])} or
 	 * {@link #writeFileData(byte[], int, int)} methods have been called.
+	 * 
+	 * NOTE: This will write a {@link DataDescriptor} at the end of the file unless a CRC32, compressed, or uncompressed
+	 * size was specified in the header.
 	 */
 	public void finishFileData() throws IOException {
 		if (fileDataEncoder == null) {
 			throw new IllegalStateException("Need to call writeFileData() before you can finish");
 		}
 		fileDataEncoder.close();
+		if (currentFileHeader.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR)) {
+			dataDescriptorBuilder.reset();
+			CountingInfo fileInfo = countingOutputStream.getFileInfo();
+			// XXX: need to handle zip64
+			dataDescriptorBuilder.setCompressedSize((int) fileInfo.getByteCount());
+			dataDescriptorBuilder.setUncompressedSize((int) fileDataEncoder.getNumBytesWritten());
+			dataDescriptorBuilder.setCrc32(fileInfo.getCrc32());
+			dataDescriptorBuilder.build().write(countingOutputStream);
+		}
 		fileDataEncoder = null;
-		// xxx: need to do something with the file info now
-	}
-
-	/**
-	 * Write an optional data-descriptor after the file data has been written.
-	 */
-	public void writeDataDescriptor(DataDescriptor dataDescriptor) throws IOException {
-		// XXX: should write this if the header was set, etc.
-		dataDescriptor.write(countingOutputStream);
 	}
 
 	/**
 	 * Write a central-directory file-header after all of the files have been written.
 	 */
 	public void writeDirectoryFileHeader(CentralDirectoryFileHeader dirHeader) throws IOException {
+		if (dirEndBuilder.getDirectoryOffset() == 0) {
+			dirEndBuilder.setDirectoryOffset(countingOutputStream.getTotalInfo().getByteCount());
+			dirEndBuilder.setNumRecordsOnDisk(fileCount);
+			dirEndBuilder.setNumRecordsTotal(fileCount);
+			// not sure what to do with these
+			dirEndBuilder.setDiskNumber(1);
+			dirEndBuilder.setDiskNumberStart(1);
+		}
 		dirHeader.write(countingOutputStream);
 	}
 
 	/**
 	 * Write a central-directory end at the end of the Zip file.
 	 */
-	public void writeDirectoryEnd(CentralDirectoryEnd dirEnd) throws IOException {
-		dirEnd.write(countingOutputStream);
+	public void writeDirectoryEnd() throws IOException {
+		writeDirectoryEnd((byte[]) null);
+	}
+
+	/**
+	 * Write a central-directory end at the end of the Zip-file with a comment.
+	 */
+	public void writeDirectoryEnd(String comment) throws IOException {
+		writeDirectoryEnd(comment.getBytes());
+	}
+
+	/**
+	 * Write a central-directory end at the end of the Zip-file with a comment.
+	 */
+	public void writeDirectoryEnd(byte[] commentBytes) throws IOException {
+		dirEndBuilder.setCommentBytes(commentBytes);
+		long startOffset = dirEndBuilder.getDirectoryOffset();
+		// XXX: should be long? and need to handle zip64
+		int size = (int) (countingOutputStream.getTotalInfo().getByteCount() - startOffset);
+		dirEndBuilder.setDirectorySize(size);
+		dirEndBuilder.build().write(countingOutputStream);
 	}
 
 	/**

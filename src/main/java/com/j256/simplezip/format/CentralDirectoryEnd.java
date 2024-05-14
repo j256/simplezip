@@ -16,24 +16,22 @@ public class CentralDirectoryEnd {
 	/** signature that is expected to be at the start of the central directory */
 	public static final int EXPECTED_SIGNATURE = 0x6054b50;
 
-	private final int signature;
 	private final int diskNumber;
 	private final int diskNumberStart;
 	private final int numRecordsOnDisk;
 	private final int numRecordsTotal;
-	private final int sizeDirectory;
-	private final int offsetDirectory;
+	private final int directorySize;
+	private final long directoryOffset;
 	private final byte[] commentBytes;
 
-	public CentralDirectoryEnd(int signature, int diskNumber, int diskNumberStart, int numRecordsOnDisk,
-			int numRecordsTotal, int sizeDirectory, int offsetDirectory, byte[] commentBytes) {
-		this.signature = signature;
+	public CentralDirectoryEnd(int diskNumber, int diskNumberStart, int numRecordsOnDisk, int numRecordsTotal,
+			int directorySize, long directoryOffset, byte[] commentBytes) {
 		this.diskNumber = diskNumber;
 		this.diskNumberStart = diskNumberStart;
 		this.numRecordsOnDisk = numRecordsOnDisk;
 		this.numRecordsTotal = numRecordsTotal;
-		this.sizeDirectory = sizeDirectory;
-		this.offsetDirectory = offsetDirectory;
+		this.directorySize = directorySize;
+		this.directoryOffset = directoryOffset;
 		this.commentBytes = commentBytes;
 	}
 
@@ -51,13 +49,14 @@ public class CentralDirectoryEnd {
 
 		Builder builder = new CentralDirectoryEnd.Builder();
 
-		builder.signature = IoUtils.readInt(inputStream, "CentralDirectoryEnd.signature");
+		IoUtils.readInt(inputStream, "CentralDirectoryEnd.signature");
+		// XXX: need to throw if not directory-end or valadation issue
 		builder.diskNumber = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.diskNumber");
 		builder.diskNumberStart = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.diskNumberStart");
 		builder.numRecordsOnDisk = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.numRecordsOnDisk");
 		builder.numRecordsTotal = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.numRecordsTotal");
-		builder.sizeDirectory = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.sizeDirectory");
-		builder.offsetDirectory = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.offsetDirectory");
+		builder.directorySize = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.sizeDirectory");
+		builder.directoryOffset = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.directoryOffset");
 		int commentLength = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.commentLength");
 		builder.commentBytes = IoUtils.readBytes(inputStream, commentLength, "CentralDirectoryFileHeader.comment");
 
@@ -73,8 +72,9 @@ public class CentralDirectoryEnd {
 		IoUtils.writeShort(outputStream, diskNumberStart);
 		IoUtils.writeShort(outputStream, numRecordsOnDisk);
 		IoUtils.writeShort(outputStream, numRecordsTotal);
-		IoUtils.writeInt(outputStream, sizeDirectory);
-		IoUtils.writeInt(outputStream, offsetDirectory);
+		IoUtils.writeInt(outputStream, directorySize);
+		// XXX: need to handle zip64
+		IoUtils.writeInt(outputStream, (int) directoryOffset);
 		if (commentBytes == null) {
 			IoUtils.writeShort(outputStream, 0);
 		} else {
@@ -83,10 +83,6 @@ public class CentralDirectoryEnd {
 		if (commentBytes != null) {
 			IoUtils.writeBytes(outputStream, commentBytes);
 		}
-	}
-
-	public int getSignature() {
-		return signature;
 	}
 
 	public int getDiskNumber() {
@@ -105,12 +101,12 @@ public class CentralDirectoryEnd {
 		return numRecordsTotal;
 	}
 
-	public int getSizeDirectory() {
-		return sizeDirectory;
+	public int getDirectorySize() {
+		return directorySize;
 	}
 
-	public int getOffsetDirectory() {
-		return offsetDirectory;
+	public long getDirectoryOffset() {
+		return directoryOffset;
 	}
 
 	public byte[] getCommentBytes() {
@@ -121,21 +117,45 @@ public class CentralDirectoryEnd {
 	 * Builder for the {@link CentralDirectoryEnd}.
 	 */
 	public static class Builder {
-		private int signature;
 		private int diskNumber;
 		private int diskNumberStart;
 		private int numRecordsOnDisk;
 		private int numRecordsTotal;
-		private int sizeDirectory;
-		private int offsetDirectory;
+		private int directorySize;
+		private long directoryOffset;
 		private byte[] commentBytes;
 
-		public int getSignature() {
-			return signature;
+		/**
+		 * Create a builder from an existing directory-end
+		 */
+		public static Builder fromEnd(CentralDirectoryEnd end) {
+			Builder builder = new Builder();
+			builder.diskNumber = end.diskNumber;
+			builder.diskNumberStart = end.diskNumberStart;
+			builder.numRecordsOnDisk = end.numRecordsOnDisk;
+			builder.numRecordsTotal = end.numRecordsTotal;
+			builder.directorySize = end.directorySize;
+			builder.directoryOffset = end.directoryOffset;
+			builder.commentBytes = end.commentBytes;
+			return builder;
 		}
 
-		public void setSignature(int signature) {
-			this.signature = signature;
+		/**
+		 * Reset the builder in case you want to reuse.
+		 */
+		public void reset() {
+			diskNumber = 0;
+			diskNumberStart = 0;
+			numRecordsOnDisk = 0;
+			numRecordsTotal = 0;
+			directorySize = 0;
+			directoryOffset = 0;
+			commentBytes = null;
+		}
+
+		public CentralDirectoryEnd build() {
+			return new CentralDirectoryEnd(diskNumber, diskNumberStart, numRecordsOnDisk, numRecordsTotal,
+					directorySize, directoryOffset, commentBytes);
 		}
 
 		public int getDiskNumber() {
@@ -170,20 +190,20 @@ public class CentralDirectoryEnd {
 			this.numRecordsTotal = numRecordsTotal;
 		}
 
-		public int getSizeDirectory() {
-			return sizeDirectory;
+		public int getDirectorySize() {
+			return directorySize;
 		}
 
-		public void setSizeDirectory(int sizeDirectory) {
-			this.sizeDirectory = sizeDirectory;
+		public void setDirectorySize(int directorySize) {
+			this.directorySize = directorySize;
 		}
 
-		public int getOffsetDirectory() {
-			return offsetDirectory;
+		public long getDirectoryOffset() {
+			return directoryOffset;
 		}
 
-		public void setOffsetDirectory(int offsetDirectory) {
-			this.offsetDirectory = offsetDirectory;
+		public void setDirectoryOffset(long directoryOffset) {
+			this.directoryOffset = directoryOffset;
 		}
 
 		public byte[] getCommentBytes() {
@@ -192,11 +212,6 @@ public class CentralDirectoryEnd {
 
 		public void setCommentBytes(byte[] commentBytes) {
 			this.commentBytes = commentBytes;
-		}
-
-		public CentralDirectoryEnd build() {
-			return new CentralDirectoryEnd(signature, diskNumber, diskNumberStart, numRecordsOnDisk, numRecordsTotal,
-					sizeDirectory, offsetDirectory, commentBytes);
 		}
 	}
 }

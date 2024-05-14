@@ -17,7 +17,6 @@ public class CentralDirectoryFileHeader {
 	public static final int EXPECTED_SIGNATURE = 0x2014b50;
 	private static final int INTERNAL_ATTRIBUTES_TEXT_FILE = (1 << 0);
 
-	private int signature;
 	private int versionMade;
 	private int versionNeeded;
 	private int generalPurposeFlags;
@@ -35,12 +34,11 @@ public class CentralDirectoryFileHeader {
 	private byte[] extraFieldBytes;
 	private final byte[] commentBytes;
 
-	public CentralDirectoryFileHeader(int signature, int versionMade, int versionNeeded, int generalPurposeFlags,
+	public CentralDirectoryFileHeader(int versionMade, int versionNeeded, int generalPurposeFlags,
 			int compressionMethodValue, int lastModifiedFileTime, int lastModifiedFileDate, int crc32,
 			int compressedSize, int uncompressedSize, int diskNumberStart, int internalFileAttributes,
 			int externalFileAttributes, int relativeOffsetOfLocalHeader, byte[] fileNameBytes, byte[] extraFieldBytes,
 			byte[] commentBytes) {
-		this.signature = signature;
 		this.versionMade = versionMade;
 		this.versionNeeded = versionNeeded;
 		this.generalPurposeFlags = generalPurposeFlags;
@@ -83,7 +81,6 @@ public class CentralDirectoryFileHeader {
 			return null;
 		}
 
-		builder.signature = signature;
 		builder.versionMade = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.versionMade");
 		builder.versionNeeded = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.versionNeeded");
 		builder.generalPurposeFlags = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.generalPurposeFlags");
@@ -140,10 +137,6 @@ public class CentralDirectoryFileHeader {
 		IoUtils.writeBytes(outputStream, fileNameBytes);
 		IoUtils.writeBytes(outputStream, extraFieldBytes);
 		IoUtils.writeBytes(outputStream, commentBytes);
-	}
-
-	public int getSignature() {
-		return signature;
 	}
 
 	public int getVersionMade() {
@@ -233,9 +226,8 @@ public class CentralDirectoryFileHeader {
 	 * Builder for the {@link CentralDirectoryFileHeader}.
 	 */
 	public static class Builder {
-		private int signature;
 		private int versionMade;
-		private int versionNeeded;
+		private int versionNeeded = ZipVersion.detectVersion().getValue();
 		private int generalPurposeFlags;
 		private int compressionMethodValue;
 		private int lastModifiedFileTime;
@@ -251,12 +243,60 @@ public class CentralDirectoryFileHeader {
 		private byte[] extraFieldBytes;
 		private byte[] commentBytes;
 
-		public int getSignature() {
-			return signature;
+		/**
+		 * Create a builder from an existing directory-end
+		 */
+		public static Builder fromEnd(CentralDirectoryFileHeader header) {
+			Builder builder = new Builder();
+			builder.versionMade = header.versionMade;
+			builder.versionNeeded = header.versionNeeded;
+			builder.generalPurposeFlags = header.generalPurposeFlags;
+			builder.compressionMethodValue = header.compressionMethodValue;
+			builder.lastModifiedFileTime = header.lastModifiedFileTime;
+			builder.lastModifiedFileDate = header.lastModifiedFileDate;
+			builder.crc32 = header.crc32;
+			builder.compressedSize = header.compressedSize;
+			builder.uncompressedSize = header.uncompressedSize;
+			builder.diskNumberStart = header.diskNumberStart;
+			builder.internalFileAttributes = header.internalFileAttributes;
+			builder.externalFileAttributes = header.externalFileAttributes;
+			builder.relativeOffsetOfLocalHeader = header.relativeOffsetOfLocalHeader;
+			builder.fileNameBytes = header.fileNameBytes;
+			builder.extraFieldBytes = header.extraFieldBytes;
+			builder.commentBytes = header.commentBytes;
+			return builder;
 		}
 
-		public void setSignature(int signature) {
-			this.signature = signature;
+		/**
+		 * Reset the builder in case you want to reuse.
+		 */
+		public void reset() {
+			versionMade = 0;
+			versionNeeded = ZipVersion.detectVersion().getValue();
+			generalPurposeFlags = 0;
+			compressionMethodValue = 0;
+			lastModifiedFileTime = 0;
+			lastModifiedFileDate = 0;
+			crc32 = 0;
+			compressedSize = 0;
+			uncompressedSize = 0;
+			diskNumberStart = 0;
+			internalFileAttributes = 0;
+			externalFileAttributes = 0;
+			relativeOffsetOfLocalHeader = 0;
+			fileNameBytes = null;
+			extraFieldBytes = null;
+			commentBytes = null;
+		}
+
+		/**
+		 * Builder an instance of the central-directory file-header.
+		 */
+		public CentralDirectoryFileHeader build() {
+			return new CentralDirectoryFileHeader(versionMade, versionNeeded, generalPurposeFlags,
+					compressionMethodValue, lastModifiedFileTime, lastModifiedFileDate, crc32, compressedSize,
+					uncompressedSize, diskNumberStart, internalFileAttributes, externalFileAttributes,
+					relativeOffsetOfLocalHeader, fileNameBytes, extraFieldBytes, commentBytes);
 		}
 
 		public int getVersionMade() {
@@ -427,13 +467,6 @@ public class CentralDirectoryFileHeader {
 
 		public void setCommentBytes(byte[] commentBytes) {
 			this.commentBytes = commentBytes;
-		}
-
-		public CentralDirectoryFileHeader build() {
-			return new CentralDirectoryFileHeader(signature, versionMade, versionNeeded, generalPurposeFlags,
-					compressionMethodValue, lastModifiedFileTime, lastModifiedFileDate, crc32, compressedSize,
-					uncompressedSize, diskNumberStart, internalFileAttributes, externalFileAttributes,
-					relativeOffsetOfLocalHeader, fileNameBytes, extraFieldBytes, commentBytes);
 		}
 	}
 

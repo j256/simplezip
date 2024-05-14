@@ -51,7 +51,7 @@ public class ZipFileReaderTest {
 		assertEquals(CompressionMethod.DEFLATED, header.getCompressionMethod());
 
 		System.out.println("header " + header.getFileName() + ", date " + header.getLastModFileDateTime() + ", time "
-				+ header.getLastModFileTimeString() + ", size " + header.getUncompressedSize() + ", method "
+				+ header.getLastModifiedFileTimeString() + ", size " + header.getUncompressedSize() + ", method "
 				+ header.getCompressionMethod() + ", extra " + Arrays.toString(header.getExtraFieldBytes()));
 
 		baos.reset();
@@ -76,7 +76,7 @@ public class ZipFileReaderTest {
 		assertNull(zipFile.readDirectoryFileHeader());
 		CentralDirectoryEnd end = zipFile.readDirectoryEnd();
 		assertNotNull(end);
-		System.out.println("end: num-records " + end.getNumRecordsTotal() + ", size " + end.getSizeDirectory());
+		System.out.println("end: num-records " + end.getNumRecordsTotal() + ", size " + end.getDirectorySize());
 
 		zipFile.close();
 	}
