@@ -55,7 +55,7 @@ public class FilePermissions {
 	/**
 	 * Returns true if the file is a symlink otherwise false.
 	 */
-	private static boolean isSymlink(File file) throws IOException {
+	public static boolean isSymlink(File file) throws IOException {
 		File canonFile;
 		File canonDir = file.getParentFile();
 		if (canonDir == null) {
