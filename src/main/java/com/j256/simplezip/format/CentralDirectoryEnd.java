@@ -117,8 +117,8 @@ public class CentralDirectoryEnd {
 	 * Builder for the {@link CentralDirectoryEnd}.
 	 */
 	public static class Builder {
-		private int diskNumber;
-		private int diskNumberStart;
+		private int diskNumber = CentralDirectoryFileHeader.DEFAULT_DISK_NUMBER;
+		private int diskNumberStart = CentralDirectoryFileHeader.DEFAULT_DISK_NUMBER;
 		private int numRecordsOnDisk;
 		private int numRecordsTotal;
 		private int directorySize;
@@ -144,8 +144,8 @@ public class CentralDirectoryEnd {
 		 * Reset the builder in case you want to reuse.
 		 */
 		public void reset() {
-			diskNumber = 0;
-			diskNumberStart = 0;
+			diskNumber = CentralDirectoryFileHeader.DEFAULT_DISK_NUMBER;
+			diskNumberStart = CentralDirectoryFileHeader.DEFAULT_DISK_NUMBER;
 			numRecordsOnDisk = 0;
 			numRecordsTotal = 0;
 			directorySize = 0;

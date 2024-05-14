@@ -15,7 +15,8 @@ public class CentralDirectoryFileHeader {
 
 	/** signature that is expected to be at the start of the central directory */
 	public static final int EXPECTED_SIGNATURE = 0x2014b50;
-	private static final int INTERNAL_ATTRIBUTES_TEXT_FILE = (1 << 0);
+	public static final int INTERNAL_ATTRIBUTES_TEXT_FILE = (1 << 0);
+	public static final int DEFAULT_DISK_NUMBER = 1;
 
 	private int versionMade;
 	private int versionNeeded;
@@ -23,7 +24,7 @@ public class CentralDirectoryFileHeader {
 	private int compressionMethodValue;
 	private int lastModifiedFileTime;
 	private int lastModifiedFileDate;
-	private int crc32;
+	private long crc32;
 	private int compressedSize;
 	private int uncompressedSize;
 	private int diskNumberStart;
@@ -35,7 +36,7 @@ public class CentralDirectoryFileHeader {
 	private final byte[] commentBytes;
 
 	public CentralDirectoryFileHeader(int versionMade, int versionNeeded, int generalPurposeFlags,
-			int compressionMethodValue, int lastModifiedFileTime, int lastModifiedFileDate, int crc32,
+			int compressionMethodValue, int lastModifiedFileTime, int lastModifiedFileDate, long crc32,
 			int compressedSize, int uncompressedSize, int diskNumberStart, int internalFileAttributes,
 			int externalFileAttributes, int relativeOffsetOfLocalHeader, byte[] fileNameBytes, byte[] extraFieldBytes,
 			byte[] commentBytes) {
@@ -167,7 +168,7 @@ public class CentralDirectoryFileHeader {
 		return lastModifiedFileDate;
 	}
 
-	public int getCrc32() {
+	public long getCrc32() {
 		return crc32;
 	}
 
@@ -232,10 +233,10 @@ public class CentralDirectoryFileHeader {
 		private int compressionMethodValue;
 		private int lastModifiedFileTime;
 		private int lastModifiedFileDate;
-		private int crc32;
+		private long crc32;
 		private int compressedSize;
 		private int uncompressedSize;
-		private int diskNumberStart;
+		private int diskNumberStart = DEFAULT_DISK_NUMBER;
 		private int internalFileAttributes;
 		private int externalFileAttributes;
 		private int relativeOffsetOfLocalHeader;
@@ -268,6 +269,38 @@ public class CentralDirectoryFileHeader {
 		}
 
 		/**
+		 * Create a builder from an existing Zip file-header.
+		 */
+		public static Builder fromFileHeader(ZipFileHeader header) {
+			Builder builder = new Builder();
+			builder.generalPurposeFlags = header.getGeneralPurposeFlagsValue();
+			builder.compressionMethodValue = header.getCompressionMethodValue();
+			builder.lastModifiedFileTime = header.getLastModifiedFileTime();
+			builder.lastModifiedFileDate = header.getLastModifiedFileDate();
+			builder.crc32 = header.getCrc32();
+			builder.compressedSize = header.getCompressedSize();
+			builder.uncompressedSize = header.getUncompressedSize();
+			builder.fileNameBytes = header.getFileNameBytes();
+			builder.extraFieldBytes = header.getExtraFieldBytes();
+			return builder;
+		}
+
+		/**
+		 * Create a builder from an existing Zip file-header.
+		 */
+		public void setFileHeader(ZipFileHeader header) {
+			this.generalPurposeFlags = header.getGeneralPurposeFlagsValue();
+			this.compressionMethodValue = header.getCompressionMethodValue();
+			this.lastModifiedFileTime = header.getLastModifiedFileTime();
+			this.lastModifiedFileDate = header.getLastModifiedFileDate();
+			this.crc32 = header.getCrc32();
+			this.compressedSize = header.getCompressedSize();
+			this.uncompressedSize = header.getUncompressedSize();
+			this.fileNameBytes = header.getFileNameBytes();
+			this.extraFieldBytes = header.getExtraFieldBytes();
+		}
+
+		/**
 		 * Reset the builder in case you want to reuse.
 		 */
 		public void reset() {
@@ -280,13 +313,25 @@ public class CentralDirectoryFileHeader {
 			crc32 = 0;
 			compressedSize = 0;
 			uncompressedSize = 0;
-			diskNumberStart = 0;
+			diskNumberStart = DEFAULT_DISK_NUMBER;
 			internalFileAttributes = 0;
 			externalFileAttributes = 0;
 			relativeOffsetOfLocalHeader = 0;
 			fileNameBytes = null;
 			extraFieldBytes = null;
 			commentBytes = null;
+		}
+
+		/**
+		 * Add to this builder the additional file information.
+		 */
+		public void addFileInfo(CentralDirectoryFileInfo fileInfo) {
+			this.versionMade = fileInfo.getVersionMade();
+			this.versionNeeded = fileInfo.getVersionNeeded();
+			this.diskNumberStart = fileInfo.getDiskNumberStart();
+			this.internalFileAttributes = fileInfo.getInternalFileAttributes();
+			this.externalFileAttributes = fileInfo.getExternalFileAttributes();
+			this.commentBytes = fileInfo.getCommentBytes();
 		}
 
 		/**
@@ -371,11 +416,11 @@ public class CentralDirectoryFileHeader {
 			this.lastModifiedFileDate = lastModifiedFileDate;
 		}
 
-		public int getCrc32() {
+		public long getCrc32() {
 			return crc32;
 		}
 
-		public void setCrc32(int crc32) {
+		public void setCrc32(long crc32) {
 			this.crc32 = crc32;
 		}
 
@@ -469,5 +514,4 @@ public class CentralDirectoryFileHeader {
 			this.commentBytes = commentBytes;
 		}
 	}
-
 }

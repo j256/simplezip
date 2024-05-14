@@ -1,5 +1,6 @@
 package com.j256.simplezip;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -7,13 +8,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.junit.Test;
 
-import com.j256.simplezip.format.CentralDirectoryFileHeader;
 import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 
@@ -43,11 +44,9 @@ public class ZipFileWriterTest {
 		fileBuilder.setLastModifiedDateTime(LocalDateTime.now());
 		fileBuilder.setFileName("hello");
 		writer.writeFileHeader(fileBuilder.build());
-		writer.writeFileData(fileBytes);
+		writer.writeFileDataPart(fileBytes);
 		writer.finishFileData();
-		CentralDirectoryFileHeader.Builder dirBuilder = CentralDirectoryFileHeader.builder();
-		writer.writeDirectoryFileHeader(dirBuilder.build());
-		writer.writeDirectoryEnd();
+		writer.finishZip();
 		writer.close();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
@@ -56,6 +55,9 @@ public class ZipFileWriterTest {
 		ZipInputStream zis = new ZipInputStream(bais);
 		zipEntry = zis.getNextEntry();
 		assertNotNull(zipEntry);
+		byte[] buffer = new byte[1024];
+		int numRead = zis.read(buffer);
+		assertArrayEquals(fileBytes, Arrays.copyOf(buffer, numRead));
 		assertNull(zis.getNextEntry());
 		zis.close();
 	}

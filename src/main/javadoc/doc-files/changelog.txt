@@ -1,5 +1,7 @@
-0.3: 5/??/2024
-	* Increased the ZipFileWriter intelligence.  Now the data-descriptor and directory-end are written automagically. 
+0.3: 5/14/2024
+	* Increased the ZipFileWriter intelligence significantly.
+	* Data-descriptor is now written automagically.
+	* Central-directory file-header and end are now written automagically.
 
 0.2: 5/13/2024
 	* Initial released version mostly just to get the maven repo online.  Not ready for use yet.
