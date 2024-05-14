@@ -2,6 +2,7 @@ package com.j256.simplezip;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -39,6 +40,7 @@ public class ZipFileWriterTest {
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try (InputStream testStream = getClass().getResourceAsStream("/src.tgz");) {
+			assertNotNull(testStream);
 			byte[] buffer = new byte[8192];
 			while (true) {
 				int num = testStream.read(buffer);
@@ -57,6 +59,7 @@ public class ZipFileWriterTest {
 		baos.reset();
 
 		ZipFileWriter writer = new ZipFileWriter(baos);
+		assertEquals(0, writer.getNumBytesWritten());
 
 		ZipFileHeader.Builder fileHeaderBuilder = ZipFileHeader.builder();
 		fileHeaderBuilder.addGeneralPurposeFlags(GeneralPurposeFlag.DEFLATING_NORMAL,
@@ -65,6 +68,7 @@ public class ZipFileWriterTest {
 		fileHeaderBuilder.setLastModifiedDateTime(LocalDateTime.now());
 		fileHeaderBuilder.setFileName(fileName1);
 		writer.writeFileHeader(fileHeaderBuilder.build());
+		assertNotEquals(0, writer.getNumBytesWritten());
 		writer.writeFileDataPart(fileBytes1);
 		writer.finishFileData();
 
@@ -86,6 +90,7 @@ public class ZipFileWriterTest {
 		writer.finishZip();
 		writer.flush();
 		writer.close();
+		System.out.println("wrote " + writer.getNumBytesWritten() + " bytes to zip output");
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
@@ -254,7 +259,7 @@ public class ZipFileWriterTest {
 		builder.setFileName("hello");
 		writer.writeFileHeader(builder.build());
 		CentralDirectoryFileInfo.Builder fileInfoBuilder = CentralDirectoryFileInfo.builder();
-		String comment = "hrm some nice lookin' file";
+		String comment = "hrm a nice lookin' file";
 		fileInfoBuilder.setComment(comment);
 		writer.addDirectoryFileInfo(fileInfoBuilder.build());
 		writer.writeFileDataPart(fileBytes, 0, 1);
@@ -302,5 +307,41 @@ public class ZipFileWriterTest {
 		writer.writeFileHeader(builder.build());
 		writer.writeFileDataPart(new byte[0]);
 		writer.close();
+	}
+
+	public static void main(String[] args) throws IOException {
+
+		byte[] fileBytes =
+				"let's see what zip does with this string to compress.  can it compress it more than 0%".getBytes();
+
+		File tmpFile = new File("/tmp/x.zip");
+		ZipFileWriter writer = new ZipFileWriter(tmpFile);
+		ZipFileHeader.Builder builder = ZipFileHeader.builder();
+		builder.setLastModifiedDateTime(LocalDateTime.now());
+		builder.setFileName("hello");
+		long headerOffset = writer.writeFileHeader(builder.build());
+		System.out.println("wrote " + headerOffset + " bytes for file-header");
+		CentralDirectoryFileInfo.Builder fileInfoBuilder = CentralDirectoryFileInfo.builder();
+		String comment = "hrm a nice lookin' file";
+		fileInfoBuilder.setComment(comment);
+		fileInfoBuilder.setTextFile(true);
+		writer.addDirectoryFileInfo(fileInfoBuilder.build());
+		writer.writeFileDataPart(fileBytes, 0, fileBytes.length);
+		long dataOffset = writer.finishFileData();
+		System.out.println("wrote " + (dataOffset - headerOffset) + " bytes of file bytes");
+		long endOffset = writer.finishZip();
+		writer.close();
+		System.out.println("wrote " + (endOffset - dataOffset) + " bytes for central-directory");
+		System.out.println("wrote " + endOffset + " total bytes to " + tmpFile);
+
+		// now try to read it back in with the jdk stuff
+		ZipFileReader reader = new ZipFileReader(tmpFile);
+		assertNotNull(reader.readFileHeader());
+		assertEquals(fileBytes.length, reader.skipFileData());
+		assertNull(reader.readFileHeader());
+		CentralDirectoryFileHeader dirHeader = reader.readDirectoryFileHeader();
+		assertNotNull(dirHeader);
+		assertEquals(comment, dirHeader.getComment());
+		reader.close();
 	}
 }

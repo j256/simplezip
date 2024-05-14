@@ -32,7 +32,7 @@ public class CountingOutputStream extends OutputStream {
 	/**
 	 * Get the total counts.
 	 */
-	public long getTotalByteCount() {
+	public long getByteCount() {
 		return byteCount;
 	}
 
