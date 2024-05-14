@@ -40,6 +40,20 @@ public class CentralDirectoryFileInfo {
 		return versionNeeded;
 	}
 
+	/**
+	 * Extract the platform from the version-made information.
+	 */
+	public Platform getPlatform() {
+		return Platform.fromValue((versionMade >> 8) & 0xFF);
+	}
+
+	/**
+	 * Extract the needed version from the version-made information.
+	 */
+	public ZipVersion getZipVersion() {
+		return ZipVersion.fromValue(versionMade & 0xFF);
+	}
+
 	public int getDiskNumberStart() {
 		return diskNumberStart;
 	}
@@ -79,29 +93,17 @@ public class CentralDirectoryFileInfo {
 		private byte[] commentBytes;
 
 		/**
-		 * Create a builder from an existing directory-end
+		 * Create a builder from an existing central-directory file-header.
 		 */
-		public static Builder fromEnd(CentralDirectoryFileInfo header) {
+		public static Builder fromFileHeader(CentralDirectoryFileHeader header) {
 			Builder builder = new Builder();
-			builder.versionMade = header.versionMade;
-			builder.versionNeeded = header.versionNeeded;
-			builder.diskNumberStart = header.diskNumberStart;
-			builder.internalFileAttributes = header.internalFileAttributes;
-			builder.externalFileAttributes = header.externalFileAttributes;
-			builder.commentBytes = header.commentBytes;
+			builder.versionMade = header.getVersionMade();
+			builder.versionNeeded = header.getVersionNeeded();
+			builder.diskNumberStart = header.getDiskNumberStart();
+			builder.internalFileAttributes = header.getInternalFileAttributes();
+			builder.externalFileAttributes = header.getExternalFileAttributes();
+			builder.commentBytes = header.getCommentBytes();
 			return builder;
-		}
-
-		/**
-		 * Reset the builder in case you want to reuse.
-		 */
-		public void reset() {
-			versionMade = 0;
-			versionNeeded = ZipVersion.detectVersion().getValue();
-			diskNumberStart = CentralDirectoryFileHeader.DEFAULT_DISK_NUMBER;
-			internalFileAttributes = 0;
-			externalFileAttributes = 0;
-			commentBytes = null;
 		}
 
 		/**
@@ -192,6 +194,22 @@ public class CentralDirectoryFileInfo {
 
 		public void setCommentBytes(byte[] commentBytes) {
 			this.commentBytes = commentBytes;
+		}
+
+		public String getComment() {
+			if (commentBytes == null) {
+				return null;
+			} else {
+				return new String(commentBytes);
+			}
+		}
+
+		public void setComment(String comment) {
+			if (comment == null) {
+				commentBytes = null;
+			} else {
+				commentBytes = comment.getBytes();
+			}
 		}
 	}
 }

@@ -18,21 +18,21 @@ public class CentralDirectoryFileHeader {
 	public static final int INTERNAL_ATTRIBUTES_TEXT_FILE = (1 << 0);
 	public static final int DEFAULT_DISK_NUMBER = 1;
 
-	private int versionMade;
-	private int versionNeeded;
-	private int generalPurposeFlags;
-	private int compressionMethodValue;
-	private int lastModifiedFileTime;
-	private int lastModifiedFileDate;
-	private long crc32;
-	private int compressedSize;
-	private int uncompressedSize;
-	private int diskNumberStart;
-	private int internalFileAttributes;
-	private int externalFileAttributes;
-	private int relativeOffsetOfLocalHeader;
+	private final int versionMade;
+	private final int versionNeeded;
+	private final int generalPurposeFlags;
+	private final int compressionMethodValue;
+	private final int lastModifiedFileTime;
+	private final int lastModifiedFileDate;
+	private final long crc32;
+	private final int compressedSize;
+	private final int uncompressedSize;
+	private final int diskNumberStart;
+	private final int internalFileAttributes;
+	private final int externalFileAttributes;
+	private final int relativeOffsetOfLocalHeader;
 	private final byte[] fileNameBytes;
-	private byte[] extraFieldBytes;
+	private final byte[] extraFieldBytes;
 	private final byte[] commentBytes;
 
 	public CentralDirectoryFileHeader(int versionMade, int versionNeeded, int generalPurposeFlags,
@@ -73,9 +73,6 @@ public class CentralDirectoryFileHeader {
 		Builder builder = new CentralDirectoryFileHeader.Builder();
 
 		int signature = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.signature");
-		if (signature < 0) {
-			return null;
-		}
 
 		if (signature == CentralDirectoryEnd.EXPECTED_SIGNATURE) {
 			inputStream.rewind(4);
@@ -146,6 +143,20 @@ public class CentralDirectoryFileHeader {
 
 	public int getVersionNeeded() {
 		return versionNeeded;
+	}
+
+	/**
+	 * Extract the platform from the version-made information.
+	 */
+	public Platform getPlatform() {
+		return Platform.fromValue((versionMade >> 8) & 0xFF);
+	}
+
+	/**
+	 * Extract the needed version from the version-made information.
+	 */
+	public ZipVersion getZipVersion() {
+		return ZipVersion.fromValue(versionMade & 0xFF);
 	}
 
 	public int getGeneralPurposeFlags() {
@@ -247,7 +258,7 @@ public class CentralDirectoryFileHeader {
 		/**
 		 * Create a builder from an existing directory-end
 		 */
-		public static Builder fromEnd(CentralDirectoryFileHeader header) {
+		public static Builder fromFileHeader(CentralDirectoryFileHeader header) {
 			Builder builder = new Builder();
 			builder.versionMade = header.versionMade;
 			builder.versionNeeded = header.versionNeeded;
@@ -269,24 +280,7 @@ public class CentralDirectoryFileHeader {
 		}
 
 		/**
-		 * Create a builder from an existing Zip file-header.
-		 */
-		public static Builder fromFileHeader(ZipFileHeader header) {
-			Builder builder = new Builder();
-			builder.generalPurposeFlags = header.getGeneralPurposeFlagsValue();
-			builder.compressionMethodValue = header.getCompressionMethodValue();
-			builder.lastModifiedFileTime = header.getLastModifiedFileTime();
-			builder.lastModifiedFileDate = header.getLastModifiedFileDate();
-			builder.crc32 = header.getCrc32();
-			builder.compressedSize = header.getCompressedSize();
-			builder.uncompressedSize = header.getUncompressedSize();
-			builder.fileNameBytes = header.getFileNameBytes();
-			builder.extraFieldBytes = header.getExtraFieldBytes();
-			return builder;
-		}
-
-		/**
-		 * Create a builder from an existing Zip file-header.
+		 * Create a builder from an existing file-header.
 		 */
 		public void setFileHeader(ZipFileHeader header) {
 			this.generalPurposeFlags = header.getGeneralPurposeFlagsValue();
@@ -521,6 +515,22 @@ public class CentralDirectoryFileHeader {
 
 		public void setCommentBytes(byte[] commentBytes) {
 			this.commentBytes = commentBytes;
+		}
+
+		public String getComment() {
+			if (commentBytes == null) {
+				return null;
+			} else {
+				return new String(commentBytes);
+			}
+		}
+
+		public void setComment(String comment) {
+			if (comment == null) {
+				commentBytes = null;
+			} else {
+				commentBytes = comment.getBytes();
+			}
 		}
 	}
 }
