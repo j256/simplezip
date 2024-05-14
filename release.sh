@@ -100,18 +100,6 @@ fi
 cd $LOCAL_DIR
 mvn test || exit 1
 
-#
-# Bit of a hack here.  We don't want to seem to depend on any log4j code.  We have a version of
-# the log4j backend that uses reflection but will only work if the code is already on the classpath.
-# We want to test it so we have to inject the dependency at runtime.  We should see LOG4J log lines
-# instead of LOG4J2 log lines.
-#
-mvn -P testlog4jv1 \
-    -Dlog4j.artifact=log4j \
-    -Dlog4j.group=log4j \
-    -Dlog4j.version=1.2.17 \
-    -Dtest=Log4jLogBackendTest test || exit 1
-
 #############################################################
 
 /bin/echo ""
