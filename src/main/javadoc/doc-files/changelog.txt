@@ -2,7 +2,6 @@
 	* Initial released version mostly just to get the maven repo online.  Not ready for use yet.
 	* Reader is pretty useful but the writer is very naive.  Missing a ton of logic.
 	* The extra information bytes right now is a work in progress.
-	* File permissions are not working right now except by hand.
 
 0.1: 5/7/2024
 	* Initial checkin.

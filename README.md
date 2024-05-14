@@ -1,7 +1,7 @@
 Simple Java Zip
 ===============
 
-![Maven Central](https://mvnrepository.com/artifact/com.j256.simplelogging/simplezip/latest)
+![Maven Central](https://mvnrepository.com/artifact/com.j256.simplezip/simplezip/latest)
 ![javadoc](https://javadoc.io/doc/com.j256.simplezip/simplezip)
 ![ChangeLog](https://github.com/j256/simplezip/blob/master/src/main/javadoc/doc-files/changelog.txt)
 ![Documentation](https://htmlpreview.github.io/?https://github.com/j256/simplezip/blob/master/src/main/javadoc/doc-files/simplezip.html)
@@ -21,7 +21,7 @@ more information.  Sorry for the meager docs.
 
 # Maven Configuration
 
-Maven packages are published via [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.j256.simplelogging/simplelogging/badge.svg?style=flat-square)](https://mvnrepository.com/artifact/com.j256.simplelogging/simplelogging/latest)
+Maven packages are published via [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.j256.simplezip/simplezip/badge.svg?style=flat-square)](https://mvnrepository.com/artifact/com.j256.simplezip/simplezip/latest)
 
 ``` xml
 <dependency>
