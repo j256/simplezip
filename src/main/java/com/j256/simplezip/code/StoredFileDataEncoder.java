@@ -10,10 +10,9 @@ import java.io.OutputStream;
  */
 public class StoredFileDataEncoder implements FileDataEncoder {
 
-	private OutputStream outputStream;
+	private final OutputStream outputStream;
 
-	@Override
-	public void registerOutputStream(OutputStream outputStream) {
+	public StoredFileDataEncoder(OutputStream outputStream) {
 		this.outputStream = outputStream;
 	}
 

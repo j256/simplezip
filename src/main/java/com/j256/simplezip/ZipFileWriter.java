@@ -243,16 +243,16 @@ public class ZipFileWriter implements Closeable {
 	private void assignFileDataEncoder() {
 		switch (currentFileHeader.getCompressionMethod()) {
 			case NONE:
-				this.fileDataEncoder = new StoredFileDataEncoder();
+				this.fileDataEncoder = new StoredFileDataEncoder(countingOutputStream);
 				break;
 			case DEFLATED:
-				this.fileDataEncoder = new DeflatorFileDataEncoder(currentFileHeader.getCompressionLevel());
+				this.fileDataEncoder =
+						new DeflatorFileDataEncoder(countingOutputStream, currentFileHeader.getCompressionLevel());
 				break;
 			default:
 				throw new IllegalStateException(
 						"Unknown compression method: " + currentFileHeader.getCompressionMethod() + " ("
 								+ currentFileHeader.getCompressionMethodValue() + ")");
 		}
-		fileDataEncoder.registerOutputStream(countingOutputStream);
 	}
 }

@@ -15,12 +15,8 @@ public class StoredFileDataDecoder implements FileDataDecoder {
 	private InputStream inputStream;
 	private int inputOffset;
 
-	public StoredFileDataDecoder(int dataSize) {
+	public StoredFileDataDecoder(InputStream inputStream, int dataSize) {
 		this.dataSize = dataSize;
-	}
-
-	@Override
-	public void registerInputStream(InputStream inputStream) {
 		this.inputStream = inputStream;
 	}
 

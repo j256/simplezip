@@ -207,16 +207,16 @@ public class ZipFileReader implements Closeable {
 	private void assignFileDataDecoder() throws IOException {
 		switch (currentFileHeader.getCompressionMethod()) {
 			case NONE:
-				this.fileDataDecoder = new StoredFileDataDecoder(currentFileHeader.getUncompressedSize());
+				this.fileDataDecoder =
+						new StoredFileDataDecoder(countingInputStream, currentFileHeader.getUncompressedSize());
 				break;
 			case DEFLATED:
-				this.fileDataDecoder = new InflatorFileDataDecoder();
+				this.fileDataDecoder = new InflatorFileDataDecoder(countingInputStream);
 				break;
 			default:
 				throw new IllegalStateException(
 						"Unknown compression method: " + currentFileHeader.getCompressionMethod() + " ("
 								+ currentFileHeader.getCompressionMethodValue() + ")");
 		}
-		fileDataDecoder.registerInputStream(countingInputStream);
 	}
 }

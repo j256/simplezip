@@ -2,7 +2,6 @@ package com.j256.simplezip.code;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * For decoding the zip file data.
@@ -10,11 +9,6 @@ import java.io.InputStream;
  * @author graywatson
  */
 public interface FileDataDecoder extends Closeable {
-
-	/**
-	 * Register our streams with the decoder.
-	 */
-	public void registerInputStream(InputStream inputStream) throws IOException;
 
 	/**
 	 * Decode a buffer bytes from a Zip-file.

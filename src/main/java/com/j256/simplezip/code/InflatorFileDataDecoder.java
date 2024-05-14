@@ -2,6 +2,7 @@ package com.j256.simplezip.code;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 /**
@@ -12,27 +13,41 @@ import java.util.zip.Inflater;
 public class InflatorFileDataDecoder implements FileDataDecoder {
 
 	private final Inflater inflater = new Inflater(true /* no wrap */);
-	private InflaterInputStream inflaterInputStream;
+	private InputStream delegate;
+	private final byte[] tmpBuffer = new byte[10240];
 
-	@Override
-	public void registerInputStream(InputStream inputStream) throws IOException {
-		this.inflaterInputStream = new InflaterInputStream(inputStream, this.inflater);
+	public InflatorFileDataDecoder(InputStream inputStream) throws IOException {
+		this.delegate = inputStream;
+		// might as well do this
+		fillInflaterBuffer();
 	}
 
 	@Override
 	public int decode(byte[] outputFuffer, int offset, int length) throws IOException {
-		int numRead = inflaterInputStream.read(outputFuffer, offset, length);
-		if (numRead < 0) {
-			return -1;
-		} else {
-			return numRead;
+		while (true) {
+			try {
+				int num = inflater.inflate(outputFuffer, offset, length);
+				if (num > 0) {
+					return num;
+				} else {
+					// 0 means that it is either finished or needs more input
+				}
+			} catch (DataFormatException dfe) {
+				throw new IOException("Inflater had data problem with zip stream", dfe);
+			}
+			if (inflater.finished() || inflater.needsDictionary()) {
+				// I don't think the needs-dictionary should happen but that's what the Java reference code does
+				return -1;
+			} else if (inflater.needsInput()) {
+				fillInflaterBuffer();
+			}
 		}
 	}
 
 	@Override
 	public void close() throws IOException {
 		inflater.end();
-		inflaterInputStream.close();
+		delegate.close();
 	}
 
 	@Override
@@ -43,5 +58,13 @@ public class InflatorFileDataDecoder implements FileDataDecoder {
 	@Override
 	public boolean isEofReached() {
 		return inflater.finished();
+	}
+
+	/**
+	 * Read data from the input stream and write to the inflater to fill its buffer.
+	 */
+	private void fillInflaterBuffer() throws IOException {
+		int num = delegate.read(tmpBuffer);
+		inflater.setInput(tmpBuffer, 0, num);
 	}
 }
