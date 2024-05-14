@@ -40,7 +40,8 @@ Here's some equally simple code that allows you to write out a Zip-file.
 
 	ZipFileWriter zipWriter = new ZipFileWriter(baos);
 	ZipFileHeader.Builder fileBuilder = ZipFileHeader.builder();
-	fileBuilder.setGeneralPurposeFlags(GeneralPurposeFlag.DEFLATING_NORMAL, GeneralPurposeFlag.DATA_DESCRIPTOR);
+	fileBuilder.setGeneralPurposeFlags(
+		GeneralPurposeFlag.DEFLATING_NORMAL, GeneralPurposeFlag.DATA_DESCRIPTOR);
 	fileBuilder.setLastModifiedDateTime(LocalDateTime.now());
 	fileBuilder.setFileName("hello.txt");
 	// write a file-header to the zip-file
