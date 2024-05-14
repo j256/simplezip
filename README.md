@@ -66,7 +66,7 @@ Maven packages are published via [![Maven Central](https://maven-badges.herokuap
 <dependency>
 	<groupId>com.j256.simplezip</groupId>
 	<artifactId>simplezip</artifactId>
-	<version>0.2</version>
+	<version>0.3</version>
 </dependency>
 ```
 
