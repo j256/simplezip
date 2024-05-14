@@ -1,3 +1,6 @@
+0.5: 5/14/2024
+	* Improved the test coverage and normalized some of the method names in the process.
+
 0.4: 5/14/2024
 	* Fixed sizes and crc which were wrong.  Was tricked by a bad test.  Whoops. 
 
