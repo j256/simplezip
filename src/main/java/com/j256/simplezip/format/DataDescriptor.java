@@ -8,8 +8,8 @@ import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
 
 /**
- * Optional data descriptor immediately after the {@link FileData}. Only written if
- * {@link GeneralPurposeFlag#DATA_DESCRIPTOR} is set in the {@link ZipFileHeader}.
+ * Optional data descriptor immediately after the file-data. Only written if {@link GeneralPurposeFlag#DATA_DESCRIPTOR}
+ * is set in the {@link ZipFileHeader}.
  * 
  * @author graywatson
  */

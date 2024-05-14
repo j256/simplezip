@@ -18,7 +18,7 @@ import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 
 /**
- * Read in a zip file.
+ * Read in a zip file either from a {@link File} or an {@link InputStream}.
  * 
  * @author graywatson
  */
@@ -36,41 +36,37 @@ public class ZipFileReader implements Closeable {
 	private DataDescriptor currentDataDescriptor;
 	private boolean currentFileEofReached;
 
+	/**
+	 * Start reading a Zip-file from the file-path. You must call {@link #close()} to close the stream when you are
+	 * done.
+	 */
 	public ZipFileReader(String path) throws FileNotFoundException {
 		this(new File(path));
 	}
 
+	/**
+	 * Read a Zip-file from a file. You must call {@link #close()} to close the stream when you are done.
+	 */
 	public ZipFileReader(File file) throws FileNotFoundException {
 		this(new FileInputStream(file));
 	}
 
+	/**
+	 * Read a Zip-file from an input-stream. You must call {@link #close()} to close the stream when you are done.
+	 */
 	public ZipFileReader(InputStream inputStream) {
 		this.countingInputStream = new RewindableInputStream(inputStream, BUFFER_SIZE);
 	}
 
-	public ZipFileHeader readNextFileHeader() throws IOException {
+	/**
+	 * Read the next file header from the zip file. This is first thing that you will call.
+	 */
+	public ZipFileHeader readFileHeader() throws IOException {
 		this.currentFileHeader = ZipFileHeader.read(countingInputStream);
 		currentFileEofReached = false;
 		currentDataDescriptor = null;
 		countingInfo.reset();
 		return currentFileHeader;
-	}
-
-	public CentralDirectoryFileHeader readNextDirectoryFileHeader() throws IOException {
-		this.currentDirHeader = CentralDirectoryFileHeader.read(countingInputStream);
-		return currentDirHeader;
-	}
-
-	public CentralDirectoryEnd readDirectoryEnd() throws IOException {
-		return CentralDirectoryEnd.read(countingInputStream);
-	}
-
-	public String getCurrentFileNameAsString() {
-		if (currentFileHeader == null) {
-			return null;
-		} else {
-			return currentFileHeader.getFileName();
-		}
 	}
 
 	/**
@@ -93,7 +89,7 @@ public class ZipFileReader implements Closeable {
 	}
 
 	/**
-	 * Read file data from the Zip stream. See {@link #readFileData(ZipFileHeader, byte[], int, int)} for more details.
+	 * Read file data from the Zip stream. See {@link #readFileData(byte[], int, int)} for more details.
 	 */
 	public int readFileData(byte[] buffer) throws IOException {
 		return readFileData(buffer, 0, buffer.length);
@@ -146,6 +142,24 @@ public class ZipFileReader implements Closeable {
 	}
 
 	/**
+	 * After all of the files have been read, you can read and examine the central-directory entries.
+	 * 
+	 * @return The next central-directory file-header or null if all entries have been read.
+	 */
+	public CentralDirectoryFileHeader readDirectoryFileHeader() throws IOException {
+		this.currentDirHeader = CentralDirectoryFileHeader.read(countingInputStream);
+		return currentDirHeader;
+	}
+
+	/**
+	 * Read the central-directory end which is after all of the central-directory file-headers at the very end of the
+	 * Zip file.
+	 */
+	public CentralDirectoryEnd readDirectoryEnd() throws IOException {
+		return CentralDirectoryEnd.read(countingInputStream);
+	}
+
+	/**
 	 * After the header, the file bytes, and any option data-descriptor has been read, validate that the Zip entry was
 	 * correct based on the various different length and CRC values stored and calculated.
 	 */
@@ -155,11 +169,22 @@ public class ZipFileReader implements Closeable {
 	}
 
 	/**
-	 * Close the associated input-stream.
+	 * Close the underlying input-stream.
 	 */
 	@Override
 	public void close() throws IOException {
 		countingInputStream.close();
+	}
+
+	/**
+	 * Return the file-name from the most recent header read.
+	 */
+	public String getCurrentFileNameAsString() {
+		if (currentFileHeader == null) {
+			return null;
+		} else {
+			return currentFileHeader.getFileName();
+		}
 	}
 
 	/**

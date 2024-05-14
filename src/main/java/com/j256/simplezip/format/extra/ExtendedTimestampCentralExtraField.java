@@ -65,6 +65,9 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 		return flags;
 	}
 
+	/**
+	 * Optional time value or null if none.
+	 */
 	public Long getTime() {
 		return time;
 	}

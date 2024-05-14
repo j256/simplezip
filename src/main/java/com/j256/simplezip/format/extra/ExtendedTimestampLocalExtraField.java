@@ -7,7 +7,7 @@ import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
 
 /**
- * Local file header extended timestamp information.
+ * Local file header extended timestamp information with last-modified, accessed, and created time stamps.
  * 
  * @author graywatson
  */

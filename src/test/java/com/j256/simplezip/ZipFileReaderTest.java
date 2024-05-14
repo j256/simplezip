@@ -41,7 +41,7 @@ public class ZipFileReaderTest {
 		InputStream input = new ByteArrayInputStream(baos.toByteArray());
 		ZipFileReader zipFile = new ZipFileReader(input);
 
-		ZipFileHeader header = zipFile.readNextFileHeader();
+		ZipFileHeader header = zipFile.readFileHeader();
 		assertEquals(fileName, header.getFileName());
 		// there is no sizes because there is data-descriptor because we were streaming data in
 		assertEquals(0, header.getCompressedSize());
@@ -66,14 +66,14 @@ public class ZipFileReaderTest {
 		crc32.update(bytes);
 		assertEquals(crc32.getValue(), dataDescriptor.getCrc32());
 
-		assertNull(zipFile.readNextFileHeader());
+		assertNull(zipFile.readFileHeader());
 
-		CentralDirectoryFileHeader dirHeader = zipFile.readNextDirectoryFileHeader();
+		CentralDirectoryFileHeader dirHeader = zipFile.readDirectoryFileHeader();
 		assertNotNull(dirHeader);
 		System.out.println("dir " + dirHeader.getFileName() + ", size " + dirHeader.getUncompressedSize() + ", method "
 				+ dirHeader.getCompressionMethod() + ", extra " + Arrays.toString(dirHeader.getExtraFieldBytes()));
 
-		assertNull(zipFile.readNextDirectoryFileHeader());
+		assertNull(zipFile.readDirectoryFileHeader());
 		CentralDirectoryEnd end = zipFile.readDirectoryEnd();
 		assertNotNull(end);
 		System.out.println("end: num-records " + end.getNumRecordsTotal() + ", size " + end.getSizeDirectory());

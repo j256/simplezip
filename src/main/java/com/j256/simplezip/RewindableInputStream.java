@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Buffer that keeps around the last read bytes, allowing us to rewind the stream for a certain number of bytes.
+ * Buffer that keeps around the last read bytes, allowing us to rewind the stream for a certain number of bytes. This is
+ * necessary because there are a couple of places where the stream is read ahead because of buffering and we need to
+ * rewind when done.
  * 
  * @author graywatson
  */

@@ -4,15 +4,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * Buffer that keeps around the last read bytes, allowing us to rewind the stream for a certain number of bytes.
+ * Delegating output-stream which keeps a total count and a per-file count of the bytes that are written..
  * 
  * @author graywatson
  */
 public class CountingOutputStream extends OutputStream {
 
+	private final OutputStream delegate;
 	private final CountingInfo totalInfo = new CountingInfo();
 	private final CountingInfo fileInfo = new CountingInfo();
-	private final OutputStream delegate;
 
 	public CountingOutputStream(OutputStream delegate) {
 		this.delegate = delegate;

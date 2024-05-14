@@ -8,8 +8,8 @@ Simple Java Zip
 ![CodeCov](https://codecov.io/github/j256/simplezip/) ![CircleCI](https://circleci.com/gh/j256/simplezip)
 ![GitHub License](https://github.com/j256/simplezip/blob/master/LICENSE.txt)
 
-This package provides some Java classes to read and write Zip files.  There are a number of different libraries
-(including one built into the JDK) that do such things but I've not found any that gave me precise controls over the Zip
-file and directory entries.
+This package provides Java classes to read and write Zip files.  There are a number of different libraries that do
+this (including one built into the JDK) but I've not found any that gave me precise controls over the Zip file and
+directory entries.
 
 Enjoy.  Gray Watson

@@ -2,6 +2,7 @@ package com.j256.simplezip;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -18,7 +19,7 @@ import com.j256.simplezip.format.DataDescriptor;
 import com.j256.simplezip.format.ZipFileHeader;
 
 /**
- * Write out a Zip file.
+ * Write out a Zip file to either a {@link File} or an {@link OutputStream}.
  * 
  * @author graywatson
  */
@@ -29,20 +30,30 @@ public class ZipFileWriter implements Closeable {
 	private ZipFileHeader currentFileHeader;
 	private FileDataEncoder fileDataEncoder;
 
-	public ZipFileWriter(String path) throws FileNotFoundException {
-		this(new File(path));
+	/**
+	 * Start writing a Zip-file to a file-path. You must call {@link #close()} to close the stream when you are done.
+	 */
+	public ZipFileWriter(String filePath) throws FileNotFoundException {
+		this(new File(filePath));
 	}
 
+	/**
+	 * Start writing a Zip-file to a file. You must call {@link #close()} to close the stream when you are done.
+	 */
 	public ZipFileWriter(File file) throws FileNotFoundException {
 		this(new FileOutputStream(file));
 	}
 
+	/**
+	 * Start writing a Zip-file to an output-stream. You must call {@link #close()} to close the stream when you are
+	 * done.
+	 */
 	public ZipFileWriter(OutputStream outputStream) {
 		this.countingOutputStream = new CountingOutputStream(outputStream);
 	}
 
 	/**
-	 * Write a file-header which starts the zip-file.
+	 * Write a file-header which starts the Zip-file.
 	 */
 	public void writeFileHeader(ZipFileHeader fileHeader) throws IOException {
 		// XXX: need to record file info for the central directory
@@ -53,7 +64,30 @@ public class ZipFileWriter implements Closeable {
 	}
 
 	/**
-	 * Write file data after you write the file-header.
+	 * Write the contents of a file to the Zip-file stream. Must be called after you write the file-header.
+	 * 
+	 * NOTE: this method calls {@link #finishFileData()} for you.
+	 */
+	public void writeFile(String filePath) throws IOException {
+		writeFile(new File(filePath));
+	}
+
+	/**
+	 * Write the contents of a file to the Zip-file stream. Must be called after you write the file-header.
+	 * 
+	 * NOTE: this method calls {@link #finishFileData()} for you.
+	 */
+	public void writeFile(File file) throws IOException {
+		try (InputStream inputStream = new FileInputStream(file)) {
+			writeFileData(inputStream);
+		}
+	}
+
+	/**
+	 * Read from the input-stream and write its contents to the the Zip-file stream. Must be called after you write the
+	 * file-header.
+	 * 
+	 * NOTE: this method calls {@link #finishFileData()} for you.
 	 */
 	public void writeFileData(InputStream inputStream) throws IOException {
 		byte[] buffer = new byte[10240];
@@ -68,14 +102,16 @@ public class ZipFileWriter implements Closeable {
 	}
 
 	/**
-	 * Write file data after you write the file-header.
+	 * Write file data as single or multiple byte arrays to the the Zip-file stream. Must be called after you write the
+	 * file-header. At the end of the writing, you must call {@link #finishFileData()}.
 	 */
 	public void writeFileData(byte[] buffer) throws IOException {
 		writeFileData(buffer, 0, buffer.length);
 	}
 
 	/**
-	 * Write file data after you write the file-header.
+	 * Write file data as single or multiple byte arrays to the the Zip-file stream. Must be called after you write the
+	 * file-header. At the end of the writing, you must call {@link #finishFileData()}.
 	 */
 	public void writeFileData(byte[] buffer, int offset, int length) throws IOException {
 		if (currentFileHeader == null) {
@@ -102,7 +138,7 @@ public class ZipFileWriter implements Closeable {
 	}
 
 	/**
-	 * Write a data-descriptor after the file data has been written.
+	 * Write an optional data-descriptor after the file data has been written.
 	 */
 	public void writeDataDescriptor(DataDescriptor dataDescriptor) throws IOException {
 		// XXX: should write this if the header was set, etc.

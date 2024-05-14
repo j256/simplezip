@@ -41,7 +41,7 @@ public class ZipFileWriterTest {
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 		ZipFileReader zipFile = new ZipFileReader(bais);
 
-		ZipFileHeader header = zipFile.readNextFileHeader();
+		ZipFileHeader header = zipFile.readFileHeader();
 		assertEquals(fileName, header.getFileName());
 		// there is no sizes because there is data-descriptor because we were streaming data in
 		assertEquals(0, header.getCompressedSize());
@@ -65,12 +65,12 @@ public class ZipFileWriterTest {
 		crc32.update(fileBytes);
 		assertEquals(crc32.getValue(), dataDescriptor.getCrc32());
 
-		assertNull(zipFile.readNextFileHeader());
+		assertNull(zipFile.readFileHeader());
 
-		CentralDirectoryFileHeader dirHeader = zipFile.readNextDirectoryFileHeader();
+		CentralDirectoryFileHeader dirHeader = zipFile.readDirectoryFileHeader();
 		assertNotNull(dirHeader);
 
-		assertNull(zipFile.readNextDirectoryFileHeader());
+		assertNull(zipFile.readDirectoryFileHeader());
 		CentralDirectoryEnd end = zipFile.readDirectoryEnd();
 		assertNotNull(end);
 		zipFile.close();

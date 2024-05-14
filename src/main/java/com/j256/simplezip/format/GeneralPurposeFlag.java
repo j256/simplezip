@@ -5,7 +5,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Encoded into the {@link ZipFileHeader}.
+ * Encoded into the {@link ZipFileHeader#getGeneralPurposeFlags()} and
+ * {@link CentralDirectoryFileHeader#getGeneralPurposeFlags()}
  * 
  * @author graywatson
  */

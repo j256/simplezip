@@ -41,7 +41,7 @@ public class Unix2ExtraField extends BaseExtraField {
 		builder.groupId = IoUtils.readShort(inputStream, "Unix2ExtraField.groupId");
 		return builder.build();
 	}
-	
+
 	/**
 	 * Write to the output-stream.
 	 */

@@ -7,7 +7,7 @@ import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
 
 /**
- * File headers stored in the central directory.
+ * End segment of the central-directory which is at the very end of the Zip file.
  * 
  * @author graywatson
  */
