@@ -4,15 +4,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * Delegating output-stream which keeps a total count and a per-file count of the bytes that are written..
+ * Delegating output-stream which keeps a count of the bytes written.
  * 
  * @author graywatson
  */
 public class CountingOutputStream extends OutputStream {
 
 	private final OutputStream delegate;
-	private final CountingInfo totalInfo = new CountingInfo();
-	private final CountingInfo fileInfo = new CountingInfo();
+	private long byteCount;
 
 	public CountingOutputStream(OutputStream delegate) {
 		this.delegate = delegate;
@@ -21,36 +20,20 @@ public class CountingOutputStream extends OutputStream {
 	@Override
 	public void write(int b) throws IOException {
 		delegate.write(b);
-		totalInfo.update(b);
-		fileInfo.update(b);
+		byteCount++;
 	}
 
 	@Override
 	public void write(byte[] buffer, int offset, int length) throws IOException {
 		delegate.write(buffer, offset, length);
-		totalInfo.update(buffer, offset, length);
-		fileInfo.update(buffer, offset, length);
-	}
-
-	/**
-	 * Reset the per-file counts.
-	 */
-	public void resetFileInfo() {
-		fileInfo.reset();
+		byteCount += length;
 	}
 
 	/**
 	 * Get the total counts.
 	 */
-	public CountingInfo getTotalInfo() {
-		return totalInfo;
-	}
-
-	/**
-	 * Get the per file counts.
-	 */
-	public CountingInfo getFileInfo() {
-		return fileInfo;
+	public long getTotalByteCount() {
+		return byteCount;
 	}
 
 	@Override

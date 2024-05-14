@@ -335,6 +335,15 @@ public class CentralDirectoryFileHeader {
 		}
 
 		/**
+		 * Add to this builder the information from the data-descriptor.
+		 */
+		public void addDataDescriptorInfo(DataDescriptor dataDescriptor) {
+			this.crc32 = dataDescriptor.getCrc32();
+			this.compressedSize = dataDescriptor.getCompressedSize();
+			this.uncompressedSize = dataDescriptor.getUncompressedSize();
+		}
+
+		/**
 		 * Builder an instance of the central-directory file-header.
 		 */
 		public CentralDirectoryFileHeader build() {

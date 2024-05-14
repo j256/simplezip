@@ -17,7 +17,7 @@ public interface FileDataEncoder extends Closeable {
 	public void registerOutputStream(OutputStream outputStream);
 
 	/**
-	 * Encode a buffer bytes from a Zip file.
+	 * Encode a buffer bytes from a Zip-file.
 	 * 
 	 * @param inputBuffer
 	 *            Bytes to be encoded.
@@ -27,9 +27,4 @@ public interface FileDataEncoder extends Closeable {
 	 *            Number of bytes to be encoded.
 	 */
 	public void encode(byte[] inputBuffer, int offset, int length) throws IOException;
-
-	/**
-	 * Return the number of bytes that were written to the encoder.  So the uncompressed byte count.
-	 */
-	public long getNumBytesWritten();
 }

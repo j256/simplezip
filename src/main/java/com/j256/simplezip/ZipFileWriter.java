@@ -29,6 +29,7 @@ import com.j256.simplezip.format.ZipFileHeader;
 public class ZipFileWriter implements Closeable {
 
 	private final CountingOutputStream countingOutputStream;
+	private final CountingInfo uncompressedFileInfo = new CountingInfo();
 
 	private ZipFileHeader currentFileHeader;
 	private FileDataEncoder fileDataEncoder;
@@ -36,7 +37,8 @@ public class ZipFileWriter implements Closeable {
 	private CentralDirectoryFileHeader.Builder dirFileBuilder = CentralDirectoryFileHeader.builder();
 	private List<CentralDirectoryFileHeader> dirFileHeaders = new ArrayList<>();
 	private boolean finished;
-	private int fileCount = 0;
+	private long fileStartOffset;
+	private int fileCount;
 
 	/**
 	 * Start writing a Zip-file to a file-path. You must call {@link #close()} to close the stream when you are done.
@@ -68,7 +70,7 @@ public class ZipFileWriter implements Closeable {
 		// also need to save the bytes so we can calc crc and size up front if wanted
 		fileHeader.write(countingOutputStream);
 		currentFileHeader = fileHeader;
-		countingOutputStream.resetFileInfo();
+		uncompressedFileInfo.reset();
 		dirFileBuilder.reset();
 		dirFileBuilder.setFileHeader(fileHeader);
 		fileCount++;
@@ -137,11 +139,12 @@ public class ZipFileWriter implements Closeable {
 			throw new IllegalStateException("Need to call writeFileHeader() before you can write file data");
 		}
 		if (fileDataEncoder == null) {
-			dirFileHeaders.add(dirFileBuilder.build());
 			assignFileDataEncoder();
+			fileStartOffset = countingOutputStream.getTotalByteCount();
 		}
 
 		fileDataEncoder.encode(buffer, offset, length);
+		uncompressedFileInfo.update(buffer, offset, length);
 	}
 
 	/**
@@ -158,13 +161,17 @@ public class ZipFileWriter implements Closeable {
 		fileDataEncoder.close();
 		if (currentFileHeader.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR)) {
 			dataDescriptorBuilder.reset();
-			CountingInfo fileInfo = countingOutputStream.getFileInfo();
 			// XXX: need to handle zip64
-			dataDescriptorBuilder.setCompressedSize((int) fileInfo.getByteCount());
-			dataDescriptorBuilder.setUncompressedSize((int) fileDataEncoder.getNumBytesWritten());
-			dataDescriptorBuilder.setCrc32(fileInfo.getCrc32());
-			dataDescriptorBuilder.build().write(countingOutputStream);
+			long compressedSize = (int) (countingOutputStream.getTotalByteCount() - fileStartOffset);
+			dataDescriptorBuilder.setCompressedSize((int) compressedSize);
+			dataDescriptorBuilder.setUncompressedSize((int) uncompressedFileInfo.getByteCount());
+			dataDescriptorBuilder.setCrc32(uncompressedFileInfo.getCrc32());
+			DataDescriptor dataDescriptor = dataDescriptorBuilder.build();
+			dataDescriptor.write(countingOutputStream);
+			// copy our inform,atiom from the data-descriptor into the central-directory file-header
+			dirFileBuilder.addDataDescriptorInfo(dataDescriptor);
 		}
+		dirFileHeaders.add(dirFileBuilder.build());
 		fileDataEncoder = null;
 	}
 
@@ -192,7 +199,7 @@ public class ZipFileWriter implements Closeable {
 
 		// start our directory end
 		CentralDirectoryEnd.Builder dirEndBuilder = CentralDirectoryEnd.builder();
-		dirEndBuilder.setDirectoryOffset(countingOutputStream.getTotalInfo().getByteCount());
+		dirEndBuilder.setDirectoryOffset(countingOutputStream.getTotalByteCount());
 
 		// write out our recorded central-directory file-headers
 		for (CentralDirectoryFileHeader dirHeader : dirFileHeaders) {
@@ -208,7 +215,7 @@ public class ZipFileWriter implements Closeable {
 		dirEndBuilder.setCommentBytes(commentBytes);
 		long startOffset = dirEndBuilder.getDirectoryOffset();
 		// XXX: should be long? and need to handle zip64
-		int size = (int) (countingOutputStream.getTotalInfo().getByteCount() - startOffset);
+		int size = (int) (countingOutputStream.getTotalByteCount() - startOffset);
 		dirEndBuilder.setDirectorySize(size);
 		dirEndBuilder.build().write(countingOutputStream);
 		finished = true;

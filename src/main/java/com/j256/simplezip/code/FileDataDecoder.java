@@ -17,7 +17,7 @@ public interface FileDataDecoder extends Closeable {
 	public void registerInputStream(InputStream inputStream) throws IOException;
 
 	/**
-	 * Decode a buffer bytes from a Zip file.
+	 * Decode a buffer bytes from a Zip-file.
 	 * 
 	 * @param outputBuffer
 	 *            Buffer to write decoded bytes into.
