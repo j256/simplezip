@@ -65,6 +65,8 @@ public class InflatorFileDataDecoder implements FileDataDecoder {
 	 */
 	private void fillInflaterBuffer() throws IOException {
 		int num = delegate.read(tmpBuffer);
-		inflater.setInput(tmpBuffer, 0, num);
+		if (num > 0) {
+			inflater.setInput(tmpBuffer, 0, num);
+		}
 	}
 }

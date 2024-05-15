@@ -21,7 +21,6 @@ public class ZipFileHeader {
 
 	private final int versionNeeded;
 	private final int generalPurposeFlags;
-	private final Set<GeneralPurposeFlag> generalPurposeFlagEnums;
 	private final int compressionMethod;
 	private final int lastModifiedFileTime;
 	private final int lastModifiedFileDate;
@@ -36,7 +35,6 @@ public class ZipFileHeader {
 			byte[] extraFieldBytes) {
 		this.versionNeeded = versionNeeded;
 		this.generalPurposeFlags = generalPurposeFlags;
-		this.generalPurposeFlagEnums = GeneralPurposeFlag.fromInt(generalPurposeFlags);
 		this.compressionMethod = compressionMethod;
 		this.lastModifiedFileTime = lastModifiedFileTime;
 		this.lastModifiedFileDate = lastModifiedFileDate;
@@ -105,7 +103,7 @@ public class ZipFileHeader {
 	 * Return whether the header has this flag.
 	 */
 	public boolean hasFlag(GeneralPurposeFlag flag) {
-		return generalPurposeFlagEnums.contains(flag);
+		return ((generalPurposeFlags & flag.getValue()) != 0);
 	}
 
 	public int getVersionNeeded() {
@@ -117,31 +115,25 @@ public class ZipFileHeader {
 	}
 
 	public Set<GeneralPurposeFlag> getGeneralPurposeFlagAsEnums() {
-		return generalPurposeFlagEnums;
+		return GeneralPurposeFlag.fromInt(generalPurposeFlags);
 	}
 
 	/**
-	 * Read the compression level from that flags.
+	 * Read the compression level from the flags.
 	 */
 	public int getCompressionLevel() {
-		int level = Deflater.DEFAULT_COMPRESSION;
-		for (GeneralPurposeFlag flag : GeneralPurposeFlag.fromInt(compressionMethod)) {
-			switch (flag) {
-				case DEFLATING_MAXIMUM:
-					return Deflater.BEST_COMPRESSION;
-				case DEFLATING_NORMAL:
-					return Deflater.DEFAULT_COMPRESSION;
-				case DEFLATING_FAST:
-					// i guess this is right
-					return Deflater.DEFAULT_COMPRESSION + Deflater.BEST_SPEED / 2;
-				case DEFLATING_SUPER_FAST:
-					return Deflater.BEST_SPEED;
-				default:
-					// not a compression speed thing
-					break;
-			}
+		if ((compressionMethod & GeneralPurposeFlag.DEFLATING_MAXIMUM.getValue()) != 0) {
+			return Deflater.BEST_COMPRESSION;
+		} else if ((compressionMethod & GeneralPurposeFlag.DEFLATING_NORMAL.getValue()) != 0) {
+			return Deflater.DEFAULT_COMPRESSION;
+		} else if ((compressionMethod & GeneralPurposeFlag.DEFLATING_FAST.getValue()) != 0) {
+			// i guess this is right
+			return Deflater.DEFAULT_COMPRESSION + Deflater.BEST_SPEED / 2;
+		} else if ((compressionMethod & GeneralPurposeFlag.DEFLATING_SUPER_FAST.getValue()) != 0) {
+			return Deflater.BEST_SPEED;
+		} else {
+			return Deflater.DEFAULT_COMPRESSION;
 		}
-		return level;
 	}
 
 	public int getCompressionMethod() {
