@@ -17,6 +17,7 @@ import com.j256.simplezip.code.StoredFileDataEncoder;
 import com.j256.simplezip.format.CentralDirectoryEnd;
 import com.j256.simplezip.format.CentralDirectoryFileHeader;
 import com.j256.simplezip.format.CentralDirectoryFileInfo;
+import com.j256.simplezip.format.CompressionMethod;
 import com.j256.simplezip.format.DataDescriptor;
 import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
@@ -29,7 +30,7 @@ import com.j256.simplezip.format.ZipFileHeader;
 public class ZipFileWriter implements Closeable {
 
 	private final CountingOutputStream countingOutputStream;
-	private final CountingInfo uncompressedFileInfo = new CountingInfo();
+	private final CountingInfo incomingFileDateInfo = new CountingInfo();
 
 	private ZipFileHeader currentFileHeader;
 	private FileDataEncoder fileDataEncoder;
@@ -79,7 +80,7 @@ public class ZipFileWriter implements Closeable {
 		// also need to save the bytes so we can calc crc and size up front if wanted
 		fileHeader.write(countingOutputStream);
 		currentFileHeader = fileHeader;
-		uncompressedFileInfo.reset();
+		incomingFileDateInfo.reset();
 		dirFileBuilder.reset();
 		dirFileBuilder.setFileHeader(fileHeader);
 		fileFinished = false;
@@ -88,8 +89,8 @@ public class ZipFileWriter implements Closeable {
 	}
 
 	/**
-	 * The Zip central directory at the end of the zip-file holds additional information about the files that is not
-	 * contained in the {@link ZipFileHeader}. You can set these mostly optional fields here.
+	 * Add additional information (most optional_ to the Zip central-directory file-header that is written to the end of
+	 * the Zip-file and which holds information about the files that is not contained in the {@link ZipFileHeader}.
 	 */
 	public void addDirectoryFileInfo(CentralDirectoryFileInfo fileInfo) {
 		if (zipFinished) {
@@ -99,32 +100,66 @@ public class ZipFileWriter implements Closeable {
 	}
 
 	/**
-	 * Write the contents of a file to the Zip-file stream. Must be called after you write the file-header.
+	 * Write the contents of a file to the Zip-file stream while encoding it based on the
+	 * {@link ZipFileHeader#getCompressionMethod()}. Must be called after you write the file-header.
 	 * 
 	 * NOTE: this method calls {@link #finishFileData()} for you.
+	 * 
+	 * @return Returns the number of bytes written to the stream so far.
 	 */
-	public void writeFile(String filePath) throws IOException {
-		writeFile(new File(filePath));
+	public long writeFile(String filePath) throws IOException {
+		return writeFile(new File(filePath));
 	}
 
 	/**
-	 * Write the contents of a file to the Zip-file stream. Must be called after you write the file-header.
+	 * Write the contents of a file to the Zip-file stream without any encoding. Must be called after you write the
+	 * file-header.
 	 * 
 	 * NOTE: this method calls {@link #finishFileData()} for you.
+	 * 
+	 * @return Returns the number of bytes written to the stream so far.
 	 */
-	public void writeFile(File file) throws IOException {
+	public long writeRawFile(String filePath) throws IOException {
+		return writeRawFile(new File(filePath));
+	}
+
+	/**
+	 * Write the contents of a file to the Zip-file stream while encoding it based on the
+	 * {@link ZipFileHeader#getCompressionMethod()}. Must be called after you write the file-header.
+	 * 
+	 * NOTE: this method calls {@link #finishFileData()} for you.
+	 * 
+	 * @return Returns the number of bytes written to the stream so far.
+	 */
+	public long writeFile(File file) throws IOException {
 		try (InputStream inputStream = new FileInputStream(file)) {
-			writeFileData(inputStream);
+			return writeFileData(inputStream);
 		}
 	}
 
 	/**
-	 * Read from the input-stream and write its contents to the the Zip-file stream. Must be called after you write the
+	 * Write the contents of a file to the Zip-file stream without any encoding. Must be called after you write the
 	 * file-header.
 	 * 
 	 * NOTE: this method calls {@link #finishFileData()} for you.
+	 * 
+	 * @return Returns the number of bytes written to the stream so far.
 	 */
-	public void writeFileData(InputStream inputStream) throws IOException {
+	public long writeRawFile(File file) throws IOException {
+		try (InputStream inputStream = new FileInputStream(file)) {
+			return writeRawFileData(inputStream);
+		}
+	}
+
+	/**
+	 * Read from the input-stream and write its contents to the the Zip-file stream while encoding it based on the
+	 * {@link ZipFileHeader#getCompressionMethod()}. Must be called after you write the file-header.
+	 * 
+	 * NOTE: this method calls {@link #finishFileData()} for you.
+	 * 
+	 * @return Returns the number of bytes written to the stream so far.
+	 */
+	public long writeFileData(InputStream inputStream) throws IOException {
 		byte[] buffer = new byte[10240];
 		while (true) {
 			int numRead = inputStream.read(buffer);
@@ -133,36 +168,67 @@ public class ZipFileWriter implements Closeable {
 			}
 			writeFileDataPart(buffer, 0, numRead);
 		}
-		finishFileData();
+		return finishFileData();
 	}
 
 	/**
-	 * Write file data as single or multiple byte arrays to the the Zip-file stream. Must be called after you write the
-	 * file-header. At the end of the writing, you must call {@link #finishFileData()}.
+	 * Read from the input-stream and write its contents to the the Zip-file stream without any encoding. Must be called
+	 * after you write the file-header.
+	 * 
+	 * NOTE: this method calls {@link #finishFileData()} for you.
+	 * 
+	 * @return Returns the number of bytes written to the stream so far.
+	 */
+	public long writeRawFileData(InputStream inputStream) throws IOException {
+		byte[] buffer = new byte[10240];
+		while (true) {
+			int numRead = inputStream.read(buffer);
+			if (numRead < 0) {
+				break;
+			}
+			writeRawFileDataPart(buffer, 0, numRead);
+		}
+		return finishFileData();
+	}
+
+	/**
+	 * Write file data as single or multiple byte arrays to the the Zip-file stream while encoding it based on the
+	 * {@link ZipFileHeader#getCompressionMethod()}. Must be called after you write the file-header. At the end of the
+	 * writing, you must call {@link #finishFileData()}.
 	 */
 	public void writeFileDataPart(byte[] buffer) throws IOException {
 		writeFileDataPart(buffer, 0, buffer.length);
 	}
 
 	/**
-	 * Write file data as single or multiple byte arrays to the the Zip-file stream. Must be called after you write the
-	 * file-header. At the end of the writing, you must call {@link #finishFileData()}.
+	 * Write file data as single or multiple byte arrays to the the Zip-file stream without any encoding. Must be called
+	 * after you write the file-header. At the end of the writing, you must call {@link #finishFileData()}.
+	 */
+	public void writeRawFileDataPart(byte[] buffer) throws IOException {
+		writeRawFileDataPart(buffer, 0, buffer.length);
+	}
+
+	/**
+	 * Write file data as single or multiple byte arrays to the the Zip-file stream while encoding it based on the
+	 * {@link ZipFileHeader#getCompressionMethod()}. Must be called after you write the file-header. At the end of the
+	 * writing, you must call {@link #finishFileData()}.
 	 */
 	public void writeFileDataPart(byte[] buffer, int offset, int length) throws IOException {
 		if (currentFileHeader == null) {
 			throw new IllegalStateException("Need to call writeFileHeader() before you can write file data");
 		}
-		if (zipFinished) {
-			// might not be able to get here but let's be careful out there
-			throw new IllegalStateException("Cannot write file-data if the zip has been finished");
-		}
-		if (fileDataEncoder == null) {
-			assignFileDataEncoder();
-			fileStartOffset = countingOutputStream.getByteCount();
-		}
+		doWriteFileDataPart(buffer, offset, length, currentFileHeader.getCompressionMethodAsEnum());
+	}
 
-		fileDataEncoder.encode(buffer, offset, length);
-		uncompressedFileInfo.update(buffer, offset, length);
+	/**
+	 * Write file data as single or multiple byte arrays to the the Zip-file stream without any encoding. Must be called
+	 * after you write the file-header. At the end of the writing, you must call {@link #finishFileData()}.
+	 */
+	public void writeRawFileDataPart(byte[] buffer, int offset, int length) throws IOException {
+		if (currentFileHeader == null) {
+			throw new IllegalStateException("Need to call writeFileHeader() before you can write file data");
+		}
+		doWriteFileDataPart(buffer, offset, length, CompressionMethod.NONE);
 	}
 
 	/**
@@ -182,17 +248,21 @@ public class ZipFileWriter implements Closeable {
 			throw new IllegalStateException("Need to call writeFileData() before you can finish");
 		}
 		fileDataEncoder.close();
+		long encodedSize = (int) (countingOutputStream.getByteCount() - fileStartOffset);
+		// set our directory file-header info
+		// XXX: need to handle zip64
+		dirFileBuilder.setCompressedSize((int) encodedSize);
+		dirFileBuilder.setUncompressedSize((int) incomingFileDateInfo.getByteCount());
+		dirFileBuilder.setCrc32(incomingFileDateInfo.getCrc32());
+		// set our optional data-descriptor info
 		if (currentFileHeader.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR)) {
 			dataDescriptorBuilder.reset();
 			// XXX: need to handle zip64
-			long compressedSize = (int) (countingOutputStream.getByteCount() - fileStartOffset);
-			dataDescriptorBuilder.setCompressedSize((int) compressedSize);
-			dataDescriptorBuilder.setUncompressedSize((int) uncompressedFileInfo.getByteCount());
-			dataDescriptorBuilder.setCrc32(uncompressedFileInfo.getCrc32());
+			dataDescriptorBuilder.setCompressedSize((int) encodedSize);
+			dataDescriptorBuilder.setUncompressedSize((int) incomingFileDateInfo.getByteCount());
+			dataDescriptorBuilder.setCrc32(incomingFileDateInfo.getCrc32());
 			DataDescriptor dataDescriptor = dataDescriptorBuilder.build();
 			dataDescriptor.write(countingOutputStream);
-			// copy our inform,atiom from the data-descriptor into the central-directory file-header
-			dirFileBuilder.addDataDescriptorInfo(dataDescriptor);
 		}
 		dirFileHeaders.add(dirFileBuilder.build());
 		fileDataEncoder = null;
@@ -286,8 +356,23 @@ public class ZipFileWriter implements Closeable {
 		countingOutputStream.close();
 	}
 
-	private void assignFileDataEncoder() {
-		switch (currentFileHeader.getCompressionMethodAsEnum()) {
+	private void doWriteFileDataPart(byte[] buffer, int offset, int length, CompressionMethod compressionMethod)
+			throws IOException {
+		if (zipFinished) {
+			// might not be able to get here but let's be careful out there
+			throw new IllegalStateException("Cannot write file-data if the zip has been finished");
+		}
+		if (fileDataEncoder == null) {
+			assignFileDataEncoder(compressionMethod);
+			fileStartOffset = countingOutputStream.getByteCount();
+		}
+
+		fileDataEncoder.encode(buffer, offset, length);
+		incomingFileDateInfo.update(buffer, offset, length);
+	}
+
+	private void assignFileDataEncoder(CompressionMethod compressionMethod) {
+		switch (compressionMethod) {
 			case NONE:
 				this.fileDataEncoder = new StoredFileDataEncoder(countingOutputStream);
 				break;
@@ -297,8 +382,7 @@ public class ZipFileWriter implements Closeable {
 				break;
 			default:
 				throw new IllegalStateException(
-						"Unknown compression method: " + currentFileHeader.getCompressionMethodAsEnum() + " ("
-								+ currentFileHeader.getCompressionMethod() + ")");
+						"Unknown compression method: " + compressionMethod + " (" + compressionMethod.getValue() + ")");
 		}
 	}
 }

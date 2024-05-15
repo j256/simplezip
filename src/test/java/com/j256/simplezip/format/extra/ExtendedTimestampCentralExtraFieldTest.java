@@ -71,4 +71,24 @@ public class ExtendedTimestampCentralExtraFieldTest {
 		assertEquals(flags, castField.getFlags());
 		assertEquals(time, (long) castField.getTime());
 	}
+
+	@Test
+	public void testReadWriteNoTime() throws IOException {
+		Builder builder = ExtendedTimestampCentralExtraField.builder();
+
+		int flags = 112;
+		builder.setFlags(flags);
+		Long time = null;
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		builder.build().write(baos);
+
+		BaseExtraField field = ExtraFieldUtil
+				.readExtraField(new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 1024), false);
+		assertTrue(field instanceof ExtendedTimestampCentralExtraField);
+		ExtendedTimestampCentralExtraField castField = (ExtendedTimestampCentralExtraField) field;
+
+		assertEquals(flags, castField.getFlags());
+		assertEquals(time, castField.getTime());
+	}
 }

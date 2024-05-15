@@ -13,6 +13,7 @@ import com.j256.simplezip.code.InflatorFileDataDecoder;
 import com.j256.simplezip.code.StoredFileDataDecoder;
 import com.j256.simplezip.format.CentralDirectoryEnd;
 import com.j256.simplezip.format.CentralDirectoryFileHeader;
+import com.j256.simplezip.format.CompressionMethod;
 import com.j256.simplezip.format.DataDescriptor;
 import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
@@ -78,7 +79,7 @@ public class ZipFileReader implements Closeable {
 		long byteCount = 0;
 		byte[] buffer = new byte[10240];
 		while (true) {
-			int numRead = readFileData(buffer, 0, buffer.length);
+			int numRead = readFileDataPart(buffer, 0, buffer.length);
 			if (numRead < 0) {
 				break;
 			}
@@ -88,7 +89,7 @@ public class ZipFileReader implements Closeable {
 	}
 
 	/**
-	 * Read in file data from the Zip stream and write it to the output-steam.
+	 * Read file data from the Zip stream, decode it, and write it to the output-steam argument.
 	 * 
 	 * @return THe number of bytes written into the output-stream.
 	 */
@@ -96,7 +97,7 @@ public class ZipFileReader implements Closeable {
 		long byteCount = 0;
 		byte[] buffer = new byte[10240];
 		while (true) {
-			int numRead = readFileData(buffer, 0, buffer.length);
+			int numRead = readFileDataPart(buffer, 0, buffer.length);
 			if (numRead < 0) {
 				break;
 			}
@@ -107,14 +108,42 @@ public class ZipFileReader implements Closeable {
 	}
 
 	/**
-	 * Read file data from the Zip stream. See {@link #readFileData(byte[], int, int)} for more details.
+	 * Read raw file data from the Zip stream, no decoding, and write it to the output-steam argument.
+	 * 
+	 * @return THe number of bytes written into the output-stream.
 	 */
-	public int readFileData(byte[] buffer) throws IOException {
-		return readFileData(buffer, 0, buffer.length);
+	public long readRawFileData(OutputStream outputStream) throws IOException {
+		long byteCount = 0;
+		byte[] buffer = new byte[10240];
+		while (true) {
+			int numRead = readRawFileDataPart(buffer, 0, buffer.length);
+			if (numRead < 0) {
+				break;
+			}
+			outputStream.write(buffer, 0, numRead);
+			byteCount += numRead;
+		}
+		return byteCount;
 	}
 
 	/**
-	 * Read file data from the Zip stream.
+	 * Read file data from the Zip stream and decode it into the buffer argument. See
+	 * {@link #readFileDataPart(byte[], int, int)} for more details.
+	 */
+	public int readFileDataPart(byte[] buffer) throws IOException {
+		return readFileDataPart(buffer, 0, buffer.length);
+	}
+
+	/**
+	 * Read raw file data from the Zip stream, without decoding, into the buffer argument. See
+	 * {@link #readRawFileDataPart(byte[], int, int)} for more details.
+	 */
+	public int readRawFileDataPart(byte[] buffer) throws IOException {
+		return readRawFileDataPart(buffer, 0, buffer.length);
+	}
+
+	/**
+	 * Read file data from the Zip stream and decode it into the buffer argument.
 	 * 
 	 * NOTE: This _must_ be called until it returns -1 which indicates that EOF has been reached. Until the underlying
 	 * decoders return EOF we don't know that we are done and we can't rewind over any pre-fetched bytes to continue to
@@ -123,41 +152,29 @@ public class ZipFileReader implements Closeable {
 	 * @return The number of bytes written into the buffer or -1 if the end of zipped bytes for this file have been
 	 *         reached. This doesn't mean that the end of the file has been reached.
 	 */
-	public int readFileData(byte[] buffer, int offset, int length) throws IOException {
+	public int readFileDataPart(byte[] buffer, int offset, int length) throws IOException {
 		if (currentFileHeader == null) {
 			throw new IllegalStateException("Need to call readNextHeader() before you can read file data");
 		}
-		if (currentFileEofReached) {
-			return -1;
-		}
-		if (length == 0) {
-			return 0;
-		}
+		return doReadFileDataPart(buffer, offset, length, currentFileHeader.getCompressionMethodAsEnum());
+	}
 
-		if (fileDataDecoder == null) {
-			assignFileDataDecoder();
+	/**
+	 * Read raw file data from the Zip stream, without decoding, into the buffer argument. This will only work if the
+	 * compressed-size value is set in the file-header.
+	 * 
+	 * NOTE: This _must_ be called until it returns -1 which indicates that EOF has been reached. Until the underlying
+	 * decoders return EOF we don't know that we are done and we can't rewind over any pre-fetched bytes to continue to
+	 * process the next file or the directory at the end of the Zip file.
+	 * 
+	 * @return The number of bytes written into the buffer or -1 if the end of zipped bytes for this file have been
+	 *         reached. This doesn't mean that the end of the file has been reached.
+	 */
+	public int readRawFileDataPart(byte[] buffer, int offset, int length) throws IOException {
+		if (currentFileHeader == null) {
+			throw new IllegalStateException("Need to call readNextHeader() before you can read file data");
 		}
-
-		// read in bytes from our decoder
-		int result = fileDataDecoder.decode(buffer, offset, length);
-		if (result > 0) {
-			// update our counts for the length and crc information
-			countingInfo.update(buffer, offset, result);
-		}
-		if (result < 0 || fileDataDecoder.isEofReached()) {
-			/*
-			 * Now that we've read all of the decoded data we need to rewind the input stream because the decoder might
-			 * have read more bytes than it needed and we need to rewind to the start of the data-descriptor or the next
-			 * record.
-			 */
-			countingInputStream.rewind(fileDataDecoder.getNumRemainingBytes());
-			fileDataDecoder.close();
-			if (currentFileHeader.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR)) {
-				currentDataDescriptor = DataDescriptor.read(countingInputStream, countingInfo);
-			}
-			currentFileEofReached = true;
-		}
-		return result;
+		return doReadFileDataPart(buffer, offset, length, CompressionMethod.NONE);
 	}
 
 	/**
@@ -214,19 +231,53 @@ public class ZipFileReader implements Closeable {
 		return currentDataDescriptor;
 	}
 
-	private void assignFileDataDecoder() throws IOException {
-		switch (currentFileHeader.getCompressionMethodAsEnum()) {
+	private int doReadFileDataPart(byte[] buffer, int offset, int length, CompressionMethod compressionMethod)
+			throws IOException {
+		if (currentFileEofReached) {
+			return -1;
+		}
+		if (length == 0) {
+			return 0;
+		}
+
+		if (fileDataDecoder == null) {
+			assignFileDataDecoder(compressionMethod);
+		}
+
+		// read in bytes from our decoder
+		int result = fileDataDecoder.decode(buffer, offset, length);
+		if (result > 0) {
+			// update our counts for the length and crc information
+			countingInfo.update(buffer, offset, result);
+		}
+		if (result < 0 || fileDataDecoder.isEofReached()) {
+			/*
+			 * Now that we've read all of the decoded data we need to rewind the input stream because the decoder might
+			 * have read more bytes than it needed and we need to rewind to the start of the data-descriptor or the next
+			 * record.
+			 */
+			countingInputStream.rewind(fileDataDecoder.getNumRemainingBytes());
+			fileDataDecoder.close();
+			if (currentFileHeader.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR)) {
+				currentDataDescriptor = DataDescriptor.read(countingInputStream, countingInfo);
+			}
+			currentFileEofReached = true;
+		}
+		return result;
+	}
+
+	private void assignFileDataDecoder(CompressionMethod compressionMethod) throws IOException {
+		switch (compressionMethod) {
 			case NONE:
 				this.fileDataDecoder =
-						new StoredFileDataDecoder(countingInputStream, currentFileHeader.getUncompressedSize());
+						new StoredFileDataDecoder(countingInputStream, currentFileHeader.getCompressedSize());
 				break;
 			case DEFLATED:
 				this.fileDataDecoder = new InflatorFileDataDecoder(countingInputStream);
 				break;
 			default:
 				throw new IllegalStateException(
-						"Unknown compression method: " + currentFileHeader.getCompressionMethodAsEnum() + " ("
-								+ currentFileHeader.getCompressionMethod() + ")");
+						"Unknown compression method: " + compressionMethod + " (" + compressionMethod.getValue() + ")");
 		}
 	}
 }

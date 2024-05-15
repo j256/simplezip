@@ -86,11 +86,17 @@ public class CentralDirectoryFileInfo {
 	 */
 	public static class Builder {
 		private int versionMade;
-		private int versionNeeded = ZipVersion.detectVersion().getValue();
+		private int versionNeeded;
 		private int diskNumberStart = CentralDirectoryFileHeader.DEFAULT_DISK_NUMBER;
 		private int internalFileAttributes;
 		private int externalFileAttributes;
 		private byte[] commentBytes;
+
+		public Builder() {
+			// detect and set the platform and version automatically
+			setPlatform(Platform.detectPlatform());
+			setZipVersion(ZipVersion.detectVersion());
+		}
 
 		/**
 		 * Create a builder from an existing central-directory file-header.

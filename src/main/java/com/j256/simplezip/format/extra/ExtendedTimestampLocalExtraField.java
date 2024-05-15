@@ -19,14 +19,15 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 	private final int flags;
 	private final long timeLastModified;;
 	private final long timeLastAccessed;
-	private final long timeCreated;
+	private final long timeCreation;
 
-	public ExtendedTimestampLocalExtraField(int flags, long timeLastModified, long timeLastAccessed, long timeCreated) {
+	public ExtendedTimestampLocalExtraField(int flags, long timeLastModified, long timeLastAccessed,
+			long timeCreation) {
 		super(EXPECTED_ID, EXPECTED_SIZE);
 		this.flags = flags;
 		this.timeLastModified = timeLastModified;
 		this.timeLastAccessed = timeLastAccessed;
-		this.timeCreated = timeCreated;
+		this.timeCreation = timeCreation;
 	}
 
 	/**
@@ -45,7 +46,7 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 		builder.flags = IoUtils.readByte(inputStream, "ExtendedTimestampLocalExtraField.flags");
 		builder.timeLastModified = IoUtils.readLong(inputStream, "ExtendedTimestampLocalExtraField.timeLastModified");
 		builder.timeLastAccessed = IoUtils.readLong(inputStream, "ExtendedTimestampLocalExtraField.timeLastAccessed");
-		builder.timeCreated = IoUtils.readLong(inputStream, "ExtendedTimestampLocalExtraField.timeCreated");
+		builder.timeCreation = IoUtils.readLong(inputStream, "ExtendedTimestampLocalExtraField.timeCreation");
 		return builder.build();
 	}
 
@@ -56,9 +57,9 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 	public void write(OutputStream outputStream) throws IOException {
 		super.write(outputStream);
 		IoUtils.writeByte(outputStream, flags);
-		IoUtils.writeLong(outputStream, timeLastAccessed);
 		IoUtils.writeLong(outputStream, timeLastModified);
-		IoUtils.writeLong(outputStream, timeCreated);
+		IoUtils.writeLong(outputStream, timeLastAccessed);
+		IoUtils.writeLong(outputStream, timeCreation);
 	}
 
 	public int getFlags() {
@@ -73,8 +74,8 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 		return timeLastAccessed;
 	}
 
-	public long getTimeCreated() {
-		return timeCreated;
+	public long getTimeCreation() {
+		return timeCreation;
 	}
 
 	/**
@@ -85,10 +86,10 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 		private int flags;
 		private long timeLastModified;;
 		private long timeLastAccessed;
-		private long timeCreated;
+		private long timeCreation;
 
 		public ExtendedTimestampLocalExtraField build() {
-			return new ExtendedTimestampLocalExtraField(flags, timeLastModified, timeLastAccessed, timeCreated);
+			return new ExtendedTimestampLocalExtraField(flags, timeLastModified, timeLastAccessed, timeCreation);
 		}
 
 		public int getFlags() {
@@ -114,13 +115,13 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 		public void setTimeLastAccessed(long timeLastAccess) {
 			this.timeLastAccessed = timeLastAccess;
 		}
-
-		public long getTimeCreated() {
-			return timeCreated;
+		
+		public long getTimeCreation() {
+			return timeCreation;
 		}
-
-		public void setTimeCreated(long timeCreation) {
-			this.timeCreated = timeCreation;
+		
+		public void setTimeCreation(long timeCreation) {
+			this.timeCreation = timeCreation;
 		}
 	}
 }
