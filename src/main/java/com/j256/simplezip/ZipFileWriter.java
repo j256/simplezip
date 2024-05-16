@@ -226,7 +226,7 @@ public class ZipFileWriter implements Closeable {
 		if (currentFileHeader == null) {
 			throw new IllegalStateException("Need to call writeFileHeader() before you can write file data");
 		}
-		doWriteFileDataPart(buffer, offset, length, currentFileHeader.getCompressionMethodAsEnum());
+		doWriteFileDataPart(buffer, offset, length, currentFileHeader.getCompressionMethod());
 	}
 
 	/**
@@ -237,7 +237,7 @@ public class ZipFileWriter implements Closeable {
 		if (currentFileHeader == null) {
 			throw new IllegalStateException("Need to call writeFileHeader() before you can write file data");
 		}
-		doWriteFileDataPart(buffer, offset, length, CompressionMethod.NONE);
+		doWriteFileDataPart(buffer, offset, length, CompressionMethod.NONE.getValue());
 	}
 
 	/**
@@ -373,8 +373,7 @@ public class ZipFileWriter implements Closeable {
 		bufferedOutputStream.close();
 	}
 
-	private void doWriteFileDataPart(byte[] buffer, int offset, int length, CompressionMethod compressionMethod)
-			throws IOException {
+	private void doWriteFileDataPart(byte[] buffer, int offset, int length, int compressionMethod) throws IOException {
 		if (zipFinished) {
 			// might not be able to get here but let's be careful out there
 			throw new IllegalStateException("Cannot write file-data if the zip has been finished");
@@ -387,18 +386,15 @@ public class ZipFileWriter implements Closeable {
 		incomingFileDateInfo.update(buffer, offset, length);
 	}
 
-	private void assignFileDataEncoder(CompressionMethod compressionMethod) {
-		switch (compressionMethod) {
-			case NONE:
-				this.fileDataEncoder = new StoredFileDataEncoder(bufferedOutputStream);
-				break;
-			case DEFLATED:
-				this.fileDataEncoder =
-						new DeflatorFileDataEncoder(bufferedOutputStream, currentFileHeader.getCompressionLevel());
-				break;
-			default:
-				throw new IllegalStateException(
-						"Unknown compression method: " + compressionMethod + " (" + compressionMethod.getValue() + ")");
+	private void assignFileDataEncoder(int compressionMethod) {
+		if (compressionMethod == CompressionMethod.NONE.getValue()) {
+			this.fileDataEncoder = new StoredFileDataEncoder(bufferedOutputStream);
+		} else if (compressionMethod == CompressionMethod.DEFLATED.getValue()) {
+			this.fileDataEncoder =
+					new DeflatorFileDataEncoder(bufferedOutputStream, currentFileHeader.getCompressionLevel());
+		} else {
+			throw new IllegalStateException("Unknown compression method: "
+					+ CompressionMethod.fromValue(compressionMethod) + " (" + compressionMethod + ")");
 		}
 	}
 }

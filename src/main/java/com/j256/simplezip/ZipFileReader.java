@@ -155,7 +155,7 @@ public class ZipFileReader implements Closeable {
 		if (currentFileHeader == null) {
 			throw new IllegalStateException("Need to call readNextHeader() before you can read file data");
 		}
-		return doReadFileDataPart(buffer, offset, length, currentFileHeader.getCompressionMethodAsEnum());
+		return doReadFileDataPart(buffer, offset, length, currentFileHeader.getCompressionMethod());
 	}
 
 	/**
@@ -173,7 +173,7 @@ public class ZipFileReader implements Closeable {
 		if (currentFileHeader == null) {
 			throw new IllegalStateException("Need to call readNextHeader() before you can read file data");
 		}
-		return doReadFileDataPart(buffer, offset, length, CompressionMethod.NONE);
+		return doReadFileDataPart(buffer, offset, length, CompressionMethod.NONE.getValue());
 	}
 
 	/**
@@ -230,8 +230,7 @@ public class ZipFileReader implements Closeable {
 		return currentDataDescriptor;
 	}
 
-	private int doReadFileDataPart(byte[] buffer, int offset, int length, CompressionMethod compressionMethod)
-			throws IOException {
+	private int doReadFileDataPart(byte[] buffer, int offset, int length, int compressionMethod) throws IOException {
 		if (currentFileEofReached) {
 			return -1;
 		}
@@ -266,18 +265,15 @@ public class ZipFileReader implements Closeable {
 		return result;
 	}
 
-	private void assignFileDataDecoder(CompressionMethod compressionMethod) throws IOException {
-		switch (compressionMethod) {
-			case NONE:
-				this.fileDataDecoder =
-						new StoredFileDataDecoder(countingInputStream, currentFileHeader.getCompressedSize());
-				break;
-			case DEFLATED:
-				this.fileDataDecoder = new InflatorFileDataDecoder(countingInputStream);
-				break;
-			default:
-				throw new IllegalStateException(
-						"Unknown compression method: " + compressionMethod + " (" + compressionMethod.getValue() + ")");
+	private void assignFileDataDecoder(int compressionMethod) throws IOException {
+		if (compressionMethod == CompressionMethod.NONE.getValue()) {
+			this.fileDataDecoder =
+					new StoredFileDataDecoder(countingInputStream, currentFileHeader.getCompressedSize());
+		} else if (compressionMethod == CompressionMethod.DEFLATED.getValue()) {
+			this.fileDataDecoder = new InflatorFileDataDecoder(countingInputStream);
+		} else {
+			throw new IllegalStateException("Unknown compression method: "
+					+ CompressionMethod.fromValue(compressionMethod) + " (" + compressionMethod + ")");
 		}
 	}
 }
