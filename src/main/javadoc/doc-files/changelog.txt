@@ -1,3 +1,8 @@
+0.6: 5/?/2024
+	* Added ZipFileReader.readRaw... and ZipFileWriter.writeRaw... methods for dealing with unencoded data.
+	* Some method and field renames as things stabilize and test coverage grows.
+	* Added buffering to the ZipFileWriter which can be enabled to fill out ZipFileHeader before writing file data.
+
 0.5: 5/14/2024
 	* Improved the test coverage and normalized some of the method names in the process.
 

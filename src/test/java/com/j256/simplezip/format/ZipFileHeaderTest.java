@@ -93,7 +93,8 @@ public class ZipFileHeaderTest {
 		ZipFileHeader.Builder builder = ZipFileHeader.builder();
 
 		int flags = 0;
-		builder.addGeneralPurposeFlag(GeneralPurposeFlag.DATA_DESCRIPTOR);
+		builder.assignGeneralPurposeFlag(GeneralPurposeFlag.DATA_DESCRIPTOR, false);
+		builder.assignGeneralPurposeFlag(GeneralPurposeFlag.DATA_DESCRIPTOR, true);
 		flags |= GeneralPurposeFlag.DATA_DESCRIPTOR.getValue();
 		assertEquals(flags, builder.getGeneralPurposeFlags());
 

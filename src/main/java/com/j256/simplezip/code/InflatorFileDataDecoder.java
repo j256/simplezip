@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
+import com.j256.simplezip.IoUtils;
+
 /**
  * Decoded for the DEFLATED Zip file format.
  * 
@@ -14,7 +16,7 @@ public class InflatorFileDataDecoder implements FileDataDecoder {
 
 	private final Inflater inflater = new Inflater(true /* no wrap */);
 	private InputStream delegate;
-	private final byte[] tmpBuffer = new byte[10240];
+	private final byte[] tmpBuffer = new byte[IoUtils.STANDARD_BUFFER_SIZE];
 
 	public InflatorFileDataDecoder(InputStream inputStream) throws IOException {
 		this.delegate = inputStream;

@@ -260,7 +260,7 @@ public class ZipFileReaderTest {
 		CRC32 crc32 = new CRC32();
 		crc32.update(fileBytes);
 		builder.setCrc32(crc32.getValue());
-		System.out.println("wrote header, offset = " + writer.writeFileHeader(builder.build()));
+		writer.writeFileHeader(builder.build());
 		writer.writeRawFileDataPart(fileBytes);
 		System.out.println("wrote raw file, offset = " + writer.finishFileData());
 		writer.close();
@@ -291,7 +291,7 @@ public class ZipFileReaderTest {
 		CRC32 crc32 = new CRC32();
 		crc32.update(fileBytes);
 		builder.setCrc32(crc32.getValue());
-		System.out.println("wrote header, offset = " + writer.writeFileHeader(builder.build()));
+		writer.writeFileHeader(builder.build());
 		writer.writeRawFileDataPart(fileBytes);
 		System.out.println("wrote raw file, offset = " + writer.finishFileData());
 		writer.close();

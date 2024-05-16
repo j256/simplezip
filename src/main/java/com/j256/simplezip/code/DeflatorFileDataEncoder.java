@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.Deflater;
 
+import com.j256.simplezip.IoUtils;
+
 /**
  * Decoded for the DEFLATED Zip file format.
  * 
@@ -13,8 +15,8 @@ public class DeflatorFileDataEncoder implements FileDataEncoder {
 
 	private final Deflater deflater;
 	private final OutputStream outputStream;
-	private byte[] encodeBuffer = new byte[10240];
-	private byte[] tmpBuffer = new byte[10240];
+	private byte[] encodeBuffer = new byte[IoUtils.STANDARD_BUFFER_SIZE];
+	private byte[] tmpBuffer = new byte[IoUtils.STANDARD_BUFFER_SIZE];
 
 	public DeflatorFileDataEncoder(OutputStream outputStream, int level) {
 		this.outputStream = outputStream;
