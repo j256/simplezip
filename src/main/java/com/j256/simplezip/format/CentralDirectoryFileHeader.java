@@ -294,7 +294,7 @@ public class CentralDirectoryFileHeader {
 		}
 
 		/**
-		 * Reset the builder in case you want to reuse.
+		 * Reset the builder in case you want to reuse. This does set a couple of default fields.
 		 */
 		public void reset() {
 			versionMade = 0;

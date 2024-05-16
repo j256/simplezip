@@ -263,19 +263,19 @@ public class ZipFileHeader {
 		}
 
 		/**
-		 * Clear all fields in the builder.
+		 * Clear all fields in the builder. This does set a couple of default fields.
 		 */
 		public void reset() {
-			this.versionNeeded = 0;
-			this.generalPurposeFlags = 0;
-			this.compressionMethod = 0;
-			this.lastModifiedFileTime = 0;
-			this.lastModifiedFileDate = 0;
-			this.crc32 = 0;
-			this.compressedSize = 0;
-			this.uncompressedSize = 0;
-			this.fileNameBytes = null;
-			this.extraFieldBytes = null;
+			versionNeeded = 0;
+			generalPurposeFlags = 0;
+			compressionMethod = CompressionMethod.DEFLATED.getValue();
+			lastModifiedFileTime = 0;
+			lastModifiedFileDate = 0;
+			crc32 = 0;
+			compressedSize = 0;
+			uncompressedSize = 0;
+			fileNameBytes = null;
+			extraFieldBytes = null;
 		}
 
 		public int getVersionNeeded() {
