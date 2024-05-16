@@ -25,7 +25,7 @@ Here's some simple code that runs through all of the Zip-file parts.
 	ZipFileHeader header = zipFile.readFileHeader();
 	byte[] buffer = new byte[8192];
 	// read into buffers or via InputStream
-	long numRead = zipFile.readFileData(buffer);
+	long numRead = zipFile.readFileDataPart(buffer);
 	...
 	// NOTE: descriptor can be null
 	DataDescriptor dataDescriptor = zipFile.getCurrentDataDescriptor();
@@ -37,7 +37,7 @@ Here's some simple code that runs through all of the Zip-file parts.
 
 Here's some equally simple code that allows you to write out a Zip-file.
 
-	ZipFileWriter zipWriter = new ZipFileWriter(baos);
+	ZipFileWriter zipWriter = new ZipFileWriter(output);
 	ZipFileHeader.Builder headerBuilder = ZipFileHeader.builder();
 	headerBuilder.setGeneralPurposeFlags(
 		GeneralPurposeFlag.DEFLATING_NORMAL, GeneralPurposeFlag.DATA_DESCRIPTOR);
@@ -45,10 +45,10 @@ Here's some equally simple code that allows you to write out a Zip-file.
 	headerBuilder.setLastModifiedDateTime(LocalDateTime.now());
 	headerBuilder.setFileName("hello.txt");
 	// write a file-header to the zip-file
-	zipWriter.writeFileHeader(fileBuilder.build());
+	zipWriter.writeFileHeader(headerBuilder.build());
 	// can add additional central-directory info to the file
 	zipWriter.addDirectoryFileInfo(fileInfo);
-	// write file data from buffer or InputStream
+	// write file data from file, buffer, or InputStream
 	zipWriter.writeFileDataPart(fileBytes);
 	...
 	// must be called after all parts written
@@ -67,7 +67,7 @@ Maven packages are published via [![Maven Central](https://maven-badges.herokuap
 <dependency>
 	<groupId>com.j256.simplezip</groupId>
 	<artifactId>simplezip</artifactId>
-	<version>0.5</version>
+	<version>0.6</version>
 </dependency>
 ```
 
