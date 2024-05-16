@@ -1,3 +1,7 @@
+0.7: ??/??/2024
+	* Added better support for file permissions.
+	* Added reading from ZipFileReader directory to a File. 
+
 0.6: 5/16/2024
 	* Added ZipFileReader.readRaw... and ZipFileWriter.writeRaw... methods for dealing with unencoded data.
 	* Some method and field renames as things stabilize and test coverage grows.
@@ -20,4 +24,4 @@
 	* The extra information bytes right now is a work in progress.
 
 0.1: 5/7/2024
-	* Initial checkin.
+	* Initial commit.

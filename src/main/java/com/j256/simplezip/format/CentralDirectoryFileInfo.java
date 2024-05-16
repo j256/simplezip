@@ -1,5 +1,7 @@
 package com.j256.simplezip.format;
 
+import java.io.File;
+
 /**
  * Additional file information that can be written into the central-directory that does not exist in the
  * {@link ZipFileHeader}.
@@ -192,6 +194,83 @@ public class CentralDirectoryFileInfo {
 
 		public void setExternalFileAttributes(int externalFileAttributes) {
 			this.externalFileAttributes = externalFileAttributes;
+		}
+
+		/**
+		 * Set the externalFileAttributes from the attributes associated with the file argument.
+		 */
+		public void setExternalFileAttributesFromFile(File file) {
+			this.externalFileAttributes = FilePermissions.fromFile(file);
+		}
+
+		/**
+		 * Set the Unix file mode into the top of the externalFileAttributes. For example you can set this with 0644 or
+		 * 0777.
+		 */
+		public void setUnixExternalFileAttributes(int unixFileAttributes) {
+			externalFileAttributes = ((externalFileAttributes & 0xFFFF) | (unixFileAttributes << 16));
+		}
+
+		/**
+		 * Set in the externalFileAttributes whether or not the file is a directory.
+		 */
+		public void setFileIsDirectory(boolean isDirectory) {
+			if (isDirectory) {
+				externalFileAttributes |= FilePermissions.UNIX_DIRECTORY;
+				externalFileAttributes |= FilePermissions.MS_DOS_DIRECTORY;
+			} else {
+				externalFileAttributes &= ~FilePermissions.UNIX_DIRECTORY;
+				externalFileAttributes &= ~FilePermissions.MS_DOS_DIRECTORY;
+			}
+		}
+
+		/**
+		 * Set in the externalFileAttributes whether or not the file is a symbolic-link.
+		 */
+		public void setFileIsSymlink(boolean isSymlink) {
+			if (isSymlink) {
+				externalFileAttributes |= FilePermissions.UNIX_SYMLINK;
+			} else {
+				externalFileAttributes &= ~FilePermissions.UNIX_SYMLINK;
+			}
+		}
+
+		/**
+		 * Set in the externalFileAttributes whether or not the file is a regular-file.
+		 */
+		public void setFileIsRegular(boolean isDirectory) {
+			if (isDirectory) {
+				externalFileAttributes |= FilePermissions.UNIX_REGULAR_FILE;
+			} else {
+				externalFileAttributes &= ~FilePermissions.UNIX_REGULAR_FILE;
+			}
+		}
+
+		/**
+		 * Set in the externalFileAttributes whether or not the file is read-only.
+		 */
+		public void setFileReadOnly(boolean readOnly) {
+			if (readOnly) {
+				externalFileAttributes =
+						((externalFileAttributes & 0xFFFF) | FilePermissions.UNIX_READ_ONLY_PERMISSIONS);
+				externalFileAttributes |= FilePermissions.MS_DOS_READONLY;
+			} else {
+				externalFileAttributes &= ~FilePermissions.MS_DOS_READONLY;
+			}
+		}
+
+		/**
+		 * Set the MS-DOS file mode into the bottom of the externalFileAttributes.
+		 */
+		public void setMsDosExternalFileAttributes(int msDosFileAttributes) {
+			externalFileAttributes = ((externalFileAttributes & 0xFF) | msDosFileAttributes);
+		}
+
+		/**
+		 * Set the external
+		 */
+		public void setExternalAttributesFromFile(File file) {
+			externalFileAttributes = FilePermissions.fromFile(file);
 		}
 
 		public byte[] getCommentBytes() {

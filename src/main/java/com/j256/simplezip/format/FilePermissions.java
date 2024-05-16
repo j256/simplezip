@@ -19,34 +19,61 @@ import java.util.Set;
  */
 public class FilePermissions {
 
-	private static int DEFAULT_READ_ONLY_PERMISSIONS = 0444;
-	private static int DEFAULT_READ_WRITE_PERMISSIONS = 0644;
-	private static int DEFAULT_READ_ONLY_EXECUTE_PERMISSIONS = 0555;
-	private static int DEFAULT_READ_WRITE_EXECUTE_PERMISSIONS = 0755;
+	public static int UNIX_REGULAR_FILE = (0100000 << 16);
+	public static int UNIX_DIRECTORY = (040000 << 16);
+	public static int UNIX_SYMLINK = (0120000 << 16);
+	public static int UNIX_READ_ONLY_PERMISSIONS = (0444 << 16);
+	private static int UNIX_READ_WRITE_PERMISSIONS = (0644 << 16);
+	private static int UNIX_READ_ONLY_EXECUTE_PERMISSIONS = (0555 << 16);
+	private static int UNIX_READ_WRITE_EXECUTE_PERMISSIONS = (0755 << 16);
 
-	public int fileToPermissions(File file) {
+	public static int MS_DOS_READONLY = 0x01;
+	public static int MS_DOS_DIRECTORY = 0x010;
+
+	/**
+	 * Set the permissions from a file.
+	 */
+	public static int fromFile(File file) {
 		if (!file.exists()) {
 			return 0;
 		}
 		int permissions = 0;
+		if (file.isDirectory()) {
+			permissions |= MS_DOS_DIRECTORY;
+			permissions |= UNIX_DIRECTORY;
+		} else if (isSymlink(file)) {
+			permissions |= UNIX_SYMLINK;
+		} else {
+			permissions |= UNIX_REGULAR_FILE;
+		}
 		try {
+			// try to read in the posix permissions
 			Path path = FileSystems.getDefault().getPath(file.getPath());
 			Set<PosixFilePermission> perms = Files.getPosixFilePermissions(path);
-			permissions = Permission.modeFromPermSet(perms);
+			permissions |= Permission.modeFromPermSet(perms);
 		} catch (Exception e) {
-			// non-posix
-			if (file.canRead()) {
-			}
+			permissions |= assignPermissionsFromFileAttributes(file);
+		}
+		return permissions;
+	}
+
+	/**
+	 * Set the meager permissions from the File attributes if not posix.
+	 */
+	private static int assignPermissionsFromFileAttributes(File file) {
+		int permissions = 0;
+		if (file.canWrite()) {
 			if (file.canExecute()) {
-				if (file.canWrite()) {
-					return DEFAULT_READ_WRITE_EXECUTE_PERMISSIONS;
-				} else {
-					return DEFAULT_READ_ONLY_EXECUTE_PERMISSIONS;
-				}
-			} else if (file.canWrite()) {
-				return DEFAULT_READ_WRITE_PERMISSIONS;
+				permissions |= UNIX_READ_WRITE_EXECUTE_PERMISSIONS;
 			} else {
-				return DEFAULT_READ_ONLY_PERMISSIONS;
+				permissions |= UNIX_READ_WRITE_PERMISSIONS;
+			}
+		} else {
+			permissions |= MS_DOS_READONLY;
+			if (file.canExecute()) {
+				permissions |= UNIX_READ_ONLY_EXECUTE_PERMISSIONS;
+			} else {
+				permissions |= UNIX_READ_ONLY_PERMISSIONS;
 			}
 		}
 		return permissions;
@@ -55,31 +82,36 @@ public class FilePermissions {
 	/**
 	 * Returns true if the file is a symlink otherwise false.
 	 */
-	public static boolean isSymlink(File file) throws IOException {
-		File canonFile;
-		File canonDir = file.getParentFile();
-		if (canonDir == null) {
-			canonFile = file;
-		} else {
-			canonFile = new File(canonDir.getCanonicalFile(), file.getName());
+	private static boolean isSymlink(File file) {
+		try {
+			File canonFile;
+			File canonDir = file.getParentFile();
+			if (canonDir == null) {
+				canonFile = file;
+			} else {
+				canonFile = new File(canonDir.getCanonicalFile(), file.getName());
+			}
+			return !canonFile.getCanonicalFile().equals(canonFile.getAbsoluteFile());
+		} catch (IOException ioe) {
+			// ignored
+			return false;
 		}
-		return !canonFile.getCanonicalFile().equals(canonFile.getAbsoluteFile());
 	}
 
 	/**
-	 * Mapping from the posix permissions to tar file modes.
+	 * Mapping from the posix permissions to unix file modes.
 	 */
 	public static enum Permission {
 
-		OWNER_READ(PosixFilePermission.OWNER_READ, 0400),
-		OWNER_WRITE(PosixFilePermission.OWNER_WRITE, 0200),
-		OWNER_EXECUTE(PosixFilePermission.OWNER_EXECUTE, 0100),
-		GROUP_READ(PosixFilePermission.GROUP_READ, 0040),
-		GROUP_WRITE(PosixFilePermission.GROUP_WRITE, 0020),
-		GROUP_EXECUTE(PosixFilePermission.GROUP_EXECUTE, 0010),
-		OTHERS_READ(PosixFilePermission.OTHERS_READ, 0004),
-		OTHERS_WRITE(PosixFilePermission.OTHERS_WRITE, 0002),
-		OTHERS_EXECUTE(PosixFilePermission.OTHERS_EXECUTE, 0001),
+		OWNER_READ(PosixFilePermission.OWNER_READ, (0400 << 16)),
+		OWNER_WRITE(PosixFilePermission.OWNER_WRITE, (0200 << 16)),
+		OWNER_EXECUTE(PosixFilePermission.OWNER_EXECUTE, (0100 << 16)),
+		GROUP_READ(PosixFilePermission.GROUP_READ, (0040 << 16)),
+		GROUP_WRITE(PosixFilePermission.GROUP_WRITE, (0020 << 16)),
+		GROUP_EXECUTE(PosixFilePermission.GROUP_EXECUTE, (0010 << 16)),
+		OTHERS_READ(PosixFilePermission.OTHERS_READ, (0004 << 16)),
+		OTHERS_WRITE(PosixFilePermission.OTHERS_WRITE, (0002 << 16)),
+		OTHERS_EXECUTE(PosixFilePermission.OTHERS_EXECUTE, (0001 << 16)),
 		// end
 		;
 

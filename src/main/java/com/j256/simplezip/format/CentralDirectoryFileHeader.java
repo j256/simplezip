@@ -16,7 +16,7 @@ public class CentralDirectoryFileHeader {
 	/** signature that is expected to be at the start of the central directory */
 	public static final int EXPECTED_SIGNATURE = 0x2014b50;
 	public static final int INTERNAL_ATTRIBUTES_TEXT_FILE = (1 << 0);
-	public static final int DEFAULT_DISK_NUMBER = 1;
+	public static final int DEFAULT_DISK_NUMBER = 0;
 
 	private final int versionMade;
 	private final int versionNeeded;
