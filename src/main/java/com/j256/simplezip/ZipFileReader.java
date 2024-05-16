@@ -30,6 +30,7 @@ public class ZipFileReader implements Closeable {
 
 	private final RewindableInputStream countingInputStream;
 	private final CountingInfo countingInfo = new CountingInfo();
+	private final byte[] tmpBuffer = new byte[IoUtils.STANDARD_BUFFER_SIZE];
 
 	private FileDataDecoder fileDataDecoder;
 	private ZipFileHeader currentFileHeader;
@@ -66,6 +67,7 @@ public class ZipFileReader implements Closeable {
 		this.currentFileHeader = ZipFileHeader.read(countingInputStream);
 		currentFileEofReached = false;
 		currentDataDescriptor = null;
+		fileDataDecoder = null;
 		countingInfo.reset();
 		return currentFileHeader;
 	}
@@ -77,9 +79,8 @@ public class ZipFileReader implements Closeable {
 	 */
 	public long skipFileData() throws IOException {
 		long byteCount = 0;
-		byte[] buffer = new byte[10240];
 		while (true) {
-			int numRead = readFileDataPart(buffer, 0, buffer.length);
+			int numRead = readFileDataPart(tmpBuffer, 0, tmpBuffer.length);
 			if (numRead < 0) {
 				break;
 			}
@@ -95,13 +96,12 @@ public class ZipFileReader implements Closeable {
 	 */
 	public long readFileData(OutputStream outputStream) throws IOException {
 		long byteCount = 0;
-		byte[] buffer = new byte[10240];
 		while (true) {
-			int numRead = readFileDataPart(buffer, 0, buffer.length);
+			int numRead = readFileDataPart(tmpBuffer, 0, tmpBuffer.length);
 			if (numRead < 0) {
 				break;
 			}
-			outputStream.write(buffer, 0, numRead);
+			outputStream.write(tmpBuffer, 0, numRead);
 			byteCount += numRead;
 		}
 		return byteCount;
@@ -114,13 +114,12 @@ public class ZipFileReader implements Closeable {
 	 */
 	public long readRawFileData(OutputStream outputStream) throws IOException {
 		long byteCount = 0;
-		byte[] buffer = new byte[10240];
 		while (true) {
-			int numRead = readRawFileDataPart(buffer, 0, buffer.length);
+			int numRead = readRawFileDataPart(tmpBuffer, 0, tmpBuffer.length);
 			if (numRead < 0) {
 				break;
 			}
-			outputStream.write(buffer, 0, numRead);
+			outputStream.write(tmpBuffer, 0, numRead);
 			byteCount += numRead;
 		}
 		return byteCount;
@@ -262,6 +261,7 @@ public class ZipFileReader implements Closeable {
 				currentDataDescriptor = DataDescriptor.read(countingInputStream, countingInfo);
 			}
 			currentFileEofReached = true;
+			fileDataDecoder = null;
 		}
 		return result;
 	}

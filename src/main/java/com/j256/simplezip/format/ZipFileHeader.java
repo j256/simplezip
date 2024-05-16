@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Set;
+import java.util.zip.CRC32;
 import java.util.zip.Deflater;
 
 import com.j256.simplezip.IoUtils;
@@ -86,7 +87,11 @@ public class ZipFileHeader {
 	public void write(OutputStream outputStream) throws IOException {
 		IoUtils.writeInt(outputStream, EXPECTED_SIGNATURE);
 		IoUtils.writeShort(outputStream, versionNeeded);
-		IoUtils.writeShort(outputStream, generalPurposeFlags);
+		int flags = generalPurposeFlags;
+		if (needsDataDescriptor()) {
+			flags |= GeneralPurposeFlag.DATA_DESCRIPTOR.getValue();
+		}
+		IoUtils.writeShort(outputStream, flags);
 		IoUtils.writeShort(outputStream, compressionMethod);
 		IoUtils.writeShort(outputStream, lastModifiedFileTime);
 		IoUtils.writeShort(outputStream, lastModifiedFileDate);
@@ -204,6 +209,13 @@ public class ZipFileHeader {
 		return extraFieldBytes;
 	}
 
+	/**
+	 * Does this file header need a data-descriptor.
+	 */
+	public boolean needsDataDescriptor() {
+		return (compressedSize == 0 || crc32 == 0);
+	}
+
 	@Override
 	public String toString() {
 		return "ZipFileHeader [name=" + getFileName() + ", compSize " + compressedSize + ", uncompSize="
@@ -217,7 +229,7 @@ public class ZipFileHeader {
 	public static class Builder {
 		private int versionNeeded;
 		/** NOTE: we turn on the data-descriptor flag by default until a size or crc32 is set */
-		private int generalPurposeFlags = GeneralPurposeFlag.DATA_DESCRIPTOR.getValue();
+		private int generalPurposeFlags;
 		private int compressionMethod = CompressionMethod.DEFLATED.getValue();
 		private int lastModifiedFileTime;
 		private int lastModifiedFileDate;
@@ -254,17 +266,16 @@ public class ZipFileHeader {
 		 * Clear all fields in the builder.
 		 */
 		public void reset() {
-			Builder builder = new Builder();
-			builder.versionNeeded = 0;
-			builder.generalPurposeFlags = 0;
-			builder.compressionMethod = 0;
-			builder.lastModifiedFileTime = 0;
-			builder.lastModifiedFileDate = 0;
-			builder.crc32 = 0;
-			builder.compressedSize = 0;
-			builder.uncompressedSize = 0;
-			builder.fileNameBytes = null;
-			builder.extraFieldBytes = null;
+			this.versionNeeded = 0;
+			this.generalPurposeFlags = 0;
+			this.compressionMethod = 0;
+			this.lastModifiedFileTime = 0;
+			this.lastModifiedFileDate = 0;
+			this.crc32 = 0;
+			this.compressedSize = 0;
+			this.uncompressedSize = 0;
+			this.fileNameBytes = null;
+			this.extraFieldBytes = null;
 		}
 
 		public int getVersionNeeded() {
@@ -288,12 +299,19 @@ public class ZipFileHeader {
 		}
 
 		/**
-		 * Adds to the current general-purpose-flags the value associated with this flag enum.
+		 * Assign a flag via turning on and off.
 		 */
-		public void addGeneralPurposeFlag(GeneralPurposeFlag flag) {
-			this.generalPurposeFlags |= flag.getValue();
+		public void assignGeneralPurposeFlag(GeneralPurposeFlag flag, boolean value) {
+			if (value) {
+				this.generalPurposeFlags |= flag.getValue();
+			} else {
+				this.generalPurposeFlags &= ~flag.getValue();
+			}
 		}
 
+		/**
+		 * Return the set of GeneralPurposeFlag enums that make up the general-purpose-flags.
+		 */
 		public Set<GeneralPurposeFlag> getGeneralPurposeFlagAsEnums() {
 			return GeneralPurposeFlag.fromInt(generalPurposeFlags);
 		}
@@ -366,11 +384,11 @@ public class ZipFileHeader {
 		}
 
 		public void setCrc32(long crc32) {
-			if (crc32 != 0) {
-				// turn off the data-descriptor if we have a crc or size
-				generalPurposeFlags &= ~GeneralPurposeFlag.DATA_DESCRIPTOR.getValue();
-			}
 			this.crc32 = crc32;
+		}
+
+		public void setCrc32Value(CRC32 crc32) {
+			this.crc32 = crc32.getValue();
 		}
 
 		public int getCompressedSize() {
@@ -378,10 +396,6 @@ public class ZipFileHeader {
 		}
 
 		public void setCompressedSize(int compressedSize) {
-			if (compressedSize != 0) {
-				// turn off the data-descriptor if we have a crc or size
-				generalPurposeFlags &= ~GeneralPurposeFlag.DATA_DESCRIPTOR.getValue();
-			}
 			this.compressedSize = compressedSize;
 		}
 
@@ -390,10 +404,6 @@ public class ZipFileHeader {
 		}
 
 		public void setUncompressedSize(int uncompressedSize) {
-			if (uncompressedSize != 0) {
-				// turn off the data-descriptor if we have a crc or size
-				generalPurposeFlags &= ~GeneralPurposeFlag.DATA_DESCRIPTOR.getValue();
-			}
 			this.uncompressedSize = uncompressedSize;
 		}
 

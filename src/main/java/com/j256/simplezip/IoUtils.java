@@ -12,6 +12,7 @@ import java.io.OutputStream;
  */
 public class IoUtils {
 
+	public static int STANDARD_BUFFER_SIZE = 4096;
 	private static final byte[] NO_BYTES = new byte[0];
 
 	/**

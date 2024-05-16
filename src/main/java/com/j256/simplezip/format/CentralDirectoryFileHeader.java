@@ -377,6 +377,17 @@ public class CentralDirectoryFileHeader {
 			this.generalPurposeFlags = generalPurposeFlags;
 		}
 
+		/**
+		 * Assign a flag via turning on and off.
+		 */
+		public void assignGeneralPurposeFlag(GeneralPurposeFlag flag, boolean value) {
+			if (value) {
+				this.generalPurposeFlags |= flag.getValue();
+			} else {
+				this.generalPurposeFlags &= ~flag.getValue();
+			}
+		}
+
 		public int getCompressionMethod() {
 			return compressionMethod;
 		}
