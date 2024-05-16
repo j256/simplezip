@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -87,6 +88,28 @@ public class ZipFileReader implements Closeable {
 			byteCount += numRead;
 		}
 		return byteCount;
+	}
+
+	/**
+	 * Read file data from the Zip stream, decode it, and write it to the file path argument.
+	 * 
+	 * @param outputPath
+	 *            Where to write the data read from the zip stream.
+	 * @return THe number of bytes written into the output-stream.
+	 */
+	public long readFileData(String outputPath) throws IOException {
+		return readFileData(new FileOutputStream(outputPath));
+	}
+
+	/**
+	 * Read file data from the Zip stream, decode it, and write it to the file argument.
+	 * 
+	 * @param outputFile
+	 *            Where to write the data read from the zip stream.
+	 * @return THe number of bytes written into the output-stream.
+	 */
+	public long readFileData(File outputFile) throws IOException {
+		return readFileData(new FileOutputStream(outputFile));
 	}
 
 	/**

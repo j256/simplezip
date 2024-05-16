@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -343,5 +344,68 @@ public class ZipFileReaderTest {
 		assertArrayEquals(bytes, Arrays.copyOf(output, numInflated));
 
 		reader.close();
+	}
+
+	@Test
+	public void testReadToFile() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		String fileName = "hello";
+		ZipEntry zipEntry = new ZipEntry(fileName);
+		byte[] bytes = new byte[] { 1, 2, 3 };
+		zipEntry.setSize(bytes.length);
+		zipEntry.setCompressedSize(5);
+		zipEntry.setMethod(ZipEntry.DEFLATED);
+		CRC32 crc32 = new CRC32();
+		crc32.update(bytes);
+		zipEntry.setCrc(crc32.getValue());
+		ZipOutputStream zos = new ZipOutputStream(baos);
+		zos.putNextEntry(zipEntry);
+		zos.write(bytes);
+		zos.closeEntry();
+		// do it twice
+		zipEntry = new ZipEntry(fileName + "2");
+		zipEntry.setSize(bytes.length);
+		zipEntry.setCompressedSize(5);
+		zipEntry.setMethod(ZipEntry.DEFLATED);
+		zipEntry.setCrc(crc32.getValue());
+		zos.putNextEntry(zipEntry);
+		zos.write(bytes);
+		zos.closeEntry();
+		zos.close();
+
+		RewindableInputStream input = new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 10240);
+		ZipFileReader reader = new ZipFileReader(input);
+		assertNotNull(reader.readFileHeader());
+		File file = File.createTempFile(getClass().getSimpleName(), ".t");
+		file.deleteOnExit();
+		reader.readFileData(file);
+		byte[] output = readFileToBytes(file);
+		assertArrayEquals(bytes, output);
+		file.delete();
+
+		assertNotNull(reader.readFileHeader());
+		file = File.createTempFile(getClass().getSimpleName(), ".t");
+		file.deleteOnExit();
+		reader.readFileData(file.getPath());
+		output = readFileToBytes(file);
+		assertArrayEquals(bytes, output);
+		file.delete();
+
+		reader.close();
+	}
+
+	private byte[] readFileToBytes(File file) throws IOException {
+		try (FileInputStream fis = new FileInputStream(file);
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();) {
+			byte[] buffer = new byte[1024];
+			while (true) {
+				int num = fis.read(buffer);
+				if (num < 0) {
+					break;
+				}
+				baos.write(buffer, 0, num);
+			}
+			return baos.toByteArray();
+		}
 	}
 }
