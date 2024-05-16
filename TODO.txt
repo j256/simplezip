@@ -1,6 +1,4 @@
 - need to have an encryption interface
-- could also have a bufferable input stream which holds the deflated bytes until it can write the header and then the bytes
-	- should dump to disk after X bytes and give up after Y bytes and just write data-descriptor
 - need to publish some sort of header without the details so that they can get filled in by the writer
 - need to figure out the dos and the unix permissions
 - need to figure out how to do the extra blocks, maybe hashmap of name/values?
