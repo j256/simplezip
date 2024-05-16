@@ -47,7 +47,9 @@ public enum Platform {
 	 */
 	public static Platform detectPlatform() {
 		String os = System.getProperty("os.name");
-		System.out.println("os = " + os);
+		if (os.contains("OS X")) {
+			return MACINTOSH;
+		}
 		return OTHER;
 	}
 
