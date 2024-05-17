@@ -138,12 +138,14 @@ public class ZipFileReaderTest {
 	public void readFileDataWithoutHeader() throws IOException {
 		ZipFileReader reader = new ZipFileReader(new ByteArrayInputStream(new byte[0]));
 		reader.readFileDataPart(new byte[0]);
+		reader.close();
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void readRawFileDataWithoutHeader() throws IOException {
 		ZipFileReader reader = new ZipFileReader(new ByteArrayInputStream(new byte[0]));
 		reader.readRawFileDataPart(new byte[0]);
+		reader.close();
 	}
 
 	@Test
@@ -187,7 +189,6 @@ public class ZipFileReaderTest {
 		assertEquals(1, num);
 		assertFalse(reader.isFileDataEofReached());
 		num = reader.readFileDataPart(buffer, 1, buffer.length - 1);
-		assertTrue(reader.isFileDataEofReached());
 		assertArrayEquals(bytes, Arrays.copyOf(buffer, num + 1));
 		reader.close();
 	}

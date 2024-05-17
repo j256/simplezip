@@ -14,7 +14,9 @@ import com.j256.simplezip.RewindableInputStream;
 public class CentralDirectoryEnd {
 
 	/** signature that is expected to be at the start of the central directory */
-	public static final int EXPECTED_SIGNATURE = 0x6054b50;
+	private static final int EXPECTED_SIGNATURE = 0x6054b50;
+	/** This is the minimum size that this header will take on disk. */
+	public static final int MINIMUM_READ_SIZE = 4 * 2 + 2 * 4 + 2;
 
 	private final int diskNumber;
 	private final int diskNumberStart;
@@ -49,8 +51,11 @@ public class CentralDirectoryEnd {
 
 		Builder builder = new CentralDirectoryEnd.Builder();
 
-		IoUtils.readInt(inputStream, "CentralDirectoryEnd.signature");
-		// XXX: need to throw if not directory-end or valadation issue
+		int signature = IoUtils.readInt(inputStream, "CentralDirectoryEnd.signature");
+		if (signature != EXPECTED_SIGNATURE) {
+			return null;
+		}
+		// XXX: need to throw if not directory-end or validation issue
 		builder.diskNumber = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.diskNumber");
 		builder.diskNumberStart = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.diskNumberStart");
 		builder.numRecordsOnDisk = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.numRecordsOnDisk");

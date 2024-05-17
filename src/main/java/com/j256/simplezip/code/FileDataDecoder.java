@@ -22,14 +22,4 @@ public interface FileDataDecoder extends Closeable {
 	 * @return The number of bytes written into the outputBlock at the outputOffset.
 	 */
 	public int decode(byte[] outputBuffer, int offset, int length) throws IOException;
-
-	/**
-	 * Return the number of left over bytes in the last read buffer.
-	 */
-	public int getNumRemainingBytes();
-
-	/**
-	 * Has EOF been reached on the data stream.
-	 */
-	public boolean isEofReached();
 }

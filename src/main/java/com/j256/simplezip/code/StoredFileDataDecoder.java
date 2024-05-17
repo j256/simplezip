@@ -41,15 +41,4 @@ public class StoredFileDataDecoder implements FileDataDecoder {
 	public void close() {
 		// no-op
 	}
-
-	@Override
-	public int getNumRemainingBytes() {
-		// never any remaining bytes
-		return 0;
-	}
-
-	@Override
-	public boolean isEofReached() {
-		return (inputOffset >= dataSize);
-	}
 }

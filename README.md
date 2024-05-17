@@ -78,3 +78,12 @@ Simplezip has no direct dependencies.
 # ChangeLog Release Notes
 
 See the [![ChangeLog](https://img.shields.io/github/v/release/j256/simplezip?label=changelog)](https://github.com/j256/simplezip/blob/master/src/main/javadoc/doc-files/changelog.txt)
+
+# References Used to Write this Library
+
+Here are some of the reference documents that were used to write this library.
+
+* [PKWare ZIP File Format Specification](https://pkwaredownloads.blob.core.windows.net/pem/APPNOTE.txt)
+* [Wikipedia Zip file format](https://en.wikipedia.org/wiki/ZIP_(file_format))
+* [DOS/Windows file attributes](http://justsolve.archiveteam.org/wiki/DOS/Windows_file_attributes)
+* [Zip format's external file attribute](https://unix.stackexchange.com/questions/14705/the-zip-formats-external-file-attribute)

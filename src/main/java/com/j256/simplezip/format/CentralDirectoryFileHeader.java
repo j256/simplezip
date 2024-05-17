@@ -14,9 +14,11 @@ import com.j256.simplezip.RewindableInputStream;
 public class CentralDirectoryFileHeader {
 
 	/** signature that is expected to be at the start of the central directory */
-	public static final int EXPECTED_SIGNATURE = 0x2014b50;
+	private static final int EXPECTED_SIGNATURE = 0x2014b50;
 	public static final int INTERNAL_ATTRIBUTES_TEXT_FILE = (1 << 0);
 	public static final int DEFAULT_DISK_NUMBER = 0;
+	/** This is the minimum size that this header will take on disk. */
+	public static final int MINIMUM_READ_SIZE = 6 * 2 + 3 * 4 + 5 * 2 + 2 * 4;
 
 	private final int versionMade;
 	private final int versionNeeded;
@@ -73,7 +75,7 @@ public class CentralDirectoryFileHeader {
 
 		int signature = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.signature");
 
-		if (signature == CentralDirectoryEnd.EXPECTED_SIGNATURE) {
+		if (signature != EXPECTED_SIGNATURE) {
 			inputStream.rewind(4);
 			return null;
 		}

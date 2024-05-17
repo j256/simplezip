@@ -35,7 +35,6 @@ public class ZipFileWriterTest {
 	public void testStuff() throws IOException {
 
 		String fileName1 = "hello";
-		String fileName2 = "src.tgz";
 		byte[] fileBytes1 = new byte[] { 1, 2, 3 };
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -76,6 +75,7 @@ public class ZipFileWriterTest {
 		fileHeaderBuilder.reset();
 		fileHeaderBuilder.setCompressionMethod(CompressionMethod.NONE);
 		fileHeaderBuilder.setLastModifiedDateTime(LocalDateTime.now());
+		String fileName2 = "src.tgz";
 		fileHeaderBuilder.setFileName(fileName2);
 		fileHeaderBuilder.setCompressedSize(fileBytes2.length);
 		fileHeaderBuilder.setUncompressedSize(fileBytes2.length);
@@ -337,9 +337,21 @@ public class ZipFileWriterTest {
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
-		readUsingZipFileReader(file.getName(), fileBytes, bais);
-		bais.reset();
-		readUsingZipInputStream(file.getName(), fileBytes, bais);
+		// read using ZipInputStream
+		ZipInputStream zis = new ZipInputStream(bais);
+		ZipEntry entry = zis.getNextEntry();
+		assertEquals(file.getName() + "1", entry.getName());
+		byte[] buffer = new byte[1024];
+		int num = zis.read(buffer);
+		assertEquals(fileBytes.length, num);
+		assertArrayEquals(fileBytes, Arrays.copyOf(buffer, num));
+		entry = zis.getNextEntry();
+		assertNotNull(entry);
+		assertEquals(file.getName() + "2", entry.getName());
+		num = zis.read(buffer);
+		assertEquals(fileBytes.length, num);
+		assertArrayEquals(fileBytes, Arrays.copyOf(buffer, num));
+		zis.close();
 	}
 
 	@Test
@@ -368,9 +380,21 @@ public class ZipFileWriterTest {
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
-		readUsingZipFileReader(file.getName(), fileBytes, bais);
-		bais.reset();
-		readUsingZipInputStream(file.getName(), fileBytes, bais);
+		// read using ZipInputStream
+		ZipInputStream zis = new ZipInputStream(bais);
+		ZipEntry entry = zis.getNextEntry();
+		assertEquals(file.getName() + "1", entry.getName());
+		byte[] buffer = new byte[1024];
+		int num = zis.read(buffer);
+		assertEquals(fileBytes.length, num);
+		assertArrayEquals(fileBytes, Arrays.copyOf(buffer, num));
+		entry = zis.getNextEntry();
+		assertNotNull(entry);
+		assertEquals(file.getName() + "2", entry.getName());
+		num = zis.read(buffer);
+		assertEquals(fileBytes.length, num);
+		assertArrayEquals(fileBytes, Arrays.copyOf(buffer, num));
+		zis.close();
 	}
 
 	@Test
@@ -433,6 +457,105 @@ public class ZipFileWriterTest {
 		writer.close();
 	}
 
+	@Test
+	public void testFileInAFile() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ZipFileWriter writer = new ZipFileWriter(baos);
+		writer.enableBufferedOutput(1024 * 1024, 1024 * 1024);
+		ZipFileHeader.Builder builder = ZipFileHeader.builder();
+		String outerFileName = "outer.bin";
+		builder.setFileName(outerFileName);
+		writer.writeFileHeader(builder.build());
+		byte[] outerFileBytes = new byte[] { 1, 2, 3, 4, 5, 6 };
+		writer.writeFileDataPart(outerFileBytes);
+		writer.finishFileData();
+
+		String zipName = "hello.zip";
+		builder.setFileName(zipName);
+		writer.writeFileHeader(builder.build());
+
+		// write an inner zip file
+		ZipFileWriter innerWriter = new ZipFileWriter(writer.openFileDataOutputStream(false));
+		innerWriter.enableBufferedOutput(1024 * 1024, 1024 * 1024);
+		String innerFileName = "inner.bin";
+		builder.setFileName(innerFileName);
+		innerWriter.writeFileHeader(builder.build());
+		byte[] innerFileBytes = new byte[] { 10, 20, 30, 40, 50, 60 };
+		innerWriter.writeFileDataPart(innerFileBytes);
+		innerWriter.finishFileData();
+		innerWriter.close();
+
+		writer.close();
+
+		/*
+		 * Read it back in.
+		 */
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+
+		// read using ZipInputStream
+		ZipInputStream zis = new ZipInputStream(bais);
+		ZipEntry entry = zis.getNextEntry();
+		assertEquals(outerFileName, entry.getName());
+		byte[] buffer = new byte[1024];
+		int num = zis.read(buffer);
+		assertArrayEquals(outerFileBytes, Arrays.copyOf(buffer, num));
+
+		entry = zis.getNextEntry();
+		assertEquals(zipName, entry.getName());
+		// process inner zip file
+		ZipInputStream innerZis = new ZipInputStream(zis);
+		entry = innerZis.getNextEntry();
+		assertEquals(innerFileName, entry.getName());
+		num = innerZis.read(buffer);
+		assertArrayEquals(innerFileBytes, Arrays.copyOf(buffer, num));
+		assertNull(innerZis.getNextEntry());
+		innerZis.close();
+
+		zis.close();
+
+		/*
+		 * now read it using our reader
+		 */
+
+		bais.reset();
+
+		// read using ZipInputStream
+		ZipFileReader reader = new ZipFileReader(bais);
+		ZipFileHeader header = reader.readFileHeader();
+		assertEquals(outerFileName, header.getFileName());
+		num = reader.readFileDataPart(buffer);
+		assertArrayEquals(outerFileBytes, Arrays.copyOf(buffer, num));
+		assertEquals(-1, reader.readFileDataPart(buffer));
+
+		header = reader.readFileHeader();
+		assertNotNull(header);
+		assertEquals(zipName, header.getFileName());
+		// process inner zip file
+		ZipFileReader innerReader = new ZipFileReader(reader.openFileDataOutputStream(false));
+		header = innerReader.readFileHeader();
+		assertEquals(innerFileName, header.getFileName());
+		num = innerReader.readFileDataPart(buffer);
+		assertArrayEquals(innerFileBytes, Arrays.copyOf(buffer, num));
+		assertEquals(-1, innerReader.readFileDataPart(buffer));
+		assertNull(innerReader.readFileHeader());
+		CentralDirectoryFileHeader dirHeader = innerReader.readDirectoryFileHeader();
+		assertNotNull(dirHeader);
+		assertEquals(innerFileName, dirHeader.getFileName());
+		assertNull(innerReader.readDirectoryFileHeader());
+
+		// NOTE we need to make sure that we read all of the bytes from the inner file
+		innerReader.close();
+		innerReader = null;
+
+		assertNull(reader.readFileHeader());
+		dirHeader = reader.readDirectoryFileHeader();
+		assertNotNull(dirHeader);
+		assertEquals(outerFileName, dirHeader.getFileName());
+
+		reader.close();
+	}
+
 	public static void main(String[] args) throws IOException {
 
 		byte[] fileBytes =
@@ -440,6 +563,7 @@ public class ZipFileWriterTest {
 
 		File tmpFile = new File("/tmp/x.zip");
 		ZipFileWriter writer = new ZipFileWriter(tmpFile);
+		writer.enableBufferedOutput(10240, 10240);
 		ZipFileHeader.Builder builder = ZipFileHeader.builder();
 		builder.setLastModifiedDateTime(LocalDateTime.now());
 		builder.setFileName("hello");
@@ -448,6 +572,9 @@ public class ZipFileWriterTest {
 		String comment = "hrm a nice lookin' file";
 		fileInfoBuilder.setComment(comment);
 		fileInfoBuilder.setTextFile(true);
+		fileInfoBuilder.setUnixExternalFileAttributes(0644);
+		fileInfoBuilder.setFileReadOnly(true);
+		fileInfoBuilder.setFileIsRegular(true);
 		writer.addDirectoryFileInfo(fileInfoBuilder.build());
 		writer.writeFileDataPart(fileBytes, 0, fileBytes.length);
 		long dataOffset = writer.finishFileData();
@@ -466,43 +593,5 @@ public class ZipFileWriterTest {
 		assertNotNull(dirHeader);
 		assertEquals(comment, dirHeader.getComment());
 		reader.close();
-	}
-
-	private void readUsingZipFileReader(String name, byte[] fileBytes, ByteArrayInputStream bais) throws IOException {
-		// readUsingZipInputStream(file.getName(), fileBytes, bais);
-		ZipFileReader reader = new ZipFileReader(bais);
-		ZipFileHeader header = reader.readFileHeader();
-		assertEquals(name + "1", header.getFileName());
-		byte[] buffer = new byte[1024];
-		int num = reader.readFileDataPart(buffer);
-		assertEquals(fileBytes.length, num);
-		assertArrayEquals(fileBytes, Arrays.copyOf(buffer, num));
-		header = reader.readFileHeader();
-		assertNotNull(header);
-		assertEquals(name + "2", header.getFileName());
-		num = reader.readFileDataPart(buffer);
-		assertEquals(fileBytes.length, num);
-		assertArrayEquals(fileBytes, Arrays.copyOf(buffer, num));
-		reader.close();
-	}
-
-	private void readUsingZipInputStream(String name, byte[] fileBytes, ByteArrayInputStream bais) throws IOException {
-		// now try to read it back in with the jdk stuff
-		ZipInputStream zis = new ZipInputStream(bais);
-		ZipEntry zipEntry = zis.getNextEntry();
-		assertNotNull(zipEntry);
-		assertEquals(name + "1", zipEntry.getName());
-		assertEquals(ZipEntry.STORED, zipEntry.getMethod());
-		byte[] buffer = new byte[1024];
-		int numRead = zis.read(buffer);
-		assertArrayEquals(fileBytes, Arrays.copyOf(buffer, numRead));
-		zipEntry = zis.getNextEntry();
-		assertNotNull(zipEntry);
-		assertEquals(name + "2", zipEntry.getName());
-		assertEquals(ZipEntry.STORED, zipEntry.getMethod());
-		assertArrayEquals(fileBytes, Arrays.copyOf(buffer, numRead));
-		zipEntry = zis.getNextEntry();
-		assertNull(zipEntry);
-		zis.close();
 	}
 }

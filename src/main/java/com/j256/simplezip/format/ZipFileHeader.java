@@ -292,7 +292,7 @@ public class ZipFileHeader {
 
 		/**
 		 * Sets the general-purpose-flags as a integer value. This overrides the value set by
-		 * {@link #addGeneralPurposeFlags(Set)}.
+		 * {@link #addGeneralPurposeFlags(Collection)}.
 		 */
 		public void setGeneralPurposeFlags(int generalPurposeFlags) {
 			this.generalPurposeFlags = generalPurposeFlags;
@@ -318,7 +318,7 @@ public class ZipFileHeader {
 
 		/**
 		 * Sets the general-purpose-flags as a set of enums. This overrides the value set by
-		 * {@link #setGeneralPurposeFlagsValue(int)}.
+		 * {@link #setGeneralPurposeFlags(int)}.
 		 */
 		public void addGeneralPurposeFlags(Collection<GeneralPurposeFlag> generalPurposeFlagSet) {
 			for (GeneralPurposeFlag flag : generalPurposeFlagSet) {
