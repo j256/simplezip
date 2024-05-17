@@ -26,9 +26,6 @@ import com.j256.simplezip.format.ZipFileHeader;
  */
 public class ZipFileReader implements Closeable {
 
-	// XXX: should be maximum zip data read block
-	private static final int BUFFER_SIZE = 8192;
-
 	private final RewindableInputStream countingInputStream;
 	private final CountingInfo countingInfo = new CountingInfo();
 	private final byte[] tmpBuffer = new byte[IoUtils.STANDARD_BUFFER_SIZE];
@@ -38,6 +35,7 @@ public class ZipFileReader implements Closeable {
 	private CentralDirectoryFileHeader currentDirHeader;
 	private DataDescriptor currentDataDescriptor;
 	private boolean currentFileEofReached;
+	private FileDataInputStream fileDataInputStream;
 
 	/**
 	 * Start reading a Zip-file from the file-path. You must call {@link #close()} to close the stream when you are
@@ -58,7 +56,7 @@ public class ZipFileReader implements Closeable {
 	 * Read a Zip-file from an input-stream. You must call {@link #close()} to close the stream when you are done.
 	 */
 	public ZipFileReader(InputStream inputStream) {
-		this.countingInputStream = new RewindableInputStream(inputStream, BUFFER_SIZE);
+		this.countingInputStream = new RewindableInputStream(inputStream, IoUtils.STANDARD_BUFFER_SIZE);
 	}
 
 	/**
@@ -149,6 +147,24 @@ public class ZipFileReader implements Closeable {
 	}
 
 	/**
+	 * Get an input stream suitable for reading the bytes of a single Zip file-entry. A call to the
+	 * {@link InputStream#read(byte[], int, int)} basically calls through to
+	 * {@link #readFileDataPart(byte[], int, int)}.
+	 * 
+	 * NOTE: you _must_ read from the input-stream until it returns EOF (-1).
+	 * 
+	 * @param raw
+	 *            Set to true to make calls to {@link #readRawFileDataPart(byte[], int, int)} or false to call
+	 *            {@link #readFileDataPart(byte[], int, int)}.
+	 */
+	public InputStream openFileDataOutputStream(boolean raw) {
+		if (fileDataInputStream == null) {
+			fileDataInputStream = new FileDataInputStream(raw);
+		}
+		return fileDataInputStream;
+	}
+
+	/**
 	 * Read file data from the Zip stream and decode it into the buffer argument. See
 	 * {@link #readFileDataPart(byte[], int, int)} for more details.
 	 */
@@ -222,6 +238,16 @@ public class ZipFileReader implements Closeable {
 	 */
 	@Override
 	public void close() throws IOException {
+		/*
+		 * This is subtle. We need to read to the EOF marker in case we are in an inner Zip file. The outer decoder
+		 * might need to hit the EOF so it can appropriately rewind in case it was reading ahead.
+		 */
+		while (true) {
+			int num = countingInputStream.read(tmpBuffer);
+			if (num < 0) {
+				break;
+			}
+		}
 		countingInputStream.close();
 	}
 
@@ -267,17 +293,11 @@ public class ZipFileReader implements Closeable {
 
 		// read in bytes from our decoder
 		int result = fileDataDecoder.decode(buffer, offset, length);
-		if (result > 0) {
+		if (result >= 0) {
 			// update our counts for the length and crc information
 			countingInfo.update(buffer, offset, result);
-		}
-		if (result < 0 || fileDataDecoder.isEofReached()) {
-			/*
-			 * Now that we've read all of the decoded data we need to rewind the input stream because the decoder might
-			 * have read more bytes than it needed and we need to rewind to the start of the data-descriptor or the next
-			 * record.
-			 */
-			countingInputStream.rewind(fileDataDecoder.getNumRemainingBytes());
+		} else {
+			// EOF
 			fileDataDecoder.close();
 			if (currentFileHeader.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR)) {
 				currentDataDescriptor = DataDescriptor.read(countingInputStream, countingInfo);
@@ -297,6 +317,43 @@ public class ZipFileReader implements Closeable {
 		} else {
 			throw new IllegalStateException("Unknown compression method: "
 					+ CompressionMethod.fromValue(compressionMethod) + " (" + compressionMethod + ")");
+		}
+	}
+
+	/**
+	 * Input stream that can be used to read data for a single Zip file-entry.
+	 */
+	public class FileDataInputStream extends InputStream {
+
+		private final byte[] singleByteBuffer = new byte[1];
+		private final boolean raw;
+
+		public FileDataInputStream(boolean raw) {
+			this.raw = raw;
+		}
+
+		@Override
+		public int read() throws IOException {
+			int val = read(singleByteBuffer, 0, 1);
+			if (val < 0) {
+				return -1;
+			} else {
+				return singleByteBuffer[0];
+			}
+		}
+
+		@Override
+		public int read(byte[] buffer, int offset, int lengeth) throws IOException {
+			if (raw) {
+				return readRawFileDataPart(buffer, offset, lengeth);
+			} else {
+				return readFileDataPart(buffer, offset, lengeth);
+			}
+		}
+
+		@Override
+		public void close() {
+			// no-op, nothing to close
 		}
 	}
 }

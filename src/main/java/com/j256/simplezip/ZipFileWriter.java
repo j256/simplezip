@@ -38,6 +38,7 @@ public class ZipFileWriter implements Closeable {
 	private DataDescriptor.Builder dataDescriptorBuilder = DataDescriptor.builder();
 	private CentralDirectoryFileHeader.Builder dirFileBuilder = CentralDirectoryFileHeader.builder();
 	private List<CentralDirectoryFileHeader> dirFileHeaders = new ArrayList<>();
+	private FileDataOutputStream fileDataOutputStream;
 	private boolean fileFinished = true;
 	private boolean zipFinished;
 	private int fileCount;
@@ -71,7 +72,7 @@ public class ZipFileWriter implements Closeable {
 	 * 
 	 * @param maxSizeBuffered
 	 *            Maximum number of bytes that will be stored by the buffer before it gives up and will write a
-	 *            {@link DataDescriptor).
+	 *            {@link DataDescriptor}.
 	 * @param maxSizeInMemory
 	 *            Maximum number of bytes that will be stored by in memory. If there is any space above this number but
 	 *            below the maxSizeBuffered then it will be written to a temporary file.
@@ -198,6 +199,23 @@ public class ZipFileWriter implements Closeable {
 			writeRawFileDataPart(tmpBuffer, 0, numRead);
 		}
 		return finishFileData();
+	}
+
+	/**
+	 * Get an output stream suitable for writing the bytes for a single Zip file-entry. A call to the
+	 * {@link OutputStream#write(byte[], int, int)} basically calls through to
+	 * {@link #writeFileDataPart(byte[], int, int)}. A call to {@link OutputStream#close()} calls through to
+	 * {@link #finishFileData()}.
+	 * 
+	 * @param raw
+	 *            Set to true to make calls to {@link #writeRawFileDataPart(byte[], int, int)} or false to call
+	 *            {@link #writeFileDataPart(byte[], int, int)}.
+	 */
+	public OutputStream openFileDataOutputStream(boolean raw) {
+		if (fileDataOutputStream == null) {
+			fileDataOutputStream = new FileDataOutputStream(raw);
+		}
+		return fileDataOutputStream;
 	}
 
 	/**
@@ -382,8 +400,8 @@ public class ZipFileWriter implements Closeable {
 			assignFileDataEncoder(compressionMethod);
 		}
 
-		fileDataEncoder.encode(buffer, offset, length);
 		incomingFileDateInfo.update(buffer, offset, length);
+		fileDataEncoder.encode(buffer, offset, length);
 	}
 
 	private void assignFileDataEncoder(int compressionMethod) {
@@ -395,6 +413,46 @@ public class ZipFileWriter implements Closeable {
 		} else {
 			throw new IllegalStateException("Unknown compression method: "
 					+ CompressionMethod.fromValue(compressionMethod) + " (" + compressionMethod + ")");
+		}
+	}
+
+	/**
+	 * Output stream that can be used to write data for a single zip file. Once you close this output-stream then
+	 * {@link ZipFileWriter#finishFileData()} will be automatically called.
+	 */
+	public class FileDataOutputStream extends OutputStream {
+
+		private final byte[] singleByteBuffer = new byte[1];
+		private final boolean raw;
+
+		public FileDataOutputStream(boolean raw) {
+			this.raw = raw;
+		}
+
+		@Override
+		public void write(int b) throws IOException {
+			singleByteBuffer[0] = (byte) b;
+			write(singleByteBuffer, 0, 1);
+		}
+
+		@Override
+		public void write(byte[] buffer, int offset, int length) throws IOException {
+			if (raw) {
+				writeRawFileDataPart(buffer, offset, length);
+			} else {
+				writeFileDataPart(buffer, offset, length);
+			}
+		}
+
+		@Override
+		public void flush() throws IOException {
+			ZipFileWriter.this.flush();
+		}
+
+		@Override
+		public void close() throws IOException {
+			finishFileData();
+			// NOTE: should not call ZipFileWriter.this.close() because we will continue to write to the zip stream
 		}
 	}
 }
