@@ -573,7 +573,7 @@ public class ZipFileWriterTest {
 		fileInfoBuilder.setComment(comment);
 		fileInfoBuilder.setTextFile(true);
 		fileInfoBuilder.setUnixExternalFileAttributes(0644);
-		fileInfoBuilder.setFileReadOnly(true);
+		fileInfoBuilder.setFileIsReadOnly(true);
 		fileInfoBuilder.setFileIsRegular(true);
 		writer.addDirectoryFileInfo(fileInfoBuilder.build());
 		writer.writeFileDataPart(fileBytes, 0, fileBytes.length);

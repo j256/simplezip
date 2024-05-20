@@ -108,7 +108,7 @@ public class ZipFileHeader {
 	 * Return whether the header has this flag.
 	 */
 	public boolean hasFlag(GeneralPurposeFlag flag) {
-		return ((generalPurposeFlags & flag.getValue()) != 0);
+		return ((generalPurposeFlags & flag.getValue()) == flag.getValue());
 	}
 
 	public int getVersionNeeded() {
@@ -127,16 +127,18 @@ public class ZipFileHeader {
 	 * Read the compression level from the flags.
 	 */
 	public int getCompressionLevel() {
-		if ((compressionMethod & GeneralPurposeFlag.DEFLATING_MAXIMUM.getValue()) != 0) {
+		int deflateFlags = (generalPurposeFlags & 06);
+		if (deflateFlags == GeneralPurposeFlag.DEFLATING_MAXIMUM.getValue()) {
 			return Deflater.BEST_COMPRESSION;
-		} else if ((compressionMethod & GeneralPurposeFlag.DEFLATING_NORMAL.getValue()) != 0) {
+		} else if (deflateFlags == GeneralPurposeFlag.DEFLATING_NORMAL.getValue()) {
 			return Deflater.DEFAULT_COMPRESSION;
-		} else if ((compressionMethod & GeneralPurposeFlag.DEFLATING_FAST.getValue()) != 0) {
+		} else if (deflateFlags == GeneralPurposeFlag.DEFLATING_FAST.getValue()) {
 			// i guess this is right
-			return Deflater.DEFAULT_COMPRESSION + Deflater.BEST_SPEED / 2;
-		} else if ((compressionMethod & GeneralPurposeFlag.DEFLATING_SUPER_FAST.getValue()) != 0) {
+			return (Deflater.DEFAULT_COMPRESSION + Deflater.BEST_SPEED) / 2;
+		} else if (deflateFlags == GeneralPurposeFlag.DEFLATING_SUPER_FAST.getValue()) {
 			return Deflater.BEST_SPEED;
 		} else {
+			// may not get here but let's be careful out there
 			return Deflater.DEFAULT_COMPRESSION;
 		}
 	}
@@ -202,7 +204,11 @@ public class ZipFileHeader {
 	}
 
 	public String getFileName() {
-		return new String(fileNameBytes);
+		if (fileNameBytes == null) {
+			return null;
+		} else {
+			return new String(fileNameBytes);
+		}
 	}
 
 	public byte[] getExtraFieldBytes() {
@@ -286,6 +292,11 @@ public class ZipFileHeader {
 			this.versionNeeded = versionNeeded;
 		}
 
+		public Builder withVersionNeeded(int versionNeeded) {
+			this.versionNeeded = versionNeeded;
+			return this;
+		}
+
 		public int getGeneralPurposeFlags() {
 			return generalPurposeFlags;
 		}
@@ -296,6 +307,15 @@ public class ZipFileHeader {
 		 */
 		public void setGeneralPurposeFlags(int generalPurposeFlags) {
 			this.generalPurposeFlags = generalPurposeFlags;
+		}
+
+		/**
+		 * Sets the general-purpose-flags as a integer value. This overrides the value set by
+		 * {@link #addGeneralPurposeFlags(Collection)}.
+		 */
+		public Builder withGeneralPurposeFlags(int generalPurposeFlags) {
+			this.generalPurposeFlags = generalPurposeFlags;
+			return this;
 		}
 
 		/**
@@ -327,13 +347,38 @@ public class ZipFileHeader {
 		}
 
 		/**
+		 * Sets the general-purpose-flags as a set of enums. This overrides the value set by
+		 * {@link #setGeneralPurposeFlags(int)}.
+		 */
+		public Builder withGeneralPurposeFlags(Collection<GeneralPurposeFlag> generalPurposeFlagSet) {
+			addGeneralPurposeFlags(generalPurposeFlagSet);
+			return this;
+		}
+
+		/**
 		 * Sets the general-purpose-flags as an array of enums. This overrides the value set by
 		 * {@link #setGeneralPurposeFlags(int)}.
 		 */
 		public void addGeneralPurposeFlags(GeneralPurposeFlag... generalPurposeFlagEnums) {
 			for (GeneralPurposeFlag flag : generalPurposeFlagEnums) {
-				generalPurposeFlags |= flag.getValue();
+				if (flag == GeneralPurposeFlag.DEFLATING_NORMAL //
+						|| flag == GeneralPurposeFlag.DEFLATING_MAXIMUM //
+						|| flag == GeneralPurposeFlag.DEFLATING_FAST //
+						|| flag == GeneralPurposeFlag.DEFLATING_SUPER_FAST) {
+					generalPurposeFlags = (generalPurposeFlags & ~06) | flag.getValue();
+				} else {
+					generalPurposeFlags |= flag.getValue();
+				}
 			}
+		}
+
+		/**
+		 * Sets the general-purpose-flags as an array of enums. This overrides the value set by
+		 * {@link #setGeneralPurposeFlags(int)}.
+		 */
+		public Builder withGeneralPurposeFlags(GeneralPurposeFlag... generalPurposeFlagEnums) {
+			addGeneralPurposeFlags(generalPurposeFlagEnums);
+			return this;
 		}
 
 		public int getCompressionMethod() {
@@ -344,12 +389,22 @@ public class ZipFileHeader {
 			this.compressionMethod = compressionMethod;
 		}
 
+		public Builder withCompressionMethod(int compressionMethod) {
+			this.compressionMethod = compressionMethod;
+			return this;
+		}
+
 		public CompressionMethod getCompressionMethodAsEnum() {
 			return CompressionMethod.fromValue(compressionMethod);
 		}
 
 		public void setCompressionMethod(CompressionMethod method) {
 			this.compressionMethod = method.getValue();
+		}
+
+		public Builder withCompressionMethod(CompressionMethod method) {
+			this.compressionMethod = method.getValue();
+			return this;
 		}
 
 		public int getLastModifiedFileTime() {
@@ -360,12 +415,22 @@ public class ZipFileHeader {
 			this.lastModifiedFileTime = lastModFileTime;
 		}
 
+		public Builder withLastModifiedFileTime(int lastModFileTime) {
+			this.lastModifiedFileTime = lastModFileTime;
+			return this;
+		}
+
 		public int getLastModifiedFileDate() {
 			return lastModifiedFileDate;
 		}
 
 		public void setLastModifiedFileDate(int lastModifiedFileDate) {
 			this.lastModifiedFileDate = lastModifiedFileDate;
+		}
+
+		public Builder withLastModifiedFileDate(int lastModifiedFileDate) {
+			this.lastModifiedFileDate = lastModifiedFileDate;
+			return this;
 		}
 
 		/**
@@ -379,12 +444,26 @@ public class ZipFileHeader {
 					| (localDateTime.getSecond() / 2));
 		}
 
+		/**
+		 * Set the lastModFileDate and lastModFileTime as a {@link LocalDateTime}. Warning, the time has a 2 second
+		 * resolution so some normalization will occur.
+		 */
+		public Builder withLastModifiedDateTime(LocalDateTime localDateTime) {
+			setLastModifiedDateTime(localDateTime);
+			return this;
+		}
+
 		public long getCrc32() {
 			return crc32;
 		}
 
 		public void setCrc32(long crc32) {
 			this.crc32 = crc32;
+		}
+
+		public Builder withCrc32(long crc32) {
+			this.crc32 = crc32;
+			return this;
 		}
 
 		public void setCrc32Value(CRC32 crc32) {
@@ -399,12 +478,22 @@ public class ZipFileHeader {
 			this.compressedSize = compressedSize;
 		}
 
+		public Builder withCompressedSize(int compressedSize) {
+			this.compressedSize = compressedSize;
+			return this;
+		}
+
 		public int getUncompressedSize() {
 			return uncompressedSize;
 		}
 
 		public void setUncompressedSize(int uncompressedSize) {
 			this.uncompressedSize = uncompressedSize;
+		}
+
+		public Builder withUncompressedSize(int uncompressedSize) {
+			this.uncompressedSize = uncompressedSize;
+			return this;
 		}
 
 		public byte[] getFileNameBytes() {
@@ -415,8 +504,26 @@ public class ZipFileHeader {
 			this.fileNameBytes = fileName;
 		}
 
+		public Builder withFileNameBytes(byte[] fileName) {
+			this.fileNameBytes = fileName;
+			return this;
+		}
+
+		public String getFileName() {
+			if (fileNameBytes == null) {
+				return null;
+			} else {
+				return new String(fileNameBytes);
+			}
+		}
+
 		public void setFileName(String fileName) {
 			this.fileNameBytes = fileName.getBytes();
+		}
+
+		public Builder withFileName(String fileName) {
+			this.fileNameBytes = fileName.getBytes();
+			return this;
 		}
 
 		public byte[] getExtraFieldBytes() {
@@ -425,6 +532,11 @@ public class ZipFileHeader {
 
 		public void setExtraFieldBytes(byte[] extraFieldBytes) {
 			this.extraFieldBytes = extraFieldBytes;
+		}
+
+		public Builder withExtraFieldBytes(byte[] extraFieldBytes) {
+			this.extraFieldBytes = extraFieldBytes;
+			return this;
 		}
 	}
 }

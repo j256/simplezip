@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -48,9 +49,9 @@ public class ZipFileReaderTest {
 		InputStream input = new ByteArrayInputStream(baos.toByteArray());
 		ZipFileReader reader = new ZipFileReader(input);
 
-		assertNull(reader.getCurrentFileNameAsString());
+		assertNull(reader.getCurrentFileName());
 		ZipFileHeader header = reader.readFileHeader();
-		assertEquals(reader.getCurrentFileNameAsString(), header.getFileName());
+		assertEquals(reader.getCurrentFileName(), header.getFileName());
 		assertEquals(fileName, header.getFileName());
 		// there is no sizes because there is data-descriptor because we were streaming data in
 		assertEquals(0, header.getCompressedSize());
@@ -164,8 +165,8 @@ public class ZipFileReaderTest {
 		ZipFileReader reader = new ZipFileReader(input);
 		assertNotNull(reader.readFileHeader());
 		byte[] buffer = new byte[1024];
-		int num = reader.readFileDataPart(buffer);
-		assertEquals(-1, num);
+		assertEquals(-1, reader.readFileDataPart(buffer));
+		assertEquals(-1, reader.readFileDataPart(buffer));
 		reader.close();
 	}
 
@@ -219,6 +220,36 @@ public class ZipFileReaderTest {
 		assertEquals(bytes.length, num);
 		assertEquals(-1, reader.readFileDataPart(buffer, 0, buffer.length));
 		assertArrayEquals(bytes, Arrays.copyOf(buffer, num));
+		reader.close();
+	}
+
+	@Test
+	public void testReadWithInputStream() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+		ZipFileWriter writer = new ZipFileWriter(baos);
+		writer.enableBufferedOutput(10240, 10240);
+		String fileName = "hello";
+		Builder builder = ZipFileHeader.builder().withFileName(fileName).withCompressionMethod(CompressionMethod.NONE);
+		byte[] bytes = new byte[] { 1, 2, 3 };
+		writer.writeFileHeader(builder.build());
+		writer.writeFileDataPart(bytes);
+		writer.finishFileData();
+		writer.close();
+
+		InputStream input = new ByteArrayInputStream(baos.toByteArray());
+		ZipFileReader reader = new ZipFileReader(input);
+		ZipFileHeader header = reader.readFileHeader();
+		assertEquals(CompressionMethod.NONE, header.getCompressionMethodAsEnum());
+		byte[] buffer = new byte[1024];
+		InputStream inputStream = reader.openFileDataOutputStream(false);
+		assertSame(inputStream, reader.openFileDataOutputStream(false));
+		int first = inputStream.read();
+		int num = inputStream.read(buffer, 0, buffer.length - 1);
+		assertEquals(bytes.length, num + 1);
+		assertEquals(-1, inputStream.read());
+		assertEquals(bytes[0], first);
+		assertArrayEquals(Arrays.copyOfRange(bytes, 1, bytes.length), Arrays.copyOf(buffer, num));
 		reader.close();
 	}
 

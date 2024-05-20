@@ -10,6 +10,8 @@ import java.io.File;
  */
 public class CentralDirectoryFileInfo {
 
+	private static final int MS_DOS_EXTERNAL_ATTRIBUTES_MASK = 0xFFFF;
+
 	private int versionMade;
 	private int versionNeeded;
 	private int diskNumberStart;
@@ -130,12 +132,22 @@ public class CentralDirectoryFileInfo {
 			this.versionMade = versionMade;
 		}
 
+		public Builder withVersionMade(int versionMade) {
+			this.versionMade = versionMade;
+			return this;
+		}
+
 		public Platform getPlatform() {
 			return Platform.fromValue((versionMade >> 8) & 0xFF);
 		}
 
 		public void setPlatform(Platform platform) {
 			this.versionMade = ((this.versionMade & 0xFF) | (platform.getValue() << 8));
+		}
+
+		public Builder withPlatform(Platform platform) {
+			setPlatform(platform);
+			return this;
 		}
 
 		public ZipVersion getZipVersion() {
@@ -146,12 +158,22 @@ public class CentralDirectoryFileInfo {
 			this.versionMade = ((this.versionMade & 0xFF00) | version.getValue());
 		}
 
+		public Builder withZipVersion(ZipVersion version) {
+			setZipVersion(version);
+			return this;
+		}
+
 		public int getVersionNeeded() {
 			return versionNeeded;
 		}
 
 		public void setVersionNeeded(int versionNeeded) {
 			this.versionNeeded = versionNeeded;
+		}
+
+		public Builder withVersionNeeded(int versionNeeded) {
+			this.versionNeeded = versionNeeded;
+			return this;
 		}
 
 		public int getDiskNumberStart() {
@@ -162,12 +184,22 @@ public class CentralDirectoryFileInfo {
 			this.diskNumberStart = diskNumberStart;
 		}
 
+		public Builder withDiskNumberStart(int diskNumberStart) {
+			this.diskNumberStart = diskNumberStart;
+			return this;
+		}
+
 		public int getInternalFileAttributes() {
 			return internalFileAttributes;
 		}
 
 		public void setInternalFileAttributes(int internalFileAttributes) {
 			this.internalFileAttributes = internalFileAttributes;
+		}
+
+		public Builder withInternalFileAttributes(int internalFileAttributes) {
+			this.internalFileAttributes = internalFileAttributes;
+			return this;
 		}
 
 		/**
@@ -188,6 +220,14 @@ public class CentralDirectoryFileInfo {
 			}
 		}
 
+		/**
+		 * Set in the internalFileAttributes.
+		 */
+		public Builder withTextFile(boolean textFile) {
+			setTextFile(textFile);
+			return this;
+		}
+
 		public int getExternalFileAttributes() {
 			return externalFileAttributes;
 		}
@@ -196,11 +236,40 @@ public class CentralDirectoryFileInfo {
 			this.externalFileAttributes = externalFileAttributes;
 		}
 
+		public Builder withExternalFileAttributes(int externalFileAttributes) {
+			this.externalFileAttributes = externalFileAttributes;
+			return this;
+		}
+
 		/**
 		 * Set the externalFileAttributes from the attributes associated with the file argument.
 		 */
-		public void setExternalFileAttributesFromFile(File file) {
+		public void setExternalAttributesFromFile(File file) {
 			this.externalFileAttributes = FilePermissions.fromFile(file);
+		}
+
+		/**
+		 * Set the externalFileAttributes from the attributes associated with the file argument.
+		 */
+		public Builder withExternalAttributesFromFile(File file) {
+			setExternalAttributesFromFile(file);
+			return this;
+		}
+
+		/**
+		 * Set the MS-DOS file mode into the bottom of the externalFileAttributes.
+		 */
+		public void setMsDosExternalFileAttributes(int msDosFileAttributes) {
+			externalFileAttributes =
+					(externalFileAttributes & ~MS_DOS_EXTERNAL_ATTRIBUTES_MASK) | (msDosFileAttributes & 0xFF);
+		}
+
+		/**
+		 * Set the MS-DOS file mode into the bottom of the externalFileAttributes.
+		 */
+		public Builder withMsDosExternalFileAttributes(int msDosFileAttributes) {
+			setMsDosExternalFileAttributes(msDosFileAttributes);
+			return this;
 		}
 
 		/**
@@ -208,7 +277,17 @@ public class CentralDirectoryFileInfo {
 		 * 0777.
 		 */
 		public void setUnixExternalFileAttributes(int unixFileAttributes) {
-			externalFileAttributes = ((externalFileAttributes & 0xFFFF) | (unixFileAttributes << 16));
+			externalFileAttributes =
+					((externalFileAttributes & MS_DOS_EXTERNAL_ATTRIBUTES_MASK) | (unixFileAttributes << 16));
+		}
+
+		/**
+		 * Set the Unix file mode into the top of the externalFileAttributes. For example you can set this with 0644 or
+		 * 0777.
+		 */
+		public Builder withUnixExternalFileAttributes(int unixFileAttributes) {
+			setUnixExternalFileAttributes(unixFileAttributes);
+			return this;
 		}
 
 		/**
@@ -225,6 +304,14 @@ public class CentralDirectoryFileInfo {
 		}
 
 		/**
+		 * Set in the externalFileAttributes whether or not the file is a directory.
+		 */
+		public Builder withFileIsDirectory(boolean isDirectory) {
+			setFileIsDirectory(isDirectory);
+			return this;
+		}
+
+		/**
 		 * Set in the externalFileAttributes whether or not the file is a symbolic-link.
 		 */
 		public void setFileIsSymlink(boolean isSymlink) {
@@ -236,10 +323,18 @@ public class CentralDirectoryFileInfo {
 		}
 
 		/**
+		 * Set in the externalFileAttributes whether or not the file is a symbolic-link.
+		 */
+		public Builder withFileIsSymlink(boolean isSymlink) {
+			setFileIsSymlink(isSymlink);
+			return this;
+		}
+
+		/**
 		 * Set in the externalFileAttributes whether or not the file is a regular-file.
 		 */
-		public void setFileIsRegular(boolean isDirectory) {
-			if (isDirectory) {
+		public void setFileIsRegular(boolean isRegular) {
+			if (isRegular) {
 				externalFileAttributes |= FilePermissions.UNIX_REGULAR_FILE;
 			} else {
 				externalFileAttributes &= ~FilePermissions.UNIX_REGULAR_FILE;
@@ -247,30 +342,36 @@ public class CentralDirectoryFileInfo {
 		}
 
 		/**
+		 * Set in the externalFileAttributes whether or not the file is a regular-file.
+		 */
+		public Builder withFileIsRegular(boolean isRegular) {
+			setFileIsRegular(isRegular);
+			return this;
+		}
+
+		/**
 		 * Set in the externalFileAttributes whether or not the file is read-only.
 		 */
-		public void setFileReadOnly(boolean readOnly) {
+		public void setFileIsReadOnly(boolean readOnly) {
 			if (readOnly) {
-				externalFileAttributes =
-						((externalFileAttributes & 0xFFFF) | FilePermissions.UNIX_READ_ONLY_PERMISSIONS);
+				// add in read-only permissions
+				externalFileAttributes = ((externalFileAttributes & MS_DOS_EXTERNAL_ATTRIBUTES_MASK)
+						| FilePermissions.UNIX_READ_ONLY_PERMISSIONS);
 				externalFileAttributes |= FilePermissions.MS_DOS_READONLY;
 			} else {
+				// not 100% sure this is correct but maybe the best we can do
+				externalFileAttributes = ((externalFileAttributes & MS_DOS_EXTERNAL_ATTRIBUTES_MASK)
+						| FilePermissions.UNIX_READ_WRITE_PERMISSIONS);
 				externalFileAttributes &= ~FilePermissions.MS_DOS_READONLY;
 			}
 		}
 
 		/**
-		 * Set the MS-DOS file mode into the bottom of the externalFileAttributes.
+		 * Set in the externalFileAttributes whether or not the file is read-only.
 		 */
-		public void setMsDosExternalFileAttributes(int msDosFileAttributes) {
-			externalFileAttributes = ((externalFileAttributes & 0xFF) | msDosFileAttributes);
-		}
-
-		/**
-		 * Set the external
-		 */
-		public void setExternalAttributesFromFile(File file) {
-			externalFileAttributes = FilePermissions.fromFile(file);
+		public Builder withFileIsReadOnly(boolean readOnly) {
+			setFileIsReadOnly(readOnly);
+			return this;
 		}
 
 		public byte[] getCommentBytes() {
@@ -279,6 +380,11 @@ public class CentralDirectoryFileInfo {
 
 		public void setCommentBytes(byte[] commentBytes) {
 			this.commentBytes = commentBytes;
+		}
+
+		public Builder withCommentBytes(byte[] commentBytes) {
+			this.commentBytes = commentBytes;
+			return this;
 		}
 
 		public String getComment() {
@@ -295,6 +401,11 @@ public class CentralDirectoryFileInfo {
 			} else {
 				commentBytes = comment.getBytes();
 			}
+		}
+
+		public Builder withComment(String comment) {
+			setComment(comment);
+			return this;
 		}
 	}
 }

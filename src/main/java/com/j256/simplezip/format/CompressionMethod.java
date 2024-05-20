@@ -7,7 +7,10 @@ package com.j256.simplezip.format;
  */
 public enum CompressionMethod {
 
+	/** no compression selected which is the same as ZipEntry.STORED */
 	NONE(0),
+	/** this is an alias to NONE but here to match the ZipEntry.STORED */
+	STORED(0),
 	SHRUNK(1),
 	REDUCED_FACTOR_1(2),
 	REDUCED_FACTOR_2(3),
@@ -15,6 +18,7 @@ public enum CompressionMethod {
 	REDUCED_FACTOR_4(5),
 	IMPLODED(6),
 	TOKENIZING(7),
+	/** standard zip-file compression */
 	DEFLATED(8),
 	DEFLATED64(9),
 	PKWARE_IMPLODED(10),

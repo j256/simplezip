@@ -1,6 +1,4 @@
 - need to have an encryption interface
-- need to publish some sort of header without the details so that they can get filled in by the writer
-- need to figure out the dos and the unix permissions
 - need to figure out how to do the extra blocks, maybe hashmap of name/values?
 - should be able to iterate over the entries and then iterate over the directory
 	- then go back and annotate the entries already recorded in the stream

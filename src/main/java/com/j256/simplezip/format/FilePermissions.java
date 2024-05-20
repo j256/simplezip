@@ -23,7 +23,7 @@ public class FilePermissions {
 	public static int UNIX_DIRECTORY = (040000 << 16);
 	public static int UNIX_SYMLINK = (0120000 << 16);
 	public static int UNIX_READ_ONLY_PERMISSIONS = (0444 << 16);
-	private static int UNIX_READ_WRITE_PERMISSIONS = (0644 << 16);
+	public static int UNIX_READ_WRITE_PERMISSIONS = (0644 << 16);
 	private static int UNIX_READ_ONLY_EXECUTE_PERMISSIONS = (0555 << 16);
 	private static int UNIX_READ_WRITE_EXECUTE_PERMISSIONS = (0755 << 16);
 

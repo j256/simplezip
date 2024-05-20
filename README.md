@@ -87,3 +87,5 @@ Here are some of the reference documents that were used to write this library.
 * [Wikipedia Zip file format](https://en.wikipedia.org/wiki/ZIP_(file_format))
 * [DOS/Windows file attributes](http://justsolve.archiveteam.org/wiki/DOS/Windows_file_attributes)
 * [Zip format's external file attribute](https://unix.stackexchange.com/questions/14705/the-zip-formats-external-file-attribute)
+* [Structure of a PKZip file](https://users.cs.jmu.edu/buchhofp/forensics/formats/pkzip.html)
+* [Known types of Zipfile extra fields](https://libzip.org/specifications/extrafld.txt)
