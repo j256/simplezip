@@ -10,7 +10,8 @@ Simple Java Zip
 
 This package provides Java classes to read and write Zip files.  There are a number of different libraries that do
 this (including one built into the JDK) but I've not found any that gave me precise controls over the Zip file and
-directory entries.
+directory entries.  This library allows you to control the output in all Zip fields which should allow you to read
+and re-write Zip files duplicating all Zip data structures.
 
 Enjoy.  Gray Watson
 
@@ -23,7 +24,7 @@ Here's some simple code that runs through all of the Zip-file parts.
 	ZipFileReader zipFile = new ZipFileReader(input);
 	// readFileHeader() will return null when no more files
 	ZipFileHeader header = zipFile.readFileHeader();
-	byte[] buffer = new byte[8192];
+	byte[] buffer = new byte[4096];
 	// read into buffers or via InputStream
 	long numRead = zipFile.readFileDataPart(buffer);
 	...
@@ -67,7 +68,7 @@ Maven packages are published via [![Maven Central](https://maven-badges.herokuap
 <dependency>
 	<groupId>com.j256.simplezip</groupId>
 	<artifactId>simplezip</artifactId>
-	<version>0.6</version>
+	<version>0.7</version>
 </dependency>
 ```
 

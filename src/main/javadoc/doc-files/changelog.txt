@@ -1,7 +1,8 @@
-0.7: ??/??/2024
+0.7: 5/20/2024
 	* Added better support for file permissions.
-	* Added reading from ZipFileReader and writing to a File.
-	* Added support for writing to an OutputStream in the ZipFileWriter for file-data.  Similar for the ZipFileReader.
+	* Added reading from ZipFileReader and writing to a File directly.
+	* Added support for writing to an OutputStream in the ZipFileWriter for file-data.
+	* Added support for reading from an InputStream in the ZipFileReader for file-data.
 	* Fixed problems with streaming Zip files inside of Zip files because of possibility of reading past the inner one.
 	* Fixed problems with compression level flags.
 	* Added with...() method chaining to some of the builder classes.
