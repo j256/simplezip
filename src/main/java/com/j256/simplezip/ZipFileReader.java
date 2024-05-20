@@ -36,6 +36,7 @@ public class ZipFileReader implements Closeable {
 	private DataDescriptor currentDataDescriptor;
 	private boolean currentFileEofReached;
 	private FileDataInputStream fileDataInputStream;
+	private boolean readTillEof = true;
 
 	/**
 	 * Start reading a Zip-file from the file-path. You must call {@link #close()} to close the stream when you are
@@ -43,6 +44,7 @@ public class ZipFileReader implements Closeable {
 	 */
 	public ZipFileReader(String path) throws FileNotFoundException {
 		this(new File(path));
+		this.readTillEof = false;
 	}
 
 	/**
@@ -50,6 +52,7 @@ public class ZipFileReader implements Closeable {
 	 */
 	public ZipFileReader(File file) throws FileNotFoundException {
 		this(new FileInputStream(file));
+		this.readTillEof = false;
 	}
 
 	/**
@@ -156,9 +159,10 @@ public class ZipFileReader implements Closeable {
 	 * @param raw
 	 *            Set to true to make calls to {@link #readRawFileDataPart(byte[], int, int)} or false to call
 	 *            {@link #readFileDataPart(byte[], int, int)}.
+	 * @return Stream that can be used to read the file bytes. Calling close() on this stream is a no-op.
 	 */
 	public InputStream openFileDataOutputStream(boolean raw) {
-		if (fileDataInputStream == null) {
+		if (fileDataInputStream == null || fileDataInputStream.raw != raw) {
 			fileDataInputStream = new FileDataInputStream(raw);
 		}
 		return fileDataInputStream;
@@ -234,19 +238,30 @@ public class ZipFileReader implements Closeable {
 	}
 
 	/**
-	 * Close the underlying input-stream.
+	 * In some circumstances we need to read to the EOF marker in case we are in an inner Zip file. The outer decoder
+	 * might need to hit the EOF so it can appropriately rewind in case it was reading ahead. This method will be called
+	 * by {@link #close()} if {@link #setReadTillEof(boolean)} is set to true which is on by default if the
+	 * {@link #ZipFileReader(InputStream)} constructor is used.
 	 */
-	@Override
-	public void close() throws IOException {
-		/*
-		 * This is subtle. We need to read to the EOF marker in case we are in an inner Zip file. The outer decoder
-		 * might need to hit the EOF so it can appropriately rewind in case it was reading ahead.
-		 */
+	public void readToEndOfZip() throws IOException {
 		while (true) {
 			int num = countingInputStream.read(tmpBuffer);
 			if (num < 0) {
 				break;
 			}
+		}
+	}
+
+	/**
+	 * Close the underlying input-stream.
+	 * 
+	 * NOTE: this will read to the end of the Zip-file if it was constructed using {@link #ZipFileReader(InputStream)}
+	 * in case we have a zip inside of a zip stream. See {@link #setReadTillEof(boolean)}.
+	 */
+	@Override
+	public void close() throws IOException {
+		if (readTillEof) {
+			readToEndOfZip();
 		}
 		countingInputStream.close();
 	}
@@ -254,7 +269,7 @@ public class ZipFileReader implements Closeable {
 	/**
 	 * Return the file-name from the most recent header read.
 	 */
-	public String getCurrentFileNameAsString() {
+	public String getCurrentFileName() {
 		if (currentFileHeader == null) {
 			return null;
 		} else {
@@ -277,6 +292,15 @@ public class ZipFileReader implements Closeable {
 	 */
 	public DataDescriptor getCurrentDataDescriptor() {
 		return currentDataDescriptor;
+	}
+
+	/**
+	 * By default the reader will read to the end of the zip-file when {@link #close()} is called if we are reading from
+	 * an input-stream to handle the possibility of being a Zip within a Zip. If we don't do this the encoding of the
+	 * outer Zip file may not be fully read to the end which would cause processing issues.
+	 */
+	public void setReadTillEof(boolean readTillEof) {
+		this.readTillEof = readTillEof;
 	}
 
 	private int doReadFileDataPart(byte[] buffer, int offset, int length, int compressionMethod) throws IOException {
