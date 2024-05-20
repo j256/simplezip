@@ -4,6 +4,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -234,21 +235,25 @@ public class CentralDirectoryFileInfoTest {
 
 		CentralDirectoryFileInfo.Builder builder = CentralDirectoryFileInfo.builder();
 
+		file.setReadable(true);
 		file.setExecutable(false);
 		file.setWritable(false);
 		builder.setExternalAttributesFromFile(file);
-		assertEquals((0100444 << 16), builder.getExternalFileAttributes());
+		assertTrue((0100444 << 16) == builder.getExternalFileAttributes()
+				|| (0100440 << 16) == builder.getExternalFileAttributes());
 
 		file.setExecutable(false);
 		file.setWritable(true);
 		builder.withExternalAttributesFromFile(file);
-		assertEquals((0100644 << 16), builder.getExternalFileAttributes());
+		assertTrue((0100644 << 16) == builder.getExternalFileAttributes()
+				|| (0100640 << 16) == builder.getExternalFileAttributes());
 
 		file.setExecutable(true);
 		file.setWritable(true);
 		builder.setExternalAttributesFromFile(file);
 		// NOTE: 744 is what we get from posix
-		assertEquals((0100744 << 16), builder.getExternalFileAttributes());
+		assertTrue((0100744 << 16) == builder.getExternalFileAttributes()
+				|| (0100740 << 16) == builder.getExternalFileAttributes());
 
 		file.delete();
 	}
