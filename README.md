@@ -34,6 +34,7 @@ Here's some simple code that runs through all of the Zip-file parts.  `input` co
 	// read in the central-directory file-headers, null when no more
 	CentralDirectoryFileHeader dirHeader = zipInput.readDirectoryFileHeader();
 	CentralDirectoryEnd end = zipInput.readDirectoryEnd();
+	zipInput.close();
 
 ## Writing a Zip File
 
@@ -42,15 +43,16 @@ Here's some equally simple code that allows you to write out a Zip-file.  `outpu
 
 	ZipFileOutput zipOutput = new ZipFileOutput(output);
 	ZipFileHeader.Builder headerBuilder = ZipFileHeader.builder();
-	headerBuilder.setGeneralPurposeFlags(
+	headerBuilder.addGeneralPurposeFlags(
 		GeneralPurposeFlag.DEFLATING_NORMAL, GeneralPurposeFlag.DATA_DESCRIPTOR);
 	headerBuilder.setCompressionMethod(CompressionMethod.DEFLATED);
 	headerBuilder.setLastModifiedDateTime(LocalDateTime.now());
 	headerBuilder.setFileName("hello.txt");
 	// write a file-header to the zip-file
 	zipOutput.writeFileHeader(headerBuilder.build());
-	// can add additional central-directory info to the file
-	zipOutput.addDirectoryFileInfo(fileInfo);
+	// can add additional central-directory info to the file such as text flag
+	zipOutput.addDirectoryFileInfo(
+		CentralDirectoryFileInfo.builder().withTextFile(true).build());
 	// write file data from file, buffer, or InputStream
 	zipOutput.writeFileDataPart(fileBytes);
 	...
