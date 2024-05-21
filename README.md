@@ -42,25 +42,24 @@ Here's some equally simple code that allows you to write out a Zip-file.  `outpu
 `File`, file path, or `OutputStream`.
 
 	ZipFileOutput zipOutput = new ZipFileOutput(output);
-	ZipFileHeader.Builder headerBuilder = ZipFileHeader.builder();
-	headerBuilder.addGeneralPurposeFlags(
-		GeneralPurposeFlag.DEFLATING_NORMAL, GeneralPurposeFlag.DATA_DESCRIPTOR);
-	headerBuilder.setCompressionMethod(CompressionMethod.DEFLATED);
-	headerBuilder.setLastModifiedDateTime(LocalDateTime.now());
-	headerBuilder.setFileName("hello.txt");
+	ZipFileHeader header = ZipFileHeader.builder()
+		.withFileName("hello.txt")
+		.withGeneralPurposeFlags(GeneralPurposeFlag.DEFLATING_MAXIMUM)
+		.withLastModifiedDateTime(LocalDateTime.now())
+		.build();
 	// write a file-header to the zip-file
-	zipOutput.writeFileHeader(headerBuilder.build());
-	// can add additional central-directory info to the file such as text flag
+	zipOutput.writeFileHeader(header);
+	// add option central-directory info to the file such as text flag
 	zipOutput.addDirectoryFileInfo(
 		CentralDirectoryFileInfo.builder().withTextFile(true).build());
 	// write file data from file, buffer, or InputStream
 	zipOutput.writeFileDataPart(fileBytes);
 	...
-	// must be called after all parts written
+	// must be called after all file parts written
 	zipOutput.finishFileData();
 	// can write more file-headers and data here
 	...
-	// this writes the central-directory data
+	// this writes the recorded central-directory data and close zip
 	zipOutput.close();
 
 # Maven Configuration
