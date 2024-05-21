@@ -19,26 +19,28 @@ Enjoy.  Gray Watson
 
 ## Reading a Zip Files
 
-Here's some simple code that runs through all of the Zip-file parts.
+Here's some simple code that runs through all of the Zip-file parts.  `input` could be a
+`File`, file path, or an `InputStream`.
 
-	ZipFileReader zipFile = new ZipFileReader(input);
+	ZipFileInput zipInput = new ZipFileInput(input);
 	// readFileHeader() will return null when no more files
-	ZipFileHeader header = zipFile.readFileHeader();
+	ZipFileHeader header = zipInput.readFileHeader();
 	byte[] buffer = new byte[4096];
 	// read into buffers or via InputStream
-	long numRead = zipFile.readFileDataPart(buffer);
+	long numRead = zipInput.readFileDataPart(buffer);
 	...
 	// NOTE: descriptor can be null
-	DataDescriptor dataDescriptor = zipFile.getCurrentDataDescriptor();
+	DataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
 	// read in the central-directory file-headers, null when no more
-	CentralDirectoryFileHeader dirHeader = zipFile.readDirectoryFileHeader();
-	CentralDirectoryEnd end = zipFile.readDirectoryEnd();
+	CentralDirectoryFileHeader dirHeader = zipInput.readDirectoryFileHeader();
+	CentralDirectoryEnd end = zipInput.readDirectoryEnd();
 
 ## Writing a Zip File
 
-Here's some equally simple code that allows you to write out a Zip-file.
+Here's some equally simple code that allows you to write out a Zip-file.  `output` could be a
+`File`, file path, or `OutputStream`.
 
-	ZipFileWriter zipWriter = new ZipFileWriter(output);
+	ZipFileOutput zipOutput = new ZipFileOutput(output);
 	ZipFileHeader.Builder headerBuilder = ZipFileHeader.builder();
 	headerBuilder.setGeneralPurposeFlags(
 		GeneralPurposeFlag.DEFLATING_NORMAL, GeneralPurposeFlag.DATA_DESCRIPTOR);
@@ -46,19 +48,18 @@ Here's some equally simple code that allows you to write out a Zip-file.
 	headerBuilder.setLastModifiedDateTime(LocalDateTime.now());
 	headerBuilder.setFileName("hello.txt");
 	// write a file-header to the zip-file
-	zipWriter.writeFileHeader(headerBuilder.build());
+	zipOutput.writeFileHeader(headerBuilder.build());
 	// can add additional central-directory info to the file
-	zipWriter.addDirectoryFileInfo(fileInfo);
+	zipOutput.addDirectoryFileInfo(fileInfo);
 	// write file data from file, buffer, or InputStream
-	zipWriter.writeFileDataPart(fileBytes);
+	zipOutput.writeFileDataPart(fileBytes);
 	...
 	// must be called after all parts written
-	zipWriter.finishFileData();
+	zipOutput.finishFileData();
 	// can write more file-headers and data here
 	...
 	// this writes the central-directory data
-	zipWriter.finishZip();
-	zipWriter.close();
+	zipOutput.close();
 
 # Maven Configuration
 

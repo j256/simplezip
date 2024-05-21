@@ -27,7 +27,7 @@ import com.j256.simplezip.format.ZipFileHeader;
  * 
  * @author graywatson
  */
-public class ZipFileWriter implements Closeable {
+public class ZipFileOutput implements Closeable {
 
 	private final BufferedOutputStream bufferedOutputStream;
 	private final CountingInfo incomingFileDateInfo = new CountingInfo();
@@ -46,14 +46,14 @@ public class ZipFileWriter implements Closeable {
 	/**
 	 * Start writing a Zip-file to a file-path. You must call {@link #close()} to close the stream when you are done.
 	 */
-	public ZipFileWriter(String filePath) throws FileNotFoundException {
+	public ZipFileOutput(String filePath) throws FileNotFoundException {
 		this(new File(filePath));
 	}
 
 	/**
 	 * Start writing a Zip-file to a file. You must call {@link #close()} to close the stream when you are done.
 	 */
-	public ZipFileWriter(File file) throws FileNotFoundException {
+	public ZipFileOutput(File file) throws FileNotFoundException {
 		this(new FileOutputStream(file));
 	}
 
@@ -61,7 +61,7 @@ public class ZipFileWriter implements Closeable {
 	 * Start writing a Zip-file to an output-stream. You must call {@link #close()} to close the stream when you are
 	 * done.
 	 */
-	public ZipFileWriter(OutputStream outputStream) {
+	public ZipFileOutput(OutputStream outputStream) {
 		this.bufferedOutputStream = new BufferedOutputStream(outputStream);
 	}
 
@@ -418,7 +418,7 @@ public class ZipFileWriter implements Closeable {
 
 	/**
 	 * Output stream that can be used to write data for a single zip file. Once you close this output-stream then
-	 * {@link ZipFileWriter#finishFileData()} will be automatically called.
+	 * {@link ZipFileOutput#finishFileData()} will be automatically called.
 	 */
 	public class FileDataOutputStream extends OutputStream {
 
@@ -446,7 +446,7 @@ public class ZipFileWriter implements Closeable {
 
 		@Override
 		public void flush() throws IOException {
-			ZipFileWriter.this.flush();
+			ZipFileOutput.this.flush();
 		}
 
 		@Override
