@@ -19,8 +19,8 @@ Enjoy.  Gray Watson
 
 ## Reading a Zip Files
 
-Here's some simple code that runs through all of the Zip-file parts.  `input` could be a
-`File`, file path, or an `InputStream`.
+The following code runs through all of the Zip-file parts.  `input` could be a `File`,
+file path, or an `InputStream`.
 
 	ZipFileInput zipInput = new ZipFileInput(input);
 	// readFileHeader() will return null when no more files to read
@@ -40,8 +40,8 @@ Here's some simple code that runs through all of the Zip-file parts.  `input` co
 
 ## Writing a Zip File
 
-Here's some equally simple code that allows you to write out a Zip-file.  `output` could be a
-`File`, file path, or `OutputStream`.
+The following code writes out a Zip-file.  `output` could be a `File`, file path,
+or `OutputStream`.
 
 	ZipFileOutput zipOutput = new ZipFileOutput(output);
 	ZipFileHeader header = ZipFileHeader.builder()
@@ -52,6 +52,7 @@ Here's some equally simple code that allows you to write out a Zip-file.  `outpu
 	// write a file-header to the zip-file
 	zipOutput.writeFileHeader(header);
 	// add optional central-directory info to the file such as text flag
+	// this will be written to disk at the end of the zip
 	zipOutput.addDirectoryFileInfo(
 		CentralDirectoryFileInfo.builder().withTextFile(true).build());
 	// write file data from file, buffer, or InputStream
