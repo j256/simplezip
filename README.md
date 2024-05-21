@@ -16,7 +16,7 @@ Enjoy.  Gray Watson
 
 # Getting Started
 
-## Reading a Zip Files
+## Reading a Zip File
 
 The following code runs through all of the Zip-file parts.  `input` could be a `File`,
 file path, or an `InputStream`.
