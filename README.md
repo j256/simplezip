@@ -23,16 +23,18 @@ Here's some simple code that runs through all of the Zip-file parts.  `input` co
 `File`, file path, or an `InputStream`.
 
 	ZipFileInput zipInput = new ZipFileInput(input);
-	// readFileHeader() will return null when no more files
+	// readFileHeader() will return null when no more files to read
 	ZipFileHeader header = zipInput.readFileHeader();
 	byte[] buffer = new byte[4096];
-	// read into buffers or via InputStream
+	// read into buffers or via InputStream until it returns -1
 	long numRead = zipInput.readFileDataPart(buffer);
 	...
-	// NOTE: descriptor can be null
+	// can also call readFileData(File) to write out a file from input
+	// NOTE: descriptor can be null if none in the zip
 	DataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
-	// read in the central-directory file-headers, null when no more
+	// read in the optional central-directory file-headers, null when no more
 	CentralDirectoryFileHeader dirHeader = zipInput.readDirectoryFileHeader();
+	// read in the optional central-directory end data
 	CentralDirectoryEnd end = zipInput.readDirectoryEnd();
 	zipInput.close();
 
@@ -49,7 +51,7 @@ Here's some equally simple code that allows you to write out a Zip-file.  `outpu
 		.build();
 	// write a file-header to the zip-file
 	zipOutput.writeFileHeader(header);
-	// add option central-directory info to the file such as text flag
+	// add optional central-directory info to the file such as text flag
 	zipOutput.addDirectoryFileInfo(
 		CentralDirectoryFileInfo.builder().withTextFile(true).build());
 	// write file data from file, buffer, or InputStream
@@ -59,7 +61,7 @@ Here's some equally simple code that allows you to write out a Zip-file.  `outpu
 	zipOutput.finishFileData();
 	// can write more file-headers and data here
 	...
-	// this writes the recorded central-directory data and close zip
+	// this writes the recorded central-directory data and closes tbe zip
 	zipOutput.close();
 
 # Maven Configuration
