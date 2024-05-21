@@ -1,0 +1,217 @@
+\input texinfo @c -*-texinfo-*-
+@c %**start of header
+@setfilename simplezip.info
+@settitle SimpleZip Documentation
+@headings double
+@c %**end of header
+
+@c ----------------------------------------------------------------
+@set simplezip_version 0.9
+@set simplezip_year 2024
+@set simplezip_date May @value{simplezip_year}
+@set package SimpleZip
+@c ----------------------------------------------------------------
+
+@titlepage
+@headings off
+@title SimpleZip Package
+@subtitle Version @value{simplezip_version}
+@subtitle @value{simplezip_date}
+@author Gray Watson
+
+@page
+This manual is licensed by Gray Watson under the Creative Commons Attribution-Share Alike 3.0 License.
+
+Permission is granted to make and distribute verbatim copies of this manual provided this license
+notice and this permission notice are preserved on all copies.
+@end titlepage
+
+@c ----------------------------------------------------------------
+
+@c In the printed manual, we put the contents at the front.  For the digital manuals it is at the end. 
+@iftex
+@contents
+@end iftex
+
+@c ----------------------------------------------------------------
+@node Top, Quick Start, (dir), (dir)
+@top SimpleZip
+@everyheading @thischapter @| @thispage @| @today{}
+
+Version @value{simplezip_version} -- @value{simplezip_date}
+
+@cindex introduction
+@cindex author
+@cindex simple zip
+This package provides Java classes to read and write Zip files.  There are a number of different libraries that do
+this (including one built into the JDK) but I've not found any that gave me precise controls over the Zip internal, persisted data structures.  This library allows you to control the output of all Zip data and should allow you to
+read and write Zip files with full precision.
+
+To get started quickly using SimpleZip, @pxref{Quick Start}.  You can also take a look at the examples section of the
+document which has various working code packages. @xref{Examples}.
+@ifhtml
+There is also a @uref{http://256stuff.com/sources/simplezip/docs/simplezip.pdf, PDF version of this documentation}.
+@end ifhtml
+@iftex
+There is also a @uref{http://256stuff.com/sources/simplezip/docs/simplezip.html, HTML version of this documentation}.
+@end iftex
+
+Gray Watson @uref{http://256stuff.com/gray/}
+
+@menu
+* Quick Start::                Start using SimpleZip quickly.
+* Using::                      How to use SimpleZip.
+* Examples::                   Usage examples to help you get started.
+* License::                    Open Source license for the project.
+* Index of Concepts::          Index of concepts in the manual.
+@end menu
+
+@c ----------------------------------------------------------------
+@node Quick Start, Using, Top, Top
+@chapter Start Using Quickly
+
+@cindex getting started
+@cindex how to get started
+@cindex quick start
+To use SimpleZip you need to do the following steps.  For more information, @pxref{Using}.
+
+@enumerate
+
+@item Download SimpleZip from the @uref{http://256stuff.com/sources/simplezip/releases/, SimpleZip release page}.  @xref{Downloading}.
+
+@item Use the @code{ZipFileInput} class to read Zip files or the @code{ZipFileOutput} class to write a Zip file.
+
+@end enumerate
+
+For more extensive instructions, @pxref{Using}.
+
+@c ----------------------------------------------------------------
+@node Using, Downloading, Quick Start, Top
+@chapter Using SimpleZip
+
+@cindex how to use
+@cindex using SimpleZip
+@menu
+* Downloading ::                Downloading the SimpleZip jar.
+* Maven ::                      How to use with Maven.
+@end menu
+
+@c ----------------------------------------------------------------
+@node Downloading, Maven, Using, Using
+@section Downloading Jar
+
+@cindex how to download the jars
+@cindex downloading the jars
+@cindex where to get new jars
+To get started with SimpleZip, you will need to download the jar file.  The @uref{http://256stuff.com/sources/simplezip/releases/, SimpleZip
+release page} is the default repository but the jars are also available from the @uref{http://repo1.maven.org/maven2/com/j256/simplezip/,
+central maven repository}.
+
+The code works with Java 8 or later.
+
+@c ----------------------------------------------------------------
+@node Maven, Examples, Downloading, Using
+@section Using With Maven
+
+@cindex Maven, use with
+@cindex pom.xml dependency
+To use SimpleZip with maven, include the following dependency in your @file{pom.xml} file:
+
+@example
+<dependency>
+	<groupId>com.j256.simplezip</groupId>
+	<artifactId>simplezip</artifactId>
+	<version>@value{simplezip_version}</version>
+</dependency>
+@end example 
+
+@c ----------------------------------------------------------------
+@node Examples, License, Maven, Top
+@chapter Example Code
+
+@cindex examples of code
+@cindex code examples
+Here is some example code to help you get going with SimpleZip.  I often find that code is the best documentation of how
+to get something working.  Please feel free to suggest additional example packages for inclusion here.  Source code submissions
+are welcome as long as you don't get piqued if we don't chose your's.
+
+@cindex simple input example
+Simple input example:
+
+@example
+ZipFileInput zipInput = new ZipFileInput(input);
+// readFileHeader() will return null when no more files to read
+ZipFileHeader header = zipInput.readFileHeader();
+byte[] buffer = new byte[4096];
+// read into buffers or via InputStream until it returns -1
+long numRead = zipInput.readFileDataPart(buffer);
+...
+// can also call readFileData(File) to write out a file from input
+// NOTE: descriptor can be null if none in the zip
+DataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
+// read in the optional central-directory file-headers, null when no more
+CentralDirectoryFileHeader dirHeader = zipInput.readDirectoryFileHeader();
+// read in the optional central-directory end data
+CentralDirectoryEnd end = zipInput.readDirectoryEnd();
+zipInput.close();
+@end example
+
+@cindex simple output example
+Simple output example:
+
+@example
+ZipFileOutput zipOutput = new ZipFileOutput(output);
+ZipFileHeader header = ZipFileHeader.builder()
+	.withFileName("hello.txt")
+	.withGeneralPurposeFlags(GeneralPurposeFlag.DEFLATING_MAXIMUM)
+	.withLastModifiedDateTime(LocalDateTime.now())
+	.build();
+// write a file-header to the zip-file
+zipOutput.writeFileHeader(header);
+// add optional central-directory info to the file such as text flag
+// this will be written to disk at the end of the zip
+zipOutput.addDirectoryFileInfo(
+	CentralDirectoryFileInfo.builder().withTextFile(true).build());
+// write file data from file, buffer, or InputStream
+zipOutput.writeFileDataPart(fileBytes);
+...
+// must be called after all file parts written
+zipOutput.finishFileData();
+// can write more file-headers and data here
+...
+// this writes the recorded central-directory data and closes tbe zip
+zipOutput.close();
+@end example
+
+@c ----------------------------------------------------------------
+@node License, Index of Concepts, Examples, Top
+@chapter Open Source License
+
+@cindex license
+@cindex open source license
+This document is part of the SimpleZip project.
+
+Copyright @value{simplezip_year}, Gray Watson
+
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
+granted, provided that this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING
+ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL,
+DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE
+USE OR PERFORMANCE OF THIS SOFTWARE.
+
+The author may be contacted via the @uref{http://256stuff.com/sources/simplezip/, SimpleZip home page}.
+
+@c ----------------------------------------------------------------
+@node Index of Concepts,, License, Top
+@unnumbered Index of Concepts
+
+@printindex cp
+
+@ifhtml
+@contents
+@end ifhtml
+
+@bye

@@ -9,9 +9,8 @@ Simple Java Zip
 [![GitHub License](https://img.shields.io/github/license/j256/simplezip)](https://github.com/j256/simplezip/blob/master/LICENSE.txt)
 
 This package provides Java classes to read and write Zip files.  There are a number of different libraries that do
-this (including one built into the JDK) but I've not found any that gave me precise controls over the Zip file and
-directory entries.  This library allows you to control the output in all Zip fields which should allow you to read
-and re-write Zip files duplicating all Zip data structures.
+this (including one built into the JDK) but I've not found any that gave me precise controls over the Zip internal, persisted data structures.  This library allows you to control the output of all Zip data and should allow you to
+read and write Zip files with full precision.
 
 Enjoy.  Gray Watson
 
