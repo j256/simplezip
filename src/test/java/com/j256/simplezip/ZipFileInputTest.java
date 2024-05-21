@@ -32,7 +32,7 @@ import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 import com.j256.simplezip.format.ZipFileHeader.Builder;
 
-public class ZipFileReaderTest {
+public class ZipFileInputTest {
 
 	@Test
 	public void testStuff() throws IOException {
@@ -46,12 +46,12 @@ public class ZipFileReaderTest {
 		zos.closeEntry();
 		zos.close();
 
-		InputStream input = new ByteArrayInputStream(baos.toByteArray());
-		ZipFileReader reader = new ZipFileReader(input);
+		InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+		ZipFileInput input = new ZipFileInput(inputStream);
 
-		assertNull(reader.getCurrentFileName());
-		ZipFileHeader header = reader.readFileHeader();
-		assertEquals(reader.getCurrentFileName(), header.getFileName());
+		assertNull(input.getCurrentFileName());
+		ZipFileHeader header = input.readFileHeader();
+		assertEquals(input.getCurrentFileName(), header.getFileName());
 		assertEquals(fileName, header.getFileName());
 		// there is no sizes because there is data-descriptor because we were streaming data in
 		assertEquals(0, header.getCompressedSize());
@@ -66,51 +66,51 @@ public class ZipFileReaderTest {
 
 		baos.reset();
 		// empty read
-		assertEquals(0, reader.readFileDataPart(new byte[0]));
-		long numRead = reader.readFileData(baos);
+		assertEquals(0, input.readFileDataPart(new byte[0]));
+		long numRead = input.readFileData(baos);
 		assertEquals(bytes.length, numRead);
 		assertArrayEquals(bytes, baos.toByteArray());
 
-		DataDescriptor dataDescriptor = reader.getCurrentDataDescriptor();
+		DataDescriptor dataDescriptor = input.getCurrentDataDescriptor();
 		assertNotNull(dataDescriptor);
 		assertEquals(bytes.length, dataDescriptor.getUncompressedSize());
 		CRC32 crc32 = new CRC32();
 		crc32.update(bytes);
 		assertEquals(crc32.getValue(), dataDescriptor.getCrc32());
 
-		assertNull(reader.readFileHeader());
+		assertNull(input.readFileHeader());
 
-		CentralDirectoryFileHeader dirHeader = reader.readDirectoryFileHeader();
+		CentralDirectoryFileHeader dirHeader = input.readDirectoryFileHeader();
 		assertNotNull(dirHeader);
 		System.out.println("dir " + dirHeader.getFileName() + ", size " + dirHeader.getUncompressedSize() + ", method "
 				+ dirHeader.getCompressionMethod() + ", extra " + Arrays.toString(dirHeader.getExtraFieldBytes()));
 
-		assertNull(reader.readDirectoryFileHeader());
-		CentralDirectoryEnd end = reader.readDirectoryEnd();
+		assertNull(input.readDirectoryFileHeader());
+		CentralDirectoryEnd end = input.readDirectoryEnd();
 		assertNotNull(end);
 		System.out.println("end: num-records " + end.getNumRecordsTotal() + ", size " + end.getDirectorySize());
 
-		reader.close();
+		input.close();
 	}
 
 	@Test(expected = FileNotFoundException.class)
 	public void testReadFromBadFile() throws IOException {
-		new ZipFileReader(new File("/doesnotexist")).close();
+		new ZipFileInput(new File("/doesnotexist")).close();
 	}
 
 	@Test(expected = FileNotFoundException.class)
 	public void testReadFromBadPath() throws IOException {
-		new ZipFileReader("/doesnotexist").close();
+		new ZipFileInput("/doesnotexist").close();
 	}
 
 	@Test
 	public void testReadFromNullFile() throws IOException {
-		new ZipFileReader(new File("/dev/null")).close();
+		new ZipFileInput(new File("/dev/null")).close();
 	}
 
 	@Test
 	public void testReadFromNullPath() throws IOException {
-		new ZipFileReader("/dev/null").close();
+		new ZipFileInput("/dev/null").close();
 	}
 
 	@Test
@@ -125,28 +125,28 @@ public class ZipFileReaderTest {
 		zos.closeEntry();
 		zos.close();
 
-		InputStream input = new ByteArrayInputStream(baos.toByteArray());
-		ZipFileReader reader = new ZipFileReader(input);
-		assertNotNull(reader.readFileHeader());
+		InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+		ZipFileInput input = new ZipFileInput(inputStream);
+		assertNotNull(input.readFileHeader());
 		byte[] buffer = new byte[1024];
-		int num = reader.readFileDataPart(buffer);
+		int num = input.readFileDataPart(buffer);
 		assertEquals(bytes.length, num);
 		assertArrayEquals(bytes, Arrays.copyOf(buffer, num));
-		reader.close();
+		input.close();
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void readFileDataWithoutHeader() throws IOException {
-		ZipFileReader reader = new ZipFileReader(new ByteArrayInputStream(new byte[0]));
-		reader.readFileDataPart(new byte[0]);
-		reader.close();
+		ZipFileInput input = new ZipFileInput(new ByteArrayInputStream(new byte[0]));
+		input.readFileDataPart(new byte[0]);
+		input.close();
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void readRawFileDataWithoutHeader() throws IOException {
-		ZipFileReader reader = new ZipFileReader(new ByteArrayInputStream(new byte[0]));
-		reader.readRawFileDataPart(new byte[0]);
-		reader.close();
+		ZipFileInput input = new ZipFileInput(new ByteArrayInputStream(new byte[0]));
+		input.readRawFileDataPart(new byte[0]);
+		input.close();
 	}
 
 	@Test
@@ -161,13 +161,13 @@ public class ZipFileReaderTest {
 		zos.closeEntry();
 		zos.close();
 
-		InputStream input = new ByteArrayInputStream(baos.toByteArray());
-		ZipFileReader reader = new ZipFileReader(input);
-		assertNotNull(reader.readFileHeader());
+		InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+		ZipFileInput input = new ZipFileInput(inputStream);
+		assertNotNull(input.readFileHeader());
 		byte[] buffer = new byte[1024];
-		assertEquals(-1, reader.readFileDataPart(buffer));
-		assertEquals(-1, reader.readFileDataPart(buffer));
-		reader.close();
+		assertEquals(-1, input.readFileDataPart(buffer));
+		assertEquals(-1, input.readFileDataPart(buffer));
+		input.close();
 	}
 
 	@Test
@@ -182,16 +182,16 @@ public class ZipFileReaderTest {
 		zos.closeEntry();
 		zos.close();
 
-		InputStream input = new ByteArrayInputStream(baos.toByteArray());
-		ZipFileReader reader = new ZipFileReader(input);
-		assertNotNull(reader.readFileHeader());
+		InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+		ZipFileInput input = new ZipFileInput(inputStream);
+		assertNotNull(input.readFileHeader());
 		byte[] buffer = new byte[1024];
-		int num = reader.readFileDataPart(buffer, 0, 1);
+		int num = input.readFileDataPart(buffer, 0, 1);
 		assertEquals(1, num);
-		assertFalse(reader.isFileDataEofReached());
-		num = reader.readFileDataPart(buffer, 1, buffer.length - 1);
+		assertFalse(input.isFileDataEofReached());
+		num = input.readFileDataPart(buffer, 1, buffer.length - 1);
 		assertArrayEquals(bytes, Arrays.copyOf(buffer, num + 1));
-		reader.close();
+		input.close();
 	}
 
 	@Test
@@ -211,46 +211,46 @@ public class ZipFileReaderTest {
 		zos.closeEntry();
 		zos.close();
 
-		InputStream input = new ByteArrayInputStream(baos.toByteArray());
-		ZipFileReader reader = new ZipFileReader(input);
-		ZipFileHeader header = reader.readFileHeader();
+		InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+		ZipFileInput input = new ZipFileInput(inputStream);
+		ZipFileHeader header = input.readFileHeader();
 		assertEquals(CompressionMethod.NONE, header.getCompressionMethodAsEnum());
 		byte[] buffer = new byte[1024];
-		int num = reader.readFileDataPart(buffer, 0, buffer.length);
+		int num = input.readFileDataPart(buffer, 0, buffer.length);
 		assertEquals(bytes.length, num);
-		assertEquals(-1, reader.readFileDataPart(buffer, 0, buffer.length));
+		assertEquals(-1, input.readFileDataPart(buffer, 0, buffer.length));
 		assertArrayEquals(bytes, Arrays.copyOf(buffer, num));
-		reader.close();
+		input.close();
 	}
 
 	@Test
 	public void testReadWithInputStream() throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-		ZipFileWriter writer = new ZipFileWriter(baos);
-		writer.enableBufferedOutput(10240, 10240);
+		ZipFileOutput ouput = new ZipFileOutput(baos);
+		ouput.enableBufferedOutput(10240, 10240);
 		String fileName = "hello";
 		Builder builder = ZipFileHeader.builder().withFileName(fileName).withCompressionMethod(CompressionMethod.NONE);
 		byte[] bytes = new byte[] { 1, 2, 3 };
-		writer.writeFileHeader(builder.build());
-		writer.writeFileDataPart(bytes);
-		writer.finishFileData();
-		writer.close();
+		ouput.writeFileHeader(builder.build());
+		ouput.writeFileDataPart(bytes);
+		ouput.finishFileData();
+		ouput.close();
 
-		InputStream input = new ByteArrayInputStream(baos.toByteArray());
-		ZipFileReader reader = new ZipFileReader(input);
-		ZipFileHeader header = reader.readFileHeader();
+		InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+		ZipFileInput input = new ZipFileInput(inputStream);
+		ZipFileHeader header = input.readFileHeader();
 		assertEquals(CompressionMethod.NONE, header.getCompressionMethodAsEnum());
 		byte[] buffer = new byte[1024];
-		InputStream inputStream = reader.openFileDataOutputStream(false);
-		assertSame(inputStream, reader.openFileDataOutputStream(false));
-		int first = inputStream.read();
-		int num = inputStream.read(buffer, 0, buffer.length - 1);
+		InputStream fileStream = input.openFileDataInputStream(false);
+		assertSame(fileStream, input.openFileDataInputStream(false));
+		int first = fileStream.read();
+		int num = fileStream.read(buffer, 0, buffer.length - 1);
 		assertEquals(bytes.length, num + 1);
-		assertEquals(-1, inputStream.read());
+		assertEquals(-1, fileStream.read());
 		assertEquals(bytes[0], first);
 		assertArrayEquals(Arrays.copyOfRange(bytes, 1, bytes.length), Arrays.copyOf(buffer, num));
-		reader.close();
+		input.close();
 	}
 
 	@Test
@@ -270,20 +270,20 @@ public class ZipFileReaderTest {
 		zos.closeEntry();
 		zos.close();
 
-		InputStream input = new ByteArrayInputStream(baos.toByteArray());
-		ZipFileReader reader = new ZipFileReader(input);
-		ZipFileHeader header = reader.readFileHeader();
+		InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+		ZipFileInput input = new ZipFileInput(inputStream);
+		ZipFileHeader header = input.readFileHeader();
 		assertEquals(CompressionMethod.NONE, header.getCompressionMethodAsEnum());
 		byte[] buffer = new byte[1024];
-		assertEquals(-1, reader.readFileDataPart(buffer, 0, buffer.length));
-		reader.close();
+		assertEquals(-1, input.readFileDataPart(buffer, 0, buffer.length));
+		input.close();
 	}
 
 	@Test(expected = IOException.class)
 	public void testWriteBadDeflateData() throws IOException {
 		byte[] fileBytes = new byte[] { (byte) 200, (byte) 200, 2, 1 };
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ZipFileWriter writer = new ZipFileWriter(baos);
+		ZipFileOutput output = new ZipFileOutput(baos);
 		Builder builder = ZipFileHeader.builder();
 		builder.setCompressionMethod(CompressionMethod.DEFLATED);
 		String name = "hello.bin";
@@ -293,28 +293,28 @@ public class ZipFileReaderTest {
 		CRC32 crc32 = new CRC32();
 		crc32.update(fileBytes);
 		builder.setCrc32(crc32.getValue());
-		writer.writeFileHeader(builder.build());
-		writer.writeRawFileDataPart(fileBytes);
-		System.out.println("wrote raw file, offset = " + writer.finishFileData());
-		writer.close();
+		output.writeFileHeader(builder.build());
+		output.writeRawFileDataPart(fileBytes);
+		System.out.println("wrote raw file, offset = " + output.finishFileData());
+		output.close();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
 		// now try to read it back in with the jdk stuff
-		ZipFileReader reader = new ZipFileReader(bais);
-		ZipFileHeader header = reader.readFileHeader();
+		ZipFileInput input = new ZipFileInput(bais);
+		ZipFileHeader header = input.readFileHeader();
 		assertNotNull(header);
 		assertEquals(name, header.getFileName());
 		byte[] buffer = new byte[1024];
-		reader.readFileDataPart(buffer);
-		reader.close();
+		input.readFileDataPart(buffer);
+		input.close();
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void testWriteUnknownMethod() throws IOException {
 		byte[] fileBytes = new byte[] { (byte) 200, (byte) 200, 2, 1 };
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ZipFileWriter writer = new ZipFileWriter(baos);
+		ZipFileOutput output = new ZipFileOutput(baos);
 		Builder builder = ZipFileHeader.builder();
 		builder.setCompressionMethod(CompressionMethod.IBM_TERSE);
 		String name = "hello.bin";
@@ -324,21 +324,21 @@ public class ZipFileReaderTest {
 		CRC32 crc32 = new CRC32();
 		crc32.update(fileBytes);
 		builder.setCrc32(crc32.getValue());
-		writer.writeFileHeader(builder.build());
-		writer.writeRawFileDataPart(fileBytes);
-		System.out.println("wrote raw file, offset = " + writer.finishFileData());
-		writer.close();
+		output.writeFileHeader(builder.build());
+		output.writeRawFileDataPart(fileBytes);
+		System.out.println("wrote raw file, offset = " + output.finishFileData());
+		output.close();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
 		// now try to read it back in with the jdk stuff
-		ZipFileReader reader = new ZipFileReader(bais);
-		ZipFileHeader header = reader.readFileHeader();
+		ZipFileInput input = new ZipFileInput(bais);
+		ZipFileHeader header = input.readFileHeader();
 		assertNotNull(header);
 		assertEquals(name, header.getFileName());
 		byte[] buffer = new byte[1024];
-		reader.readFileDataPart(buffer);
-		reader.close();
+		input.readFileDataPart(buffer);
+		input.close();
 	}
 
 	@Test
@@ -360,11 +360,12 @@ public class ZipFileReaderTest {
 		zos.closeEntry();
 		zos.close();
 
-		RewindableInputStream input = new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 10240);
-		ZipFileReader reader = new ZipFileReader(input);
-		assertNotNull(reader.readFileHeader());
+		RewindableInputStream inputStream =
+				new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 10240);
+		ZipFileInput input = new ZipFileInput(inputStream);
+		assertNotNull(input.readFileHeader());
 		baos.reset();
-		reader.readRawFileData(baos);
+		input.readRawFileData(baos);
 
 		// now we inflate the data externally
 		Inflater inflater = new Inflater(true /* no wrap */);
@@ -375,7 +376,7 @@ public class ZipFileReaderTest {
 		inflater.end();
 		assertArrayEquals(bytes, Arrays.copyOf(output, numInflated));
 
-		reader.close();
+		input.close();
 	}
 
 	@Test
@@ -405,25 +406,26 @@ public class ZipFileReaderTest {
 		zos.closeEntry();
 		zos.close();
 
-		RewindableInputStream input = new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 10240);
-		ZipFileReader reader = new ZipFileReader(input);
-		assertNotNull(reader.readFileHeader());
+		RewindableInputStream inputStream =
+				new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 10240);
+		ZipFileInput input = new ZipFileInput(inputStream);
+		assertNotNull(input.readFileHeader());
 		File file = File.createTempFile(getClass().getSimpleName(), ".t");
 		file.deleteOnExit();
-		reader.readFileData(file);
+		input.readFileData(file);
 		byte[] output = readFileToBytes(file);
 		assertArrayEquals(bytes, output);
 		file.delete();
 
-		assertNotNull(reader.readFileHeader());
+		assertNotNull(input.readFileHeader());
 		file = File.createTempFile(getClass().getSimpleName(), ".t");
 		file.deleteOnExit();
-		reader.readFileData(file.getPath());
+		input.readFileData(file.getPath());
 		output = readFileToBytes(file);
 		assertArrayEquals(bytes, output);
 		file.delete();
 
-		reader.close();
+		input.close();
 	}
 
 	private byte[] readFileToBytes(File file) throws IOException {

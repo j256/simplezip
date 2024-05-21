@@ -1,11 +1,14 @@
+0.8: 5/??/2024
+	* Renamed ZipFileReader and ZipFileWriter to ZipFileInput and ZipFileOutput.
+
 0.7: 5/20/2024
-	* Added better support for file permissions.
+	* Added better support for Unix and MSDOS file permissions.
 	* Added reading from ZipFileReader and writing to a File directly.
-	* Added support for writing to an OutputStream in the ZipFileWriter for file-data.
-	* Added support for reading from an InputStream in the ZipFileReader for file-data.
+	* Added support for writing file-data to the ZipFileWriter via an OutputStream.
+	* Added support for reading file-data from the ZipFileReader via an InputStream.
+	* Added with...() method chaining to some of the builder classes.
 	* Fixed problems with streaming Zip files inside of Zip files because of possibility of reading past the inner one.
 	* Fixed problems with compression level flags.
-	* Added with...() method chaining to some of the builder classes.
 
 0.6: 5/16/2024
 	* Added ZipFileReader.readRaw... and ZipFileWriter.writeRaw... methods for dealing with unencoded data.

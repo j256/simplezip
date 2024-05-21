@@ -24,7 +24,7 @@ import com.j256.simplezip.format.ZipFileHeader;
  * 
  * @author graywatson
  */
-public class ZipFileReader implements Closeable {
+public class ZipFileInput implements Closeable {
 
 	private final RewindableInputStream countingInputStream;
 	private final CountingInfo countingInfo = new CountingInfo();
@@ -42,7 +42,7 @@ public class ZipFileReader implements Closeable {
 	 * Start reading a Zip-file from the file-path. You must call {@link #close()} to close the stream when you are
 	 * done.
 	 */
-	public ZipFileReader(String path) throws FileNotFoundException {
+	public ZipFileInput(String path) throws FileNotFoundException {
 		this(new File(path));
 		this.readTillEof = false;
 	}
@@ -50,7 +50,7 @@ public class ZipFileReader implements Closeable {
 	/**
 	 * Read a Zip-file from a file. You must call {@link #close()} to close the stream when you are done.
 	 */
-	public ZipFileReader(File file) throws FileNotFoundException {
+	public ZipFileInput(File file) throws FileNotFoundException {
 		this(new FileInputStream(file));
 		this.readTillEof = false;
 	}
@@ -58,7 +58,7 @@ public class ZipFileReader implements Closeable {
 	/**
 	 * Read a Zip-file from an input-stream. You must call {@link #close()} to close the stream when you are done.
 	 */
-	public ZipFileReader(InputStream inputStream) {
+	public ZipFileInput(InputStream inputStream) {
 		this.countingInputStream = new RewindableInputStream(inputStream, IoUtils.STANDARD_BUFFER_SIZE);
 	}
 
@@ -103,7 +103,9 @@ public class ZipFileReader implements Closeable {
 	}
 
 	/**
-	 * Read file data from the Zip stream, decode it, and write it to the file argument.
+	 * Read file data from the Zip stream, decode it, and write it to the file argument. This will associate the File
+	 * with the current header file-name so you can call assign the permissions for the file with a later call to
+	 * {@link #assignFilePermissions()} or {@link #readDirectoryFileHeadersAndAssignPermissions()}.
 	 * 
 	 * @param outputFile
 	 *            Where to write the data read from the zip stream.
@@ -161,7 +163,7 @@ public class ZipFileReader implements Closeable {
 	 *            {@link #readFileDataPart(byte[], int, int)}.
 	 * @return Stream that can be used to read the file bytes. Calling close() on this stream is a no-op.
 	 */
-	public InputStream openFileDataOutputStream(boolean raw) {
+	public InputStream openFileDataInputStream(boolean raw) {
 		if (fileDataInputStream == null || fileDataInputStream.raw != raw) {
 			fileDataInputStream = new FileDataInputStream(raw);
 		}
@@ -225,7 +227,7 @@ public class ZipFileReader implements Closeable {
 	 * @return The next central-directory file-header or null if all entries have been read.
 	 */
 	public CentralDirectoryFileHeader readDirectoryFileHeader() throws IOException {
-		this.currentDirHeader = CentralDirectoryFileHeader.read(countingInputStream);
+		currentDirHeader = CentralDirectoryFileHeader.read(countingInputStream);
 		return currentDirHeader;
 	}
 
