@@ -31,7 +31,7 @@ public class FilePermissions {
 	public static int MS_DOS_DIRECTORY = 0x010;
 
 	/**
-	 * Set the permissions from a file.
+	 * Get the permissions flags from a file.
 	 */
 	public static int fromFile(File file) {
 		if (!file.exists()) {
@@ -52,15 +52,32 @@ public class FilePermissions {
 			Set<PosixFilePermission> perms = Files.getPosixFilePermissions(path);
 			permissions |= Permission.modeFromPermSet(perms);
 		} catch (Exception e) {
-			permissions |= assignPermissionsFromFileAttributes(file);
+			permissions |= extractJavaFileAttributes(file);
 		}
 		return permissions;
 	}
 
 	/**
-	 * Set the meager permissions from the File attributes if not posix.
+	 * Set the permissions on an output file.
 	 */
-	private static int assignPermissionsFromFileAttributes(File file) {
+	public static void assignToFile(File file, int permissions) {
+		if (!file.exists()) {
+			return;
+		}
+		try {
+			// try to read in the posix permissions
+			Path path = FileSystems.getDefault().getPath(file.getPath());
+			Set<PosixFilePermission> permSet = Permission.permSetFromMode(permissions);
+			Files.setPosixFilePermissions(path, permSet);
+		} catch (Exception e) {
+			assignJavaFileAttributes(file, permissions);
+		}
+	}
+
+	/**
+	 * Extract the meager permissions from the File attributes if not posix.
+	 */
+	private static int extractJavaFileAttributes(File file) {
 		int permissions = 0;
 		if (file.canWrite()) {
 			if (file.canExecute()) {
@@ -77,6 +94,30 @@ public class FilePermissions {
 			}
 		}
 		return permissions;
+	}
+
+	/**
+	 * Set the meager permissions on File if not posix.
+	 */
+	private static void assignJavaFileAttributes(File file, int permissions) {
+		if ((permissions & UNIX_READ_WRITE_EXECUTE_PERMISSIONS) == UNIX_READ_WRITE_EXECUTE_PERMISSIONS) {
+			file.setReadable(true);
+			file.setWritable(true);
+			file.setExecutable(true);
+		} else if ((permissions & UNIX_READ_WRITE_PERMISSIONS) == UNIX_READ_WRITE_PERMISSIONS) {
+			file.setReadable(true);
+			file.setWritable(true);
+			file.setExecutable(false);
+		} else if ((permissions & UNIX_READ_ONLY_EXECUTE_PERMISSIONS) == UNIX_READ_ONLY_EXECUTE_PERMISSIONS) {
+			file.setReadable(true);
+			file.setWritable(false);
+			file.setExecutable(true);
+		} else if ((permissions & UNIX_READ_ONLY_PERMISSIONS) == UNIX_READ_ONLY_PERMISSIONS
+				|| (permissions & MS_DOS_READONLY) == MS_DOS_READONLY) {
+			file.setReadable(true);
+			file.setWritable(false);
+			file.setExecutable(false);
+		}
 	}
 
 	/**

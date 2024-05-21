@@ -345,20 +345,14 @@ public class ZipFileInputTest {
 	public void testReadRaw() throws IOException, DataFormatException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		String fileName = "hello";
-		ZipEntry zipEntry = new ZipEntry(fileName);
+		ZipFileHeader fileHeader = ZipFileHeader.builder().withFileName(fileName).build();
 		byte[] bytes = new byte[] { 1, 2, 3 };
-		zipEntry.setSize(bytes.length);
-		zipEntry.setCompressedSize(5);
-		// deflated
-		zipEntry.setMethod(ZipEntry.DEFLATED);
-		CRC32 crc32 = new CRC32();
-		crc32.update(bytes);
-		zipEntry.setCrc(crc32.getValue());
-		ZipOutputStream zos = new ZipOutputStream(baos);
-		zos.putNextEntry(zipEntry);
-		zos.write(bytes);
-		zos.closeEntry();
-		zos.close();
+		ZipFileOutput zipOutput = new ZipFileOutput(baos);
+		zipOutput.enableBufferedOutput(10240, 10240);
+		zipOutput.writeFileHeader(fileHeader);
+		zipOutput.writeFileDataPart(bytes);
+		zipOutput.finishFileData();
+		zipOutput.close();
 
 		RewindableInputStream inputStream =
 				new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 10240);
@@ -382,48 +376,43 @@ public class ZipFileInputTest {
 	@Test
 	public void testReadToFile() throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		String fileName = "hello";
-		ZipEntry zipEntry = new ZipEntry(fileName);
+		String fileName1 = "target/hello1.t";
+		ZipFileHeader fileHeader = ZipFileHeader.builder().withFileName(fileName1).build();
 		byte[] bytes = new byte[] { 1, 2, 3 };
-		zipEntry.setSize(bytes.length);
-		zipEntry.setCompressedSize(5);
-		zipEntry.setMethod(ZipEntry.DEFLATED);
-		CRC32 crc32 = new CRC32();
-		crc32.update(bytes);
-		zipEntry.setCrc(crc32.getValue());
-		ZipOutputStream zos = new ZipOutputStream(baos);
-		zos.putNextEntry(zipEntry);
-		zos.write(bytes);
-		zos.closeEntry();
-		// do it twice
-		zipEntry = new ZipEntry(fileName + "2");
-		zipEntry.setSize(bytes.length);
-		zipEntry.setCompressedSize(5);
-		zipEntry.setMethod(ZipEntry.DEFLATED);
-		zipEntry.setCrc(crc32.getValue());
-		zos.putNextEntry(zipEntry);
-		zos.write(bytes);
-		zos.closeEntry();
-		zos.close();
+		ZipFileOutput zipOutput = new ZipFileOutput(baos);
+		zipOutput.enableBufferedOutput(10240, 10240);
+		zipOutput.writeFileHeader(fileHeader);
+		zipOutput.writeFileDataAll(bytes);
+		// write another file
+		String fileName2 = "target/hello2.t";
+		fileHeader = ZipFileHeader.builder().withFileName(fileName2).build();
+		zipOutput.writeFileHeader(fileHeader);
+		zipOutput.writeFileDataAll(bytes);
+		zipOutput.close();
 
 		RewindableInputStream inputStream =
 				new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 10240);
 		ZipFileInput input = new ZipFileInput(inputStream);
 		assertNotNull(input.readFileHeader());
-		File file = File.createTempFile(getClass().getSimpleName(), ".t");
-		file.deleteOnExit();
-		input.readFileData(file);
-		byte[] output = readFileToBytes(file);
+		File file1 = new File(fileName1);
+		file1.getParentFile().mkdirs();
+		file1.deleteOnExit();
+		input.readFileData(file1);
+		byte[] output = readFileToBytes(file1);
 		assertArrayEquals(bytes, output);
-		file.delete();
 
 		assertNotNull(input.readFileHeader());
-		file = File.createTempFile(getClass().getSimpleName(), ".t");
-		file.deleteOnExit();
-		input.readFileData(file.getPath());
-		output = readFileToBytes(file);
+		File file2 = new File(fileName2);
+		file2.getParentFile().mkdirs();
+		file2.deleteOnExit();
+		input.readFileData(file2.getPath());
+		output = readFileToBytes(file2);
 		assertArrayEquals(bytes, output);
-		file.delete();
+
+		assertTrue(input.readDirectoryFileHeadersAndAssignPermissions());
+
+		file1.delete();
+		file2.delete();
 
 		input.close();
 	}

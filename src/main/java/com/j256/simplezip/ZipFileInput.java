@@ -8,6 +8,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.j256.simplezip.code.FileDataDecoder;
 import com.j256.simplezip.code.InflatorFileDataDecoder;
@@ -16,6 +18,7 @@ import com.j256.simplezip.format.CentralDirectoryEnd;
 import com.j256.simplezip.format.CentralDirectoryFileHeader;
 import com.j256.simplezip.format.CompressionMethod;
 import com.j256.simplezip.format.DataDescriptor;
+import com.j256.simplezip.format.FilePermissions;
 import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 
@@ -37,6 +40,7 @@ public class ZipFileInput implements Closeable {
 	private boolean currentFileEofReached;
 	private FileDataInputStream fileDataInputStream;
 	private boolean readTillEof = true;
+	private Map<String, File> outputFileMap;
 
 	/**
 	 * Start reading a Zip-file from the file-path. You must call {@link #close()} to close the stream when you are
@@ -99,7 +103,7 @@ public class ZipFileInput implements Closeable {
 	 * @return THe number of bytes written into the output-stream.
 	 */
 	public long readFileData(String outputPath) throws IOException {
-		return readFileData(new FileOutputStream(outputPath));
+		return readFileData(new File(outputPath));
 	}
 
 	/**
@@ -112,7 +116,12 @@ public class ZipFileInput implements Closeable {
 	 * @return THe number of bytes written into the output-stream.
 	 */
 	public long readFileData(File outputFile) throws IOException {
-		return readFileData(new FileOutputStream(outputFile));
+		long numBytes = readFileData(new FileOutputStream(outputFile));
+		if (outputFileMap == null) {
+			outputFileMap = new HashMap<>();
+		}
+		outputFileMap.put(currentFileHeader.getFileName(), outputFile);
+		return numBytes;
 	}
 
 	/**
@@ -229,6 +238,48 @@ public class ZipFileInput implements Closeable {
 	public CentralDirectoryFileHeader readDirectoryFileHeader() throws IOException {
 		currentDirHeader = CentralDirectoryFileHeader.read(countingInputStream);
 		return currentDirHeader;
+	}
+
+	/**
+	 * Assigns the file permissions from the current dir-header to the File that was previously read by
+	 * {@link #readFileData(File)}. A previous call to {@link #readDirectoryFileHeader()} must have been made with a
+	 * file-name that matches the file-header written with the File previously. This assigns the permissions based on a
+	 * call to {@link FilePermissions#assignToFile(File, int)}.
+	 * 
+	 * @return True if successful otherwise false if the file was not found.
+	 */
+	public boolean assignFilePermissions() {
+		if (outputFileMap == null) {
+			return false;
+		}
+		File file = outputFileMap.get(currentDirHeader.getFileName());
+		if (file == null) {
+			return false;
+		} else {
+			FilePermissions.assignToFile(file, currentDirHeader.getExternalFileAttributes());
+			return true;
+		}
+	}
+
+	/**
+	 * Reads in all of the file-headers from the Zip central-directory and assigns the permissions on the files that
+	 * were previously read by {@link #readFileData(File)} and that matches the file-header written with the File.
+	 * 
+	 * @return True if successful or false if any of the files were not found.
+	 * @throws IOException
+	 */
+	public boolean readDirectoryFileHeadersAndAssignPermissions() throws IOException {
+		boolean result = true;
+		while (true) {
+			currentDirHeader = CentralDirectoryFileHeader.read(countingInputStream);
+			if (currentDirHeader == null) {
+				break;
+			}
+			if (!assignFilePermissions()) {
+				result = false;
+			}
+		}
+		return result;
 	}
 
 	/**

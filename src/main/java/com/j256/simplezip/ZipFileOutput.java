@@ -219,6 +219,18 @@ public class ZipFileOutput implements Closeable {
 	}
 
 	/**
+	 * Write the complete file data as single byte array to the the Zip-file stream while encoding it based on the
+	 * {@link ZipFileHeader#getCompressionMethod()}. Must be called after you write the file-header. This method calls
+	 * {@link #finishFileData()} after the write.
+	 * 
+	 * @return Returns the number of bytes written to the stream so far.
+	 */
+	public long writeFileDataAll(byte[] buffer) throws IOException {
+		writeFileDataPart(buffer, 0, buffer.length);
+		return finishFileData();
+	}
+
+	/**
 	 * Write file data as single or multiple byte arrays to the the Zip-file stream while encoding it based on the
 	 * {@link ZipFileHeader#getCompressionMethod()}. Must be called after you write the file-header. At the end of the
 	 * writing, you must call {@link #finishFileData()}.

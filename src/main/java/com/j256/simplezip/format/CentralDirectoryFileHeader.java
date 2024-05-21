@@ -235,6 +235,13 @@ public class CentralDirectoryFileHeader {
 		return new String(commentBytes);
 	}
 
+	@Override
+	public String toString() {
+		return "CentralDirectoryFileHeader [fileName=" + (fileNameBytes == null ? "null" : new String(fileNameBytes))
+				+ ", method=" + compressionMethod + ", compSize=" + compressedSize + ", uncompSize=" + uncompressedSize
+				+ "]";
+	}
+
 	/**
 	 * Builder for the {@link CentralDirectoryFileHeader}.
 	 */

@@ -1,5 +1,6 @@
 0.8: 5/??/2024
 	* Renamed ZipFileReader and ZipFileWriter to ZipFileInput and ZipFileOutput.
+	* Added assigning permissions to files written by ZipFileInput.
 
 0.7: 5/20/2024
 	* Added better support for Unix and MSDOS file permissions.
