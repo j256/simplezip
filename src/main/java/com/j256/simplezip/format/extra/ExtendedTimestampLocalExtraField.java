@@ -115,11 +115,11 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 		public void setTimeLastAccessed(long timeLastAccess) {
 			this.timeLastAccessed = timeLastAccess;
 		}
-		
+
 		public long getTimeCreation() {
 			return timeCreation;
 		}
-		
+
 		public void setTimeCreation(long timeCreation) {
 			this.timeCreation = timeCreation;
 		}

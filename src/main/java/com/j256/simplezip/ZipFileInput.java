@@ -307,8 +307,8 @@ public class ZipFileInput implements Closeable {
 	/**
 	 * Close the underlying input-stream.
 	 * 
-	 * NOTE: this will read to the end of the Zip-file if it was constructed using {@link #ZipFileInput(InputStream)}
-	 * in case we have a zip inside of a zip stream. See {@link #setReadTillEof(boolean)}.
+	 * NOTE: this will read to the end of the Zip-file if it was constructed using {@link #ZipFileInput(InputStream)} in
+	 * case we have a zip inside of a zip stream. See {@link #setReadTillEof(boolean)}.
 	 */
 	@Override
 	public void close() throws IOException {
