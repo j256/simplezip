@@ -33,6 +33,13 @@ if [ $? -ne 0 ]; then
     bad=1
 fi
 
+cd $LOCAL_DIR
+mvn javadoc:javadoc | grep WARNING
+if [ $? -eq 0 ]; then
+    /bin/echo "ERROR: javadoc warnings exist"
+    bad=1
+fi
+
 #############################################################
 # check maven settings
 

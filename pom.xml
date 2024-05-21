@@ -127,7 +127,7 @@
 						&lt;a
 						href="https://creativecommons.org/licenses/by-sa/3.0/" &gt;Creative Commons Attribution-Share Alike 3.0 License.
 						&lt;/a&gt; </bottom>
-					<additionalparam>-tag inheritDoc:X -Xdoclint:none</additionalparam>
+					<additionalparam>-tag inheritDoc:X -Xdoclint:accessibility -Xdoclint:html -Xdoclint:reference -Xdoclint:syntax</additionalparam>
 					<excludePackageNames>
 					</excludePackageNames>
 				</configuration>

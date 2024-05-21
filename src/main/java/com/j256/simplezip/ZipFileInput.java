@@ -266,7 +266,6 @@ public class ZipFileInput implements Closeable {
 	 * were previously read by {@link #readFileData(File)} and that matches the file-header written with the File.
 	 * 
 	 * @return True if successful or false if any of the files were not found.
-	 * @throws IOException
 	 */
 	public boolean readDirectoryFileHeadersAndAssignPermissions() throws IOException {
 		boolean result = true;
@@ -294,7 +293,7 @@ public class ZipFileInput implements Closeable {
 	 * In some circumstances we need to read to the EOF marker in case we are in an inner Zip file. The outer decoder
 	 * might need to hit the EOF so it can appropriately rewind in case it was reading ahead. This method will be called
 	 * by {@link #close()} if {@link #setReadTillEof(boolean)} is set to true which is on by default if the
-	 * {@link #ZipFileReader(InputStream)} constructor is used.
+	 * {@link #ZipFileInput(File)} constructor is used.
 	 */
 	public void readToEndOfZip() throws IOException {
 		while (true) {
@@ -308,7 +307,7 @@ public class ZipFileInput implements Closeable {
 	/**
 	 * Close the underlying input-stream.
 	 * 
-	 * NOTE: this will read to the end of the Zip-file if it was constructed using {@link #ZipFileReader(InputStream)}
+	 * NOTE: this will read to the end of the Zip-file if it was constructed using {@link #ZipFileInput(InputStream)}
 	 * in case we have a zip inside of a zip stream. See {@link #setReadTillEof(boolean)}.
 	 */
 	@Override
