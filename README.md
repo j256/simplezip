@@ -1,7 +1,7 @@
 Simple Java Zip
 ===============
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.j256.simplezip/simplezip/badge.svg?style=flat-square)](https://mvnrepository.com/artifact/com.j256.simplezip/simplezip/latest)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.j256.simplezip/simplezip/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/com.j256.simplezip/simplezip/)
 [![javadoc](https://javadoc.io/badge2/com.j256.simplezip/simplezip/javadoc.svg)](https://javadoc.io/doc/com.j256.simplezip/simplezip)
 [![ChangeLog](https://img.shields.io/github/v/release/j256/simplezip?label=changelog&display_name=release)](https://github.com/j256/simplezip/blob/master/src/main/javadoc/doc-files/changelog.txt)
 [![CodeCov](https://img.shields.io/codecov/c/github/j256/simplezip.svg)](https://codecov.io/github/j256/simplezip/)
@@ -18,8 +18,8 @@ Enjoy.  Gray Watson
 
 ## Reading a Zip File
 
-The following code runs through all of the Zip-file parts.  `input` could be a `File`,
-file path, or an `InputStream`.
+The following code runs through all of the Zip-file parts.  `input` could be a file path,
+`File`, or an `InputStream`.
 
 	ZipFileInput zipInput = new ZipFileInput(input);
 	// readFileHeader() will return null when no more files to read
@@ -31,6 +31,7 @@ file path, or an `InputStream`.
 	// can also call readFileData(File) to write out a file from input
 	// NOTE: descriptor can be null if none in the zip
 	ZipDataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
+	// repeat reading file headers and data until readFileHeader() returns null
 	// read in the optional central-directory file-headers, null when no more
 	ZipCentralDirectoryFileEntry dirHeader = zipInput.readDirectoryFileEntry();
 	// read in the optional central-directory end data
@@ -39,7 +40,7 @@ file path, or an `InputStream`.
 
 ## Writing a Zip File
 
-The following code writes out a Zip-file.  `output` could be a `File`, file path,
+The following code writes out a Zip-file.  `output` could be a file path, `File`,
 or `OutputStream`.
 
 	ZipFileOutput zipOutput = new ZipFileOutput(output);
