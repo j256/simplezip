@@ -153,6 +153,20 @@ public class IoUtils {
 		}
 	}
 
+	/**
+	 * Copy the bytes from the input stream to the output stream.
+	 */
+	public static void copyStream(InputStream inputStream, OutputStream output) throws IOException {
+		byte[] buffer = new byte[4096];
+		while (true) {
+			int num = inputStream.read(buffer);
+			if (num < 0) {
+				break;
+			}
+			output.write(buffer, 0, num);
+		}
+	}
+
 	private static int readAddByte(InputStream input, String label, int current, int shift) throws IOException {
 		int value = readByte(input, label);
 		return current | (value << shift);

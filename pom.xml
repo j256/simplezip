@@ -121,7 +121,6 @@
 					</execution>
 				</executions>
 				<configuration>
-					<docfilessubdirs>true</docfilessubdirs>
 					<bottom>
 						This documentation content is licensed by Gray Watson under the
 						&lt;a

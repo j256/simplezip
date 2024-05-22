@@ -11,7 +11,7 @@ import com.j256.simplezip.format.ZipDataDescriptor;
 import com.j256.simplezip.format.ZipFileHeader;
 
 /**
- * Script which displays information about a Zip file in excruciating detail.
+ * Displays information about a Zip file in excruciating detail.
  * 
  * @author graywatson
  */

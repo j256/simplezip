@@ -1,3 +1,7 @@
+1.1: 5/22/2024
+	* Fixed some of the logic to allow us to control all bytes in the output Zip.
+	* Added ZipCentralDirectoryEndInfo to be able to control the end structure.
+
 1.0: 5/22/2024
 	* Fixed a problem with early stream-closing.  Surprised I didn't catch this earlier.
 	* Started to add some code examples.

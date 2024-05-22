@@ -29,7 +29,7 @@ import com.j256.simplezip.format.ZipFileHeader;
  */
 public class ZipFileInput implements Closeable {
 
-	private final RewindableInputStream countingInputStream;
+	private final RewindableInputStream inputStream;
 	private final ZipFileDataInfo fileDataCountingInfo = new ZipFileDataInfo();
 	private final byte[] tmpBuffer = new byte[IoUtils.STANDARD_BUFFER_SIZE];
 
@@ -63,7 +63,7 @@ public class ZipFileInput implements Closeable {
 	 * Read a Zip-file from an input-stream. You must call {@link #close()} to close the stream when you are done.
 	 */
 	public ZipFileInput(InputStream inputStream) {
-		this.countingInputStream = new RewindableInputStream(inputStream, IoUtils.STANDARD_BUFFER_SIZE);
+		this.inputStream = new RewindableInputStream(inputStream, IoUtils.STANDARD_BUFFER_SIZE);
 	}
 
 	/**
@@ -75,7 +75,7 @@ public class ZipFileInput implements Closeable {
 		}
 		currentDataDescriptor = null;
 		currentFileEofReached = false;
-		currentFileHeader = ZipFileHeader.read(countingInputStream);
+		currentFileHeader = ZipFileHeader.read(inputStream);
 		// reset the counting info now that we are ready to read the next file
 		fileDataCountingInfo.reset();
 		return currentFileHeader;
@@ -240,7 +240,7 @@ public class ZipFileInput implements Closeable {
 	 * @return The next central-directory file-header or null if all entries have been read.
 	 */
 	public ZipCentralDirectoryFileEntry readDirectoryFileEntry() throws IOException {
-		currentDirHeader = ZipCentralDirectoryFileEntry.read(countingInputStream);
+		currentDirHeader = ZipCentralDirectoryFileEntry.read(inputStream);
 		return currentDirHeader;
 	}
 
@@ -274,7 +274,7 @@ public class ZipFileInput implements Closeable {
 	public boolean readDirectoryFileEntriesAndAssignPermissions() throws IOException {
 		boolean result = true;
 		while (true) {
-			currentDirHeader = ZipCentralDirectoryFileEntry.read(countingInputStream);
+			currentDirHeader = ZipCentralDirectoryFileEntry.read(inputStream);
 			if (currentDirHeader == null) {
 				break;
 			}
@@ -290,7 +290,7 @@ public class ZipFileInput implements Closeable {
 	 * Zip file.
 	 */
 	public ZipCentralDirectoryEnd readDirectoryEnd() throws IOException {
-		return ZipCentralDirectoryEnd.read(countingInputStream);
+		return ZipCentralDirectoryEnd.read(inputStream);
 	}
 
 	/**
@@ -301,7 +301,7 @@ public class ZipFileInput implements Closeable {
 	 */
 	public void readToEndOfZip() throws IOException {
 		while (true) {
-			int num = countingInputStream.read(tmpBuffer);
+			int num = inputStream.read(tmpBuffer);
 			if (num < 0) {
 				break;
 			}
@@ -319,7 +319,7 @@ public class ZipFileInput implements Closeable {
 		if (readTillEof) {
 			readToEndOfZip();
 		}
-		countingInputStream.close();
+		inputStream.close();
 	}
 
 	/**
@@ -338,6 +338,13 @@ public class ZipFileInput implements Closeable {
 	 */
 	public ZipFileDataInfo getCurrentFileCountingInfo() {
 		return fileDataCountingInfo;
+	}
+
+	/**
+	 * Return the number of bytes that have been read so far in the stream.
+	 */
+	public long getNumBytesRead() {
+		return inputStream.getByteCount();
 	}
 
 	/**
@@ -398,17 +405,16 @@ public class ZipFileInput implements Closeable {
 			fileDataDecoder = null;
 		}
 		if (currentFileHeader.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR)) {
-			currentDataDescriptor = ZipDataDescriptor.read(countingInputStream);
+			currentDataDescriptor = ZipDataDescriptor.read(inputStream);
 		}
 		currentFileEofReached = true;
 	}
 
 	private void assignFileDataDecoder(int compressionMethod) throws IOException {
 		if (compressionMethod == CompressionMethod.NONE.getValue()) {
-			this.fileDataDecoder =
-					new StoredFileDataDecoder(countingInputStream, currentFileHeader.getCompressedSize());
+			this.fileDataDecoder = new StoredFileDataDecoder(inputStream, currentFileHeader.getCompressedSize());
 		} else if (compressionMethod == CompressionMethod.DEFLATED.getValue()) {
-			this.fileDataDecoder = new InflatorFileDataDecoder(countingInputStream);
+			this.fileDataDecoder = new InflatorFileDataDecoder(inputStream);
 		} else {
 			throw new IllegalStateException("Unknown compression method: "
 					+ CompressionMethod.fromValue(compressionMethod) + " (" + compressionMethod + ")");

@@ -3,7 +3,7 @@ package com.j256.simplezip.format;
 import java.io.File;
 
 /**
- * Additional file information that can be written into the central-directory that does not exist in the
+ * Additional file information that can be written into a central-directory file-entry that does not exist in the
  * {@link ZipFileHeader}.
  * 
  * @author graywatson
@@ -116,19 +116,19 @@ public class ZipCentralDirectoryFileInfo {
 		/**
 		 * Create a builder from an existing central-directory file-entry.
 		 */
-		public static Builder fromCentralDirectoryFileEntry(ZipCentralDirectoryFileEntry header) {
+		public static Builder fromCentralDirectoryFileEntry(ZipCentralDirectoryFileEntry entry) {
 			Builder builder = new Builder();
-			builder.versionMade = header.getVersionMade();
-			builder.versionNeeded = header.getVersionNeeded();
-			builder.diskNumberStart = header.getDiskNumberStart();
-			builder.internalFileAttributes = header.getInternalFileAttributes();
-			builder.externalFileAttributes = header.getExternalFileAttributes();
-			builder.commentBytes = header.getCommentBytes();
+			builder.versionMade = entry.getVersionMade();
+			builder.versionNeeded = entry.getVersionNeeded();
+			builder.diskNumberStart = entry.getDiskNumberStart();
+			builder.internalFileAttributes = entry.getInternalFileAttributes();
+			builder.externalFileAttributes = entry.getExternalFileAttributes();
+			builder.commentBytes = entry.getCommentBytes();
 			return builder;
 		}
 
 		/**
-		 * Builder an instance of the central-directory file-header.
+		 * Builder an instance of the central-directory file-entry.
 		 */
 		public ZipCentralDirectoryFileInfo build() {
 			return new ZipCentralDirectoryFileInfo(versionMade, versionNeeded, diskNumberStart, internalFileAttributes,
