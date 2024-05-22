@@ -18,7 +18,7 @@ import com.j256.simplezip.format.ZipCentralDirectoryEnd;
 import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
 import com.j256.simplezip.format.CompressionMethod;
 import com.j256.simplezip.format.ZipDataDescriptor;
-import com.j256.simplezip.format.FilePermissions;
+import com.j256.simplezip.format.ExternalFileAttributesUtils;
 import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 
@@ -248,7 +248,7 @@ public class ZipFileInput implements Closeable {
 	 * Assigns the file permissions from the current dir-entry to the File that was previously read by
 	 * {@link #readFileData(File)}. A previous call to {@link #readDirectoryFileEntry()} must have been made with a
 	 * file-name that matches the file-header written with the File previously. This assigns the permissions based on a
-	 * call to {@link FilePermissions#assignToFile(File, int)}.
+	 * call to {@link ExternalFileAttributesUtils#assignToFile(File, int)}.
 	 * 
 	 * @return True if successful otherwise false if the file was not found.
 	 */
@@ -260,7 +260,7 @@ public class ZipFileInput implements Closeable {
 		if (file == null) {
 			return false;
 		} else {
-			FilePermissions.assignToFile(file, currentDirHeader.getExternalFileAttributes());
+			ExternalFileAttributesUtils.assignToFile(file, currentDirHeader.getExternalFileAttributes());
 			return true;
 		}
 	}

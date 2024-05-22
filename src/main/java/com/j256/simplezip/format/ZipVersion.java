@@ -61,6 +61,13 @@ public enum ZipVersion {
 	}
 
 	/**
+	 * Return the version in the format "#.#".
+	 */
+	public String getVersionString() {
+		return major + "." + minor;
+	}
+
+	/**
 	 * Given an integer, return the associated platform..
 	 */
 	public static ZipVersion fromValue(int value) {

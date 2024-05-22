@@ -3,6 +3,7 @@ package com.j256.simplezip.format;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
@@ -86,7 +87,7 @@ public class ZipCentralDirectoryFileEntry {
 		builder.compressionMethod = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.compressionMethod");
 		builder.lastModifiedTime = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.lastModifiedTime");
 		builder.lastModifiedDate = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.lastModifiedDate");
-		builder.crc32 = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.crc32");
+		builder.crc32 = IoUtils.readIntAsLong(inputStream, "CentralDirectoryFileHeader.crc32");
 		builder.compressedSize = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.compressedSize");
 		builder.uncompressedSize = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.uncompressedSize");
 		int fileNameLength = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.fileNameLength");
@@ -140,26 +141,46 @@ public class ZipCentralDirectoryFileEntry {
 		return versionMade;
 	}
 
+	/**
+	 * Get the version needed value as a #.# string.
+	 */
+	public String getVersionMadeString() {
+		int high = versionNeeded / 10;
+		int low = versionNeeded % 10;
+		return high + "." + low;
+	}
+
 	public int getVersionNeeded() {
 		return versionNeeded;
 	}
 
 	/**
+	 * Get the version needed value as an enum;
+	 */
+	public ZipVersion getZipVersionNeeded() {
+		return ZipVersion.fromValue(versionNeeded);
+	}
+
+	/**
 	 * Extract the platform from the version-made information.
 	 */
-	public Platform getPlatform() {
+	public Platform getPlatformMade() {
 		return Platform.fromValue((versionMade >> 8) & 0xFF);
 	}
 
 	/**
 	 * Extract the needed version from the version-made information.
 	 */
-	public ZipVersion getZipVersion() {
+	public ZipVersion getZipVersionMade() {
 		return ZipVersion.fromValue(versionMade & 0xFF);
 	}
 
 	public int getGeneralPurposeFlags() {
 		return generalPurposeFlags;
+	}
+
+	public Set<GeneralPurposeFlag> getGeneralPurposeFlagsAsEnums() {
+		return GeneralPurposeFlag.fromInt(generalPurposeFlags);
 	}
 
 	public int getCompressionMethod() {
@@ -280,8 +301,8 @@ public class ZipCentralDirectoryFileEntry {
 	 * Builder for the {@link ZipCentralDirectoryFileEntry}.
 	 */
 	public static class Builder {
-		private int versionMade;
-		private int versionNeeded = ZipVersion.detectVersion().getValue();
+		private int versionMade = ZipVersion.detectVersion().getValue();
+		private int versionNeeded = ZipVersion.V1_0.getValue();
 		private int generalPurposeFlags;
 		private int compressionMethod;
 		private int lastModifiedTime;
@@ -340,8 +361,8 @@ public class ZipCentralDirectoryFileEntry {
 		 * Reset the builder in case you want to reuse. This does set a couple of default fields.
 		 */
 		public void reset() {
-			versionMade = 0;
-			versionNeeded = ZipVersion.detectVersion().getValue();
+			versionMade = ZipVersion.detectVersion().getValue();
+			versionNeeded = ZipVersion.V1_0.getValue();
 			generalPurposeFlags = 0;
 			compressionMethod = 0;
 			lastModifiedTime = 0;

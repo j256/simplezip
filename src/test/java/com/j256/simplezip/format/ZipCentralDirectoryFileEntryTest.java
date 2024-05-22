@@ -188,8 +188,8 @@ public class ZipCentralDirectoryFileEntryTest {
 		assertEquals(version, builder.getZipVersion());
 
 		ZipCentralDirectoryFileEntry fileEntry = builder.build();
-		assertEquals(platform, fileEntry.getPlatform());
-		assertEquals(version, fileEntry.getZipVersion());
+		assertEquals(platform, fileEntry.getPlatformMade());
+		assertEquals(version, fileEntry.getZipVersionMade());
 	}
 
 	@Test

@@ -1,6 +1,10 @@
+0.10: 5/??/2024
+	* Fixed a problem with early stream-closing.  Surprised I didn't catch this earlier.
+	* Added code examples.
+
 0.9: 5/21/2024
-	* Added initial documentation.
 	* Added auto-skipping of file-data in ZipFileInput if you didn't read any data or didn't read to the end.
+	* Added initial documentation.  Caused a lot of class renaming.
 	* Renamed some modified date/time fields in the ZipFileHeader and ZipCentralDirectoryFileEntry.
 	* Renamed DataDescriptor to ZipDataDescriptor.
 	* Renamed CentralDirectoryFileHeader to ZipCentralDirectoryFileEntry.

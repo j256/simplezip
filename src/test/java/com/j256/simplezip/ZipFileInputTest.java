@@ -58,7 +58,7 @@ public class ZipFileInputTest {
 		assertEquals(0, header.getCompressedSize());
 		assertEquals(0, header.getUncompressedSize());
 		assertEquals(0, header.getCrc32());
-		assertTrue(header.getGeneralPurposeFlagAsEnums().contains(GeneralPurposeFlag.DATA_DESCRIPTOR));
+		assertTrue(header.getGeneralPurposeFlagsAsEnums().contains(GeneralPurposeFlag.DATA_DESCRIPTOR));
 		assertEquals(CompressionMethod.DEFLATED, header.getCompressionMethodAsEnum());
 
 		System.out.println("header " + header.getFileName() + ", date " + header.getLastModifiedDateTime() + ", time "
@@ -464,6 +464,32 @@ public class ZipFileInputTest {
 		assertNotNull(input.readFileHeader());
 		assertNull(input.readFileHeader());
 		input.close();
+	}
+
+	@Test
+	public void testReadFromFile() throws IOException {
+		File tmpFile = File.createTempFile(getClass().getSimpleName(), ".t");
+		tmpFile.deleteOnExit();
+		String fileName = "hello";
+		ZipFileOutput zipOutput = new ZipFileOutput(tmpFile);
+		zipOutput.enableBufferedOutput(1024, 1024);
+		ZipFileHeader entry = ZipFileHeader.builder().withFileName(fileName).build();
+		zipOutput.writeFileHeader(entry);
+		byte[] bytes = new byte[] { 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3 };
+		zipOutput.writeFileDataAll(bytes);
+		entry = ZipFileHeader.builder().withFileName(fileName + "2").build();
+		zipOutput.writeFileHeader(entry);
+		zipOutput.writeFileDataAll(bytes);
+		zipOutput.close();
+
+		ZipFileInput input = new ZipFileInput(tmpFile);
+		ZipFileHeader header = input.readFileHeader();
+		assertNotNull(header);
+		System.out.println("header " + header);
+		assertNotNull(input.readFileHeader());
+		assertNull(input.readFileHeader());
+		input.close();
+		tmpFile.delete();
 	}
 
 	private byte[] readFileToBytes(File file) throws IOException {
