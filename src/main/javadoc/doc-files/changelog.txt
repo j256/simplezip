@@ -1,6 +1,6 @@
-0.10: 5/??/2024
+1.0: 5/22/2024
 	* Fixed a problem with early stream-closing.  Surprised I didn't catch this earlier.
-	* Added code examples.
+	* Started to add some code examples.
 
 0.9: 5/21/2024
 	* Added auto-skipping of file-data in ZipFileInput if you didn't read any data or didn't read to the end.
