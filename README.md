@@ -32,7 +32,7 @@ file path, or an `InputStream`.
 	// NOTE: descriptor can be null if none in the zip
 	ZipDataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
 	// read in the optional central-directory file-headers, null when no more
-	ZipCentralDirectoryFileHeader dirHeader = zipInput.readDirectoryFileHeader();
+	ZipCentralDirectoryFileEntry dirHeader = zipInput.readDirectoryFileEntry();
 	// read in the optional central-directory end data
 	ZipCentralDirectoryEnd end = zipInput.readDirectoryEnd();
 	zipInput.close();
