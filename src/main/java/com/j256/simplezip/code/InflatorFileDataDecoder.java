@@ -60,9 +60,8 @@ public class InflatorFileDataDecoder implements FileDataDecoder {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		inflater.end();
-		delegate.close();
 	}
 
 	/**
