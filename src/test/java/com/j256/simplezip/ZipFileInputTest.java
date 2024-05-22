@@ -3,6 +3,7 @@ package com.j256.simplezip;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -69,6 +70,7 @@ public class ZipFileInputTest {
 		assertEquals(0, input.readFileDataPart(new byte[0]));
 		long numRead = input.readFileData(baos);
 		assertEquals(bytes.length, numRead);
+		assertNotEquals(0, input.getCurrentFileCountingInfo().getCrc32());
 		assertArrayEquals(bytes, baos.toByteArray());
 
 		ZipDataDescriptor dataDescriptor = input.getCurrentDataDescriptor();
@@ -254,6 +256,28 @@ public class ZipFileInputTest {
 	}
 
 	@Test
+	public void testReadPartialWithInputStream() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+		ZipFileOutput ouput = new ZipFileOutput(baos);
+		ouput.enableBufferedOutput(10240, 10240);
+		String fileName = "hello";
+		Builder builder = ZipFileHeader.builder().withFileName(fileName).withCompressionMethod(CompressionMethod.NONE);
+		byte[] bytes = new byte[] { 1, 2, 3 };
+		ouput.writeFileHeader(builder.build());
+		ouput.writeFileDataPart(bytes);
+		ouput.finishFileData();
+		ouput.close();
+
+		InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+		ZipFileInput input = new ZipFileInput(inputStream);
+		input.setReadTillEof(false);
+		ZipFileHeader header = input.readFileHeader();
+		assertEquals(CompressionMethod.NONE, header.getCompressionMethodAsEnum());
+		input.close();
+	}
+
+	@Test
 	public void testReadStoredEmpty() throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		String fileName = "hello";
@@ -275,6 +299,7 @@ public class ZipFileInputTest {
 		ZipFileHeader header = input.readFileHeader();
 		assertEquals(CompressionMethod.NONE, header.getCompressionMethodAsEnum());
 		byte[] buffer = new byte[1024];
+		assertEquals(-1, input.readFileDataPart(buffer, 0, buffer.length));
 		assertEquals(-1, input.readFileDataPart(buffer, 0, buffer.length));
 		input.close();
 	}
@@ -409,6 +434,7 @@ public class ZipFileInputTest {
 		output = readFileToBytes(file2);
 		assertArrayEquals(bytes, output);
 
+		assertNull(input.readFileHeader());
 		assertTrue(input.readDirectoryFileEntriesAndAssignPermissions());
 
 		file1.delete();

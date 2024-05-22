@@ -82,7 +82,11 @@ public class ZipCentralDirectoryFileInfo {
 	}
 
 	public String getComment() {
-		return new String(commentBytes);
+		if (commentBytes == null) {
+			return null;
+		} else {
+			return new String(commentBytes);
+		}
 	}
 
 	/**

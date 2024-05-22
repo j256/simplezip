@@ -58,8 +58,11 @@ public class ZipCentralDirectoryFileEntryTest {
 		int relativeOffsetOfLocalHeader = 663523534;
 		builder.setRelativeOffsetOfLocalHeader(relativeOffsetOfLocalHeader);
 		assertEquals(relativeOffsetOfLocalHeader, builder.getRelativeOffsetOfLocalHeader());
-		byte[] fileNameBytes = "hello.txt".getBytes();
+		assertNull(builder.getFileName());
+		String fileName = "hello.txt";
+		byte[] fileNameBytes = fileName.getBytes();
 		builder.setFileNameBytes(fileNameBytes);
+		assertEquals(fileName, builder.getFileName());
 		assertArrayEquals(fileNameBytes, builder.getFileNameBytes());
 		byte[] extraBytes = new byte[] { 7, 8, 1, 2, 1, 5 };
 		builder.setExtraFieldBytes(extraBytes);

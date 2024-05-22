@@ -72,8 +72,6 @@ public class ZipCentralDirectoryFileEntry {
 	 */
 	public static ZipCentralDirectoryFileEntry read(RewindableInputStream inputStream) throws IOException {
 
-		Builder builder = new ZipCentralDirectoryFileEntry.Builder();
-
 		int signature = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.signature");
 
 		if (signature != EXPECTED_SIGNATURE) {
@@ -81,6 +79,7 @@ public class ZipCentralDirectoryFileEntry {
 			return null;
 		}
 
+		Builder builder = new ZipCentralDirectoryFileEntry.Builder();
 		builder.versionMade = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.versionMade");
 		builder.versionNeeded = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.versionNeeded");
 		builder.generalPurposeFlags = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.generalPurposeFlags");
@@ -247,7 +246,11 @@ public class ZipCentralDirectoryFileEntry {
 	}
 
 	public String getFileName() {
-		return new String(fileNameBytes);
+		if (fileNameBytes == null) {
+			return null;
+		} else {
+			return new String(fileNameBytes);
+		}
 	}
 
 	public byte[] getExtraFieldBytes() {
@@ -259,7 +262,11 @@ public class ZipCentralDirectoryFileEntry {
 	}
 
 	public String getComment() {
-		return new String(commentBytes);
+		if (commentBytes == null) {
+			return null;
+		} else {
+			return new String(commentBytes);
+		}
 	}
 
 	@Override
@@ -556,6 +563,14 @@ public class ZipCentralDirectoryFileEntry {
 
 		public void setFileNameBytes(byte[] fileNameBytes) {
 			this.fileNameBytes = fileNameBytes;
+		}
+
+		public String getFileName() {
+			if (fileNameBytes == null) {
+				return null;
+			} else {
+				return new String(fileNameBytes);
+			}
 		}
 
 		public byte[] getExtraFieldBytes() {
