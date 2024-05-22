@@ -10,12 +10,15 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.zip.CRC32;
 import java.util.zip.Deflater;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.junit.Test;
 
@@ -323,5 +326,24 @@ public class ZipFileHeaderTest {
 		ZipFileHeader.Builder builder = ZipFileHeader.builder();
 		CRC32 crc32 = new CRC32();
 		builder.setCrc32Value(crc32);
+	}
+
+	@Test
+	public void testDataDescriptor() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ZipEntry entry = new ZipEntry("hello");
+		ZipOutputStream zos = new ZipOutputStream(baos);
+		zos.putNextEntry(entry);
+		byte[] bytes1 = new byte[] { 1, 2, 3 };
+		zos.write(bytes1);
+		zos.closeEntry();
+		zos.close();
+
+		InputStream input = new ByteArrayInputStream(baos.toByteArray());
+		ZipFileHeader header = ZipFileHeader.read(new RewindableInputStream(input, 8192));
+		assertEquals(entry.getName(), header.getFileName());
+		assertEquals(0, header.getCompressedSize());
+		assertEquals(0, header.getUncompressedSize());
+		assertTrue(header.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR));
 	}
 }

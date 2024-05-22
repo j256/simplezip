@@ -456,6 +456,26 @@ public class ZipCentralDirectoryFileEntry {
 			this.lastModifiedDate = lastModifiedDate;
 		}
 
+		/**
+		 * Set the lastModFileDate and lastModFileTime as a {@link LocalDateTime}. Warning, the time has a 2 second
+		 * resolution so some normalization will occur.
+		 */
+		public void setLastModifiedDateTime(LocalDateTime lastModifiedDateTime) {
+			this.lastModifiedDate = (((lastModifiedDateTime.getYear() - 1980) << 9)
+					| (lastModifiedDateTime.getMonthValue() << 5) | (lastModifiedDateTime.getDayOfMonth()));
+			this.lastModifiedTime = ((lastModifiedDateTime.getHour() << 11) | (lastModifiedDateTime.getMinute() << 5)
+					| (lastModifiedDateTime.getSecond() / 2));
+		}
+
+		/**
+		 * Set the lastModFileDate and lastModFileTime as a {@link LocalDateTime}. Warning, the time has a 2 second
+		 * resolution so some normalization will occur.
+		 */
+		public Builder withLastModifiedDateTime(LocalDateTime lastModifiedDateTime) {
+			setLastModifiedDateTime(lastModifiedDateTime);
+			return this;
+		}
+
 		public long getCrc32() {
 			return crc32;
 		}

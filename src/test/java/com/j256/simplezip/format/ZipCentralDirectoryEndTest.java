@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import com.j256.simplezip.format.ZipCentralDirectoryEnd.Builder;
 
-public class CentralDirectoryEndTest {
+public class ZipCentralDirectoryEndTest {
 
 	@Test
 	public void testCoverage() {

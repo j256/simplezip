@@ -40,6 +40,9 @@ public enum GeneralPurposeFlag {
 	// end
 	;
 
+	// because when normal is enabled there is no values, it is always set if value is 0
+	private static final Set<GeneralPurposeFlag> VALUE_ZERO_FLAGS = Collections.singleton(DEFLATING_NORMAL);
+
 	private final int value;
 
 	private GeneralPurposeFlag(int value) {
@@ -47,11 +50,11 @@ public enum GeneralPurposeFlag {
 	}
 
 	/**
-	 * Gnerate a set of flags from an integer value.
+	 * Generate a set of flags from an integer value.
 	 */
 	public static Set<GeneralPurposeFlag> fromInt(int value) {
 		if (value == 0) {
-			return Collections.emptySet();
+			return VALUE_ZERO_FLAGS;
 		}
 		Set<GeneralPurposeFlag> flags = new HashSet<>();
 		// cut out the level because it overlaps with other flags

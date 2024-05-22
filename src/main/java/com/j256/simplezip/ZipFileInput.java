@@ -398,7 +398,7 @@ public class ZipFileInput implements Closeable {
 			fileDataDecoder = null;
 		}
 		if (currentFileHeader.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR)) {
-			currentDataDescriptor = ZipDataDescriptor.read(countingInputStream, fileDataCountingInfo);
+			currentDataDescriptor = ZipDataDescriptor.read(countingInputStream);
 		}
 		currentFileEofReached = true;
 	}

@@ -3,7 +3,6 @@ package com.j256.simplezip.format;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import com.j256.simplezip.ZipFileDataInfo;
 import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
 
@@ -16,7 +15,7 @@ import com.j256.simplezip.RewindableInputStream;
 public class ZipDataDescriptor {
 
 	/** optional signature at the start of the data-descriptor */
-	private static final int OPTIONAL_EXPECTED_SIGNATURE = 0x8074b50;
+	public static final int OPTIONAL_EXPECTED_SIGNATURE = 0x8074b50;
 
 	private final long crc32;
 	private final int compressedSize;
@@ -38,7 +37,7 @@ public class ZipDataDescriptor {
 	/**
 	 * Read from the input-stream.
 	 */
-	public static ZipDataDescriptor read(RewindableInputStream inputStream, ZipFileDataInfo countingInfo) throws IOException {
+	public static ZipDataDescriptor read(RewindableInputStream inputStream) throws IOException {
 		Builder builder = new ZipDataDescriptor.Builder();
 		/*
 		 * This is a little strange since there is an optional magic value according to Wikipedia. If the first value

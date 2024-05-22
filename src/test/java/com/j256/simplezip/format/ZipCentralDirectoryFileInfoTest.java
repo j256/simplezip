@@ -11,7 +11,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-public class CentralDirectoryFileInfoTest {
+public class ZipCentralDirectoryFileInfoTest {
 
 	@Test
 	public void testCoverage() {
@@ -143,7 +143,8 @@ public class CentralDirectoryFileInfoTest {
 
 		ZipCentralDirectoryFileEntry fileHeader = headerBuilder.build();
 
-		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.Builder.fromCentralDirectoryFileEntry(fileHeader);
+		ZipCentralDirectoryFileInfo.Builder builder =
+				ZipCentralDirectoryFileInfo.Builder.fromCentralDirectoryFileEntry(fileHeader);
 		assertEquals(versionMade, builder.getVersionMade());
 		assertEquals(versionNeeded, builder.getVersionNeeded());
 		assertEquals(diskNumberStart, builder.getDiskNumberStart());

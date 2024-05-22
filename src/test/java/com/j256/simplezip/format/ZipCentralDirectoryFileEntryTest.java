@@ -2,12 +2,18 @@ package com.j256.simplezip.format;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 import org.junit.Test;
 
 import com.j256.simplezip.format.ZipCentralDirectoryFileEntry.Builder;
 
-public class CentralDirectoryFileHeaderTest {
+public class ZipCentralDirectoryFileEntryTest {
 
 	@Test
 	public void testCoverage() {
@@ -25,10 +31,10 @@ public class CentralDirectoryFileHeaderTest {
 		int compressionMethodValue = 6334324;
 		builder.setCompressionMethod(compressionMethodValue);
 		assertEquals(compressionMethodValue, builder.getCompressionMethod());
-		int lastModifiedFileTime = 322342434;
+		int lastModifiedFileTime = 32434;
 		builder.setLastModifiedTime(lastModifiedFileTime);
 		assertEquals(lastModifiedFileTime, builder.getLastModifiedTime());
-		int lastModifiedFileDate = 8567056;
+		int lastModifiedFileDate = 1267556;
 		builder.setLastModifiedDate(lastModifiedFileDate);
 		assertEquals(lastModifiedFileDate, builder.getLastModifiedDate());
 		int crc32 = 654654;
@@ -52,7 +58,7 @@ public class CentralDirectoryFileHeaderTest {
 		int relativeOffsetOfLocalHeader = 663523534;
 		builder.setRelativeOffsetOfLocalHeader(relativeOffsetOfLocalHeader);
 		assertEquals(relativeOffsetOfLocalHeader, builder.getRelativeOffsetOfLocalHeader());
-		byte[] fileNameBytes = new byte[] { 4, 5, 1, 1, 3, 5 };
+		byte[] fileNameBytes = "hello.txt".getBytes();
 		builder.setFileNameBytes(fileNameBytes);
 		assertArrayEquals(fileNameBytes, builder.getFileNameBytes());
 		byte[] extraBytes = new byte[] { 7, 8, 1, 2, 1, 5 };
@@ -72,25 +78,99 @@ public class CentralDirectoryFileHeaderTest {
 		// NOTE: this changes the internal file attributes
 		internalFileAttributes |= ZipCentralDirectoryFileEntry.INTERNAL_ATTRIBUTES_TEXT_FILE;
 
-		ZipCentralDirectoryFileEntry fileHeader = builder.build();
-		assertEquals(versionMade, fileHeader.getVersionMade());
-		assertEquals(versionNeeded, fileHeader.getVersionNeeded());
-		assertEquals(generalPurposeFlags, fileHeader.getGeneralPurposeFlags());
-		assertEquals(compressionMethodValue, fileHeader.getCompressionMethod());
-		assertEquals(lastModifiedFileTime, fileHeader.getLastModifiedTime());
-		assertEquals(lastModifiedFileDate, fileHeader.getLastModifiedDate());
-		assertEquals(crc32, fileHeader.getCrc32());
-		assertEquals(compressedSize, fileHeader.getCompressedSize());
-		assertEquals(uncompressedSize, fileHeader.getUncompressedSize());
-		assertEquals(diskNumberStart, fileHeader.getDiskNumberStart());
-		assertEquals(internalFileAttributes, fileHeader.getInternalFileAttributes());
-		assertEquals(externalFileAttributes, fileHeader.getExternalFileAttributes());
-		assertEquals(relativeOffsetOfLocalHeader, fileHeader.getRelativeOffsetOfLocalHeader());
-		assertArrayEquals(fileNameBytes, fileHeader.getFileNameBytes());
-		assertArrayEquals(extraBytes, fileHeader.getExtraFieldBytes());
-		assertArrayEquals(commentBytes, fileHeader.getCommentBytes());
-		assertEquals(new String(commentBytes), fileHeader.getComment());
-		assertEquals(textFile, fileHeader.isTextFile());
+		ZipCentralDirectoryFileEntry fileEntry = builder.build();
+		assertEquals(versionMade, fileEntry.getVersionMade());
+		assertEquals(versionNeeded, fileEntry.getVersionNeeded());
+		assertEquals(generalPurposeFlags, fileEntry.getGeneralPurposeFlags());
+		assertEquals(compressionMethodValue, fileEntry.getCompressionMethod());
+		assertEquals(lastModifiedFileTime, fileEntry.getLastModifiedTime());
+		assertEquals(lastModifiedFileDate, fileEntry.getLastModifiedDate());
+		assertEquals(crc32, fileEntry.getCrc32());
+		assertEquals(compressedSize, fileEntry.getCompressedSize());
+		assertEquals(uncompressedSize, fileEntry.getUncompressedSize());
+		assertEquals(diskNumberStart, fileEntry.getDiskNumberStart());
+		assertEquals(internalFileAttributes, fileEntry.getInternalFileAttributes());
+		assertEquals(externalFileAttributes, fileEntry.getExternalFileAttributes());
+		assertEquals(relativeOffsetOfLocalHeader, fileEntry.getRelativeOffsetOfLocalHeader());
+		assertArrayEquals(fileNameBytes, fileEntry.getFileNameBytes());
+		assertArrayEquals(extraBytes, fileEntry.getExtraFieldBytes());
+		assertArrayEquals(commentBytes, fileEntry.getCommentBytes());
+		assertEquals(new String(commentBytes), fileEntry.getComment());
+		assertEquals(textFile, fileEntry.isTextFile());
+
+		System.out.println("entry = " + fileEntry);
+	}
+
+	@Test
+	public void testGeneralPurposeFlags() {
+		Builder builder = ZipCentralDirectoryFileEntry.builder();
+
+		builder.assignGeneralPurposeFlag(GeneralPurposeFlag.DEFLATING_FAST, false);
+		assertTrue((builder.getGeneralPurposeFlags() & GeneralPurposeFlag.DEFLATING_FAST.getValue()) == 0);
+		builder.assignGeneralPurposeFlag(GeneralPurposeFlag.DEFLATING_FAST, true);
+		assertTrue((builder.getGeneralPurposeFlags() & GeneralPurposeFlag.DEFLATING_FAST.getValue()) != 0);
+
+		ZipCentralDirectoryFileEntry fileEntry = builder.build();
+		assertTrue((fileEntry.getGeneralPurposeFlags() & GeneralPurposeFlag.DEFLATING_FAST.getValue()) != 0);
+	}
+
+	@Test
+	public void testComment() {
+		Builder builder = ZipCentralDirectoryFileEntry.builder();
+
+		String comment = "wow!";
+		builder.setComment(comment);
+		assertEquals(comment, builder.getComment());
+		ZipCentralDirectoryFileEntry entry = builder.build();
+		assertEquals(comment, entry.getComment());
+
+		builder.setComment(null);
+		assertNull(builder.getComment());
+		entry = builder.build();
+		assertNull(entry.getComment());
+	}
+
+	@Test
+	public void testInternalText() {
+		Builder builder = ZipCentralDirectoryFileEntry.builder();
+
+		builder.setTextFile(false);
+		assertFalse(builder.isTextFile());
+		ZipCentralDirectoryFileEntry entry = builder.build();
+		assertFalse(entry.isTextFile());
+
+		builder.setTextFile(true);
+		assertTrue(builder.isTextFile());
+		entry = builder.build();
+		assertTrue(entry.isTextFile());
+
+		System.out.println("no file: " + entry);
+	}
+
+	@Test
+	public void testDateTime() {
+		LocalDateTime input;
+		do {
+			input = LocalDateTime.now();
+			input = input.truncatedTo(ChronoUnit.SECONDS);
+		} while (input.getSecond() % 2 != 0);
+
+		Builder builder = ZipCentralDirectoryFileEntry.builder();
+		builder.setLastModifiedDateTime(input);
+		int date = builder.getLastModifiedDate();
+		int time = builder.getLastModifiedTime();
+		// coverage
+		builder.withLastModifiedDateTime(input);
+		ZipCentralDirectoryFileEntry entry = builder.build();
+		System.out.println("last-mod date is: " + entry.getLastModifiedDateString());
+		System.out.println("last-mod time is: " + entry.getLastModifiedTimeString());
+
+		LocalDateTime output = entry.getLastModifiedDateTime();
+		System.out.println("last-mod date is: " + entry.getLastModifiedDate());
+		System.out.println("last-mod time is: " + entry.getLastModifiedTime());
+		assertEquals(input, output);
+		assertEquals(date, entry.getLastModifiedDate());
+		assertEquals(time, entry.getLastModifiedTime());
 	}
 
 	@Test
@@ -104,9 +184,9 @@ public class CentralDirectoryFileHeaderTest {
 		builder.setZipVersion(version);
 		assertEquals(version, builder.getZipVersion());
 
-		ZipCentralDirectoryFileEntry fileHeader = builder.build();
-		assertEquals(platform, fileHeader.getPlatform());
-		assertEquals(version, fileHeader.getZipVersion());
+		ZipCentralDirectoryFileEntry fileEntry = builder.build();
+		assertEquals(platform, fileEntry.getPlatform());
+		assertEquals(version, fileEntry.getZipVersion());
 	}
 
 	@Test
@@ -117,8 +197,8 @@ public class CentralDirectoryFileHeaderTest {
 		builder.setCompressionMethod(method);
 		assertEquals(method, builder.getCompressionMethodAsEnum());
 
-		ZipCentralDirectoryFileEntry fileHeader = builder.build();
-		assertEquals(method, fileHeader.getCompressionMethodAsEnum());
+		ZipCentralDirectoryFileEntry fileEntry = builder.build();
+		assertEquals(method, fileEntry.getCompressionMethodAsEnum());
 	}
 
 	@Test
@@ -148,13 +228,13 @@ public class CentralDirectoryFileHeaderTest {
 		Builder builder = ZipCentralDirectoryFileEntry.builder();
 		builder.addFileInfo(fileInfo);
 
-		ZipCentralDirectoryFileEntry fileHeader = builder.build();
-		assertEquals(versionMade, fileHeader.getVersionMade());
-		assertEquals(versionNeeded, fileHeader.getVersionNeeded());
-		assertEquals(diskNumberStart, fileHeader.getDiskNumberStart());
-		assertEquals(internalFileAttributes, fileHeader.getInternalFileAttributes());
-		assertEquals(externalFileAttributes, fileHeader.getExternalFileAttributes());
-		assertArrayEquals(commentBytes, fileHeader.getCommentBytes());
+		ZipCentralDirectoryFileEntry fileEntry = builder.build();
+		assertEquals(versionMade, fileEntry.getVersionMade());
+		assertEquals(versionNeeded, fileEntry.getVersionNeeded());
+		assertEquals(diskNumberStart, fileEntry.getDiskNumberStart());
+		assertEquals(internalFileAttributes, fileEntry.getInternalFileAttributes());
+		assertEquals(externalFileAttributes, fileEntry.getExternalFileAttributes());
+		assertArrayEquals(commentBytes, fileEntry.getCommentBytes());
 	}
 
 	@Test
@@ -197,8 +277,8 @@ public class CentralDirectoryFileHeaderTest {
 		builder.setTextFile(textFile);
 		internalFileAttributes |= ZipCentralDirectoryFileEntry.INTERNAL_ATTRIBUTES_TEXT_FILE;
 
-		ZipCentralDirectoryFileEntry fileHeader = builder.build();
-		builder = Builder.fromFileHeader(fileHeader);
+		ZipCentralDirectoryFileEntry fileEntry = builder.build();
+		builder = Builder.fromFileHeader(fileEntry);
 		assertEquals(versionMade, builder.getVersionMade());
 		assertEquals(versionNeeded, builder.getVersionNeeded());
 		assertEquals(generalPurposeFlags, builder.getGeneralPurposeFlags());
