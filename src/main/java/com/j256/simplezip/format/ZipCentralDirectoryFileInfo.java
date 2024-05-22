@@ -10,8 +10,6 @@ import java.io.File;
  */
 public class ZipCentralDirectoryFileInfo {
 
-	private static final int MS_DOS_EXTERNAL_ATTRIBUTES_MASK = 0xFFFF;
-
 	private int versionMade;
 	private int versionNeeded;
 	private int diskNumberStart;
@@ -42,6 +40,15 @@ public class ZipCentralDirectoryFileInfo {
 
 	public int getVersionNeeded() {
 		return versionNeeded;
+	}
+
+	/**
+	 * Get the version needed value as a #.# string.
+	 */
+	public String getVersionNeededString() {
+		int high = versionNeeded / 10;
+		int low = versionNeeded % 10;
+		return high + "." + low;
 	}
 
 	/**
@@ -249,7 +256,7 @@ public class ZipCentralDirectoryFileInfo {
 		 * Set the externalFileAttributes from the attributes associated with the file argument.
 		 */
 		public void setExternalAttributesFromFile(File file) {
-			this.externalFileAttributes = FilePermissions.fromFile(file);
+			this.externalFileAttributes = ExternalFileAttributesUtils.fromFile(file);
 		}
 
 		/**
@@ -265,7 +272,7 @@ public class ZipCentralDirectoryFileInfo {
 		 */
 		public void setMsDosExternalFileAttributes(int msDosFileAttributes) {
 			externalFileAttributes =
-					(externalFileAttributes & ~MS_DOS_EXTERNAL_ATTRIBUTES_MASK) | (msDosFileAttributes & 0xFF);
+					ExternalFileAttributesUtils.assignMsdosAttributes(externalFileAttributes, msDosFileAttributes);
 		}
 
 		/**
@@ -282,7 +289,7 @@ public class ZipCentralDirectoryFileInfo {
 		 */
 		public void setUnixExternalFileAttributes(int unixFileAttributes) {
 			externalFileAttributes =
-					((externalFileAttributes & MS_DOS_EXTERNAL_ATTRIBUTES_MASK) | (unixFileAttributes << 16));
+					ExternalFileAttributesUtils.assignUnixFileAttributes(externalFileAttributes, unixFileAttributes);
 		}
 
 		/**
@@ -299,11 +306,11 @@ public class ZipCentralDirectoryFileInfo {
 		 */
 		public void setFileIsDirectory(boolean isDirectory) {
 			if (isDirectory) {
-				externalFileAttributes |= FilePermissions.UNIX_DIRECTORY;
-				externalFileAttributes |= FilePermissions.MS_DOS_DIRECTORY;
+				externalFileAttributes |= ExternalFileAttributesUtils.UNIX_DIRECTORY;
+				externalFileAttributes |= ExternalFileAttributesUtils.MS_DOS_DIRECTORY;
 			} else {
-				externalFileAttributes &= ~FilePermissions.UNIX_DIRECTORY;
-				externalFileAttributes &= ~FilePermissions.MS_DOS_DIRECTORY;
+				externalFileAttributes &= ~ExternalFileAttributesUtils.UNIX_DIRECTORY;
+				externalFileAttributes &= ~ExternalFileAttributesUtils.MS_DOS_DIRECTORY;
 			}
 		}
 
@@ -320,9 +327,9 @@ public class ZipCentralDirectoryFileInfo {
 		 */
 		public void setFileIsSymlink(boolean isSymlink) {
 			if (isSymlink) {
-				externalFileAttributes |= FilePermissions.UNIX_SYMLINK;
+				externalFileAttributes |= ExternalFileAttributesUtils.UNIX_SYMLINK;
 			} else {
-				externalFileAttributes &= ~FilePermissions.UNIX_SYMLINK;
+				externalFileAttributes &= ~ExternalFileAttributesUtils.UNIX_SYMLINK;
 			}
 		}
 
@@ -339,9 +346,9 @@ public class ZipCentralDirectoryFileInfo {
 		 */
 		public void setFileIsRegular(boolean isRegular) {
 			if (isRegular) {
-				externalFileAttributes |= FilePermissions.UNIX_REGULAR_FILE;
+				externalFileAttributes |= ExternalFileAttributesUtils.UNIX_REGULAR_FILE;
 			} else {
-				externalFileAttributes &= ~FilePermissions.UNIX_REGULAR_FILE;
+				externalFileAttributes &= ~ExternalFileAttributesUtils.UNIX_REGULAR_FILE;
 			}
 		}
 
@@ -359,14 +366,14 @@ public class ZipCentralDirectoryFileInfo {
 		public void setFileIsReadOnly(boolean readOnly) {
 			if (readOnly) {
 				// add in read-only permissions
-				externalFileAttributes = ((externalFileAttributes & MS_DOS_EXTERNAL_ATTRIBUTES_MASK)
-						| FilePermissions.UNIX_READ_ONLY_PERMISSIONS);
-				externalFileAttributes |= FilePermissions.MS_DOS_READONLY;
+				externalFileAttributes = ExternalFileAttributesUtils.assignUnixAttributes(externalFileAttributes,
+						ExternalFileAttributesUtils.UNIX_READ_ONLY_PERMISSIONS);
+				externalFileAttributes |= ExternalFileAttributesUtils.MS_DOS_READONLY;
 			} else {
 				// not 100% sure this is correct but maybe the best we can do
-				externalFileAttributes = ((externalFileAttributes & MS_DOS_EXTERNAL_ATTRIBUTES_MASK)
-						| FilePermissions.UNIX_READ_WRITE_PERMISSIONS);
-				externalFileAttributes &= ~FilePermissions.MS_DOS_READONLY;
+				externalFileAttributes = ExternalFileAttributesUtils.assignUnixAttributes(externalFileAttributes,
+						ExternalFileAttributesUtils.UNIX_READ_WRITE_PERMISSIONS);
+				externalFileAttributes &= ~ExternalFileAttributesUtils.MS_DOS_READONLY;
 			}
 		}
 

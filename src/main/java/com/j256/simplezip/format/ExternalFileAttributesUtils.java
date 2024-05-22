@@ -17,7 +17,7 @@ import java.util.Set;
  * 
  * @author graywatson
  */
-public class FilePermissions {
+public class ExternalFileAttributesUtils {
 
 	public static int UNIX_REGULAR_FILE = (0100000 << 16);
 	public static int UNIX_DIRECTORY = (040000 << 16);
@@ -26,6 +26,7 @@ public class FilePermissions {
 	public static int UNIX_READ_WRITE_PERMISSIONS = (0644 << 16);
 	private static int UNIX_READ_ONLY_EXECUTE_PERMISSIONS = (0555 << 16);
 	private static int UNIX_READ_WRITE_EXECUTE_PERMISSIONS = (0755 << 16);
+	private static final int MS_DOS_EXTERNAL_ATTRIBUTES_MASK = 0xFFFF;
 
 	public static int MS_DOS_READONLY = 0x01;
 	public static int MS_DOS_DIRECTORY = 0x010;
@@ -72,6 +73,52 @@ public class FilePermissions {
 		} catch (Exception e) {
 			assignJavaFileAttributes(file, permissions);
 		}
+	}
+
+	/**
+	 * Assign MS-DOS attributes on our attributes integer and return it.
+	 */
+	public static int assignMsdosAttributes(int attributes, int msDosFileAttributes) {
+		attributes = (attributes & ~MS_DOS_EXTERNAL_ATTRIBUTES_MASK) | (msDosFileAttributes & 0xFF);
+		return attributes;
+	}
+
+	/**
+	 * Assign Unix attributes on our attributes integer and return it.
+	 */
+	public static int assignUnixFileAttributes(int attributes, int unixFileAttributes) {
+		return assignUnixAttributes(attributes, (unixFileAttributes << 16));
+	}
+
+	public static int assignUnixAttributes(int attributes, int unixFileAttributes) {
+		attributes = ((attributes & MS_DOS_EXTERNAL_ATTRIBUTES_MASK) | unixFileAttributes);
+		return attributes;
+	}
+
+	/**
+	 * Get the permissions flags from a file.
+	 */
+	public static String toString(int attributes) {
+		StringBuilder sb = new StringBuilder();
+		boolean first = true;
+		if ((attributes & MS_DOS_EXTERNAL_ATTRIBUTES_MASK) != 0) {
+			sb.append("ms-dos:");
+			if ((attributes & MS_DOS_READONLY) == MS_DOS_READONLY) {
+				sb.append(" read-only");
+			}
+			if ((attributes & MS_DOS_DIRECTORY) == MS_DOS_DIRECTORY) {
+				sb.append(" directory");
+			}
+			first = false;
+		}
+		int unixAttributes = ((attributes & ~MS_DOS_EXTERNAL_ATTRIBUTES_MASK) >>> 16);
+		if (unixAttributes != 0) {
+			if (!first) {
+				sb.append(", ");
+			}
+			sb.append("unix:").append(Integer.toOctalString(unixAttributes));
+		}
+		return sb.toString();
 	}
 
 	/**
