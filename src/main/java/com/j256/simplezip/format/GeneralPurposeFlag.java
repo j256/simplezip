@@ -16,7 +16,8 @@ public enum GeneralPurposeFlag {
 	 * Sets whether or not the data-descriptor information follows the file data.
 	 */
 	ENCRYPTED(1 << 0),
-	// for type 8 + 9, overlaps the type-6 stuff
+	// for type 8 + 9, the deflating values overlaps the type-6 stuff
+	// deflating normal really isn't a value since it is 0
 	DEFLATING_NORMAL(0 << 1),
 	DEFLATING_MAXIMUM(1 << 1),
 	DEFLATING_FAST(2 << 1),
@@ -40,9 +41,6 @@ public enum GeneralPurposeFlag {
 	// end
 	;
 
-	// because when normal is enabled there is no values, it is always set if value is 0
-	private static final Set<GeneralPurposeFlag> VALUE_ZERO_FLAGS = Collections.singleton(DEFLATING_NORMAL);
-
 	private final int value;
 
 	private GeneralPurposeFlag(int value) {
@@ -54,14 +52,14 @@ public enum GeneralPurposeFlag {
 	 */
 	public static Set<GeneralPurposeFlag> fromInt(int value) {
 		if (value == 0) {
-			return VALUE_ZERO_FLAGS;
+			return Collections.emptySet();
 		}
 		Set<GeneralPurposeFlag> flags = new HashSet<>();
 		// cut out the level because it overlaps with other flags
 		int level = (value & 06) >> 1;
 		value &= ~06;
 		if (level == 0) {
-			flags.add(DEFLATING_NORMAL);
+			// no flag for deflating normal
 		} else if (level == 1) {
 			flags.add(DEFLATING_MAXIMUM);
 		} else if (level == 2) {

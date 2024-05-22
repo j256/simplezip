@@ -8,10 +8,10 @@ public class GeneralPurposeFlagTest {
 
 	@Test
 	public void testStuff() {
-		assertTrue(GeneralPurposeFlag.fromInt(0).contains(GeneralPurposeFlag.DEFLATING_NORMAL));
+		assertTrue(GeneralPurposeFlag.fromInt(0).isEmpty());
 
 		GeneralPurposeFlag flag = GeneralPurposeFlag.DEFLATING_NORMAL;
-		assertTrue(GeneralPurposeFlag.fromInt(flag.getValue()).contains(flag));
+		assertTrue(GeneralPurposeFlag.fromInt(flag.getValue()).isEmpty());
 		flag = GeneralPurposeFlag.DEFLATING_FAST;
 		assertTrue(GeneralPurposeFlag.fromInt(flag.getValue()).contains(flag));
 		flag = GeneralPurposeFlag.DEFLATING_SUPER_FAST;
@@ -19,5 +19,4 @@ public class GeneralPurposeFlagTest {
 		flag = GeneralPurposeFlag.DEFLATING_MAXIMUM;
 		assertTrue(GeneralPurposeFlag.fromInt(flag.getValue()).contains(flag));
 	}
-
 }

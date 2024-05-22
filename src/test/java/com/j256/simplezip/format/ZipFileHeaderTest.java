@@ -259,7 +259,7 @@ public class ZipFileHeaderTest {
 		assertTrue(result.hasFlag(GeneralPurposeFlag.DEFLATING_SUPER_FAST));
 		assertFalse(result.hasFlag(GeneralPurposeFlag.COMPRESS_PATCHED));
 		assertEquals(new HashSet<GeneralPurposeFlag>(Arrays.asList(GeneralPurposeFlag.DEFLATING_SUPER_FAST)),
-				result.getGeneralPurposeFlagAsEnums());
+				result.getGeneralPurposeFlagsAsEnums());
 		assertEquals(1, result.getCompressionLevel());
 		assertEquals(header.getCompressionLevel(), result.getCompressionLevel());
 	}
@@ -272,10 +272,8 @@ public class ZipFileHeaderTest {
 		header.write(baos);
 		ZipFileHeader result =
 				ZipFileHeader.read(new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 1024));
-		assertEquals(
-				new HashSet<GeneralPurposeFlag>(
-						Arrays.asList(GeneralPurposeFlag.DEFLATING_NORMAL, GeneralPurposeFlag.DATA_DESCRIPTOR)),
-				result.getGeneralPurposeFlagAsEnums());
+		assertEquals(new HashSet<GeneralPurposeFlag>(Arrays.asList(GeneralPurposeFlag.DATA_DESCRIPTOR)),
+				result.getGeneralPurposeFlagsAsEnums());
 	}
 
 	@Test
