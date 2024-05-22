@@ -105,8 +105,8 @@ public class BufferedOutputStream extends OutputStream {
 		Builder fullHeaderBuilder = ZipFileHeader.Builder.fromHeader(fileHeader);
 		fullHeaderBuilder.setCompressedSize((int) totalSize);
 		// XXX: need to handle zip64
-		fullHeaderBuilder.setUncompressedSize((int) uncompressedSize);
 		fullHeaderBuilder.setCrc32(crc32);
+		fullHeaderBuilder.setUncompressedSize((int) uncompressedSize);
 		ZipFileHeader writtenFileHeader = fullHeaderBuilder.build();
 		writtenFileHeader.write(delegate);
 

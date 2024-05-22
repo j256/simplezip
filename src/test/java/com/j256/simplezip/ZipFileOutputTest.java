@@ -22,6 +22,7 @@ import java.util.zip.ZipInputStream;
 import org.junit.Test;
 
 import com.j256.simplezip.format.ZipCentralDirectoryEnd;
+import com.j256.simplezip.format.ZipCentralDirectoryEndInfo;
 import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
 import com.j256.simplezip.format.ZipCentralDirectoryFileInfo;
 import com.j256.simplezip.format.CompressionMethod;
@@ -40,14 +41,7 @@ public class ZipFileOutputTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try (InputStream testStream = getClass().getResourceAsStream("/src.tgz");) {
 			assertNotNull(testStream);
-			byte[] buffer = new byte[8192];
-			while (true) {
-				int num = testStream.read(buffer);
-				if (num < 0) {
-					break;
-				}
-				baos.write(buffer, 0, num);
-			}
+			IoUtils.copyStream(testStream, baos);
 		}
 		byte[] fileBytes2 = baos.toByteArray();
 
@@ -184,11 +178,12 @@ public class ZipFileOutputTest {
 		output.finishFileData();
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void testCloseWithoutFnishingFile() throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ZipFileOutput output = new ZipFileOutput(baos);
 		output.writeFileHeader(ZipFileHeader.builder().build());
+		output.writeFileDataPart(new byte[] { 1, 2, 3 });
 		output.close();
 	}
 
@@ -432,7 +427,7 @@ public class ZipFileOutputTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ZipFileOutput output = new ZipFileOutput(baos);
 		String comment = "the very end";
-		output.finishZip(comment);
+		output.finishZip(ZipCentralDirectoryEndInfo.builder().withComment(comment).build());
 		output.close();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());

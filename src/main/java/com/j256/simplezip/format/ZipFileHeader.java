@@ -226,7 +226,7 @@ public class ZipFileHeader {
 	 * Does this file header need a data-descriptor.
 	 */
 	public boolean needsDataDescriptor() {
-		return (compressedSize == 0 || crc32 == 0);
+		return (compressionMethod != CompressionMethod.NONE.getValue() && (compressedSize == 0 || crc32 == 0));
 	}
 
 	@Override

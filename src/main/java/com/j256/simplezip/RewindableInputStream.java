@@ -16,6 +16,7 @@ public class RewindableInputStream extends InputStream {
 	private byte[] buffer;
 	private int offset;
 	private int extraOffset;
+	private long byteCount;
 
 	public RewindableInputStream(InputStream delegate, int initialBufferSize) {
 		this.delegate = delegate;
@@ -26,6 +27,7 @@ public class RewindableInputStream extends InputStream {
 	public int read() throws IOException {
 		if (extraOffset < offset) {
 			int ret = (int) (buffer[extraOffset++] & 0xff);
+			byteCount++;
 			return ret;
 		}
 		ensureSpace(1);
@@ -35,6 +37,7 @@ public class RewindableInputStream extends InputStream {
 		}
 		ret = (int) (buffer[offset++] & 0xff);
 		extraOffset++;
+		byteCount++;
 		return ret;
 	}
 
@@ -52,6 +55,7 @@ public class RewindableInputStream extends InputStream {
 		for (; extraOffset < offset && length > 0; length--) {
 			outBuffer[outOffset++] = buffer[extraOffset++];
 			extraRead++;
+			byteCount++;
 		}
 		if (length == 0) {
 			return extraRead;
@@ -68,6 +72,7 @@ public class RewindableInputStream extends InputStream {
 		System.arraycopy(buffer, offset, outBuffer, outOffset, numRead);
 		offset += numRead;
 		extraOffset += numRead;
+		byteCount += numRead;
 		return extraRead + numRead;
 	}
 
@@ -79,11 +84,19 @@ public class RewindableInputStream extends InputStream {
 			throw new IOException("Trying to rewind " + numBytes + " but buffer only has " + extraOffset);
 		}
 		extraOffset -= numBytes;
+		byteCount -= numBytes;
 	}
 
 	@Override
 	public void close() throws IOException {
 		delegate.close();
+	}
+
+	/**
+	 * Return the number of bytes read using this stream.
+	 */
+	public long getByteCount() {
+		return byteCount;
 	}
 
 	/**

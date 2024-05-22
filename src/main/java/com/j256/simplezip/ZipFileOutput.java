@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.j256.simplezip.code.DeflatorFileDataEncoder;
 import com.j256.simplezip.code.FileDataEncoder;
@@ -17,6 +19,7 @@ import com.j256.simplezip.code.StoredFileDataEncoder;
 import com.j256.simplezip.format.CompressionMethod;
 import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipCentralDirectoryEnd;
+import com.j256.simplezip.format.ZipCentralDirectoryEndInfo;
 import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
 import com.j256.simplezip.format.ZipCentralDirectoryFileInfo;
 import com.j256.simplezip.format.ZipDataDescriptor;
@@ -32,12 +35,13 @@ public class ZipFileOutput implements Closeable {
 	private final BufferedOutputStream bufferedOutputStream;
 	private final ZipFileDataInfo incomingFileDateInfo = new ZipFileDataInfo();
 	private final byte[] tmpBuffer = new byte[IoUtils.STANDARD_BUFFER_SIZE];
+	private final List<ZipCentralDirectoryFileEntry.Builder> dirFileEntryBuilders = new ArrayList<>();
+	private final Map<String, ZipCentralDirectoryFileEntry.Builder> dirFileEntryBuilderMap = new HashMap<>();
 
 	private ZipFileHeader currentFileHeader;
 	private FileDataEncoder fileDataEncoder;
 	private ZipDataDescriptor.Builder dataDescriptorBuilder = ZipDataDescriptor.builder();
-	private ZipCentralDirectoryFileEntry.Builder dirFileBuilder = ZipCentralDirectoryFileEntry.builder();
-	private List<ZipCentralDirectoryFileEntry> dirFileHeaders = new ArrayList<>();
+	private ZipCentralDirectoryFileEntry.Builder dirFileBuilder;
 	private ZipFileDataOutputStream fileDataOutputStream;
 	private boolean fileFinished = true;
 	private boolean zipFinished;
@@ -99,20 +103,49 @@ public class ZipFileOutput implements Closeable {
 		bufferedOutputStream.setFileHeader(fileHeader);
 		currentFileHeader = fileHeader;
 		incomingFileDateInfo.reset();
-		dirFileBuilder.reset();
+		dirFileBuilder = ZipCentralDirectoryFileEntry.builder();
+		// XXX: need to handle zip64
+		dirFileBuilder.setRelativeOffsetOfLocalHeader((int) bufferedOutputStream.getWriteCount());
 		fileFinished = false;
 		fileCount++;
 	}
 
 	/**
-	 * Add additional information (most optional_ to the Zip central-directory file-header that is written to the end of
-	 * the Zip-file and which holds information about the files that is not contained in the {@link ZipFileHeader}.
+	 * Add additional information (most optional) to the Zip central-directory file-header to be associated with the
+	 * most recent file-header. This information is written to the end of the Zip-file and which holds information about
+	 * the files that is not contained in the {@link ZipFileHeader}.
 	 */
 	public void addDirectoryFileInfo(ZipCentralDirectoryFileInfo fileInfo) {
+		if (dirFileBuilder == null) {
+			throw new IllegalStateException("Cannot add directory file-info a file header has not been written");
+		}
 		if (zipFinished) {
 			throw new IllegalStateException("Cannot add directory file-info if the zip has been finished");
 		}
 		dirFileBuilder.addFileInfo(fileInfo);
+	}
+
+	/**
+	 * Add additional information (most optional_ to the Zip central-directory file-header to be associated with the
+	 * file-name parameter This information is written to the end of the Zip-file and which holds information about the
+	 * files that is not contained in the {@link ZipFileHeader}.
+	 * 
+	 * @return True if this works otherwise false if the file-name is not found.
+	 */
+	public boolean addDirectoryFileInfo(String fileName, ZipCentralDirectoryFileInfo fileInfo) {
+		if (dirFileBuilder == null) {
+			throw new IllegalStateException("Cannot add directory file-info a file header has not been written");
+		}
+		if (zipFinished) {
+			throw new IllegalStateException("Cannot add directory file-info if the zip has been finished");
+		}
+		ZipCentralDirectoryFileEntry.Builder builder = dirFileEntryBuilderMap.get(fileName);
+		if (builder == null) {
+			return false;
+		} else {
+			builder.addFileInfo(fileInfo);
+			return true;
+		}
 	}
 
 	/**
@@ -287,12 +320,18 @@ public class ZipFileOutput implements Closeable {
 		if (zipFinished) {
 			throw new IllegalStateException("Cannot finish file-data if the zip has been finished");
 		}
-		if (fileDataEncoder == null) {
-			throw new IllegalStateException("Need to call writeFileData() before you can finish");
+		if (fileDataEncoder != null) {
+			fileDataEncoder.close();
 		}
-		fileDataEncoder.close();
-		ZipFileHeader writtenFileHeader = bufferedOutputStream.finishFileData(incomingFileDateInfo.getCrc32(),
-				incomingFileDateInfo.getByteCount());
+		ZipFileHeader writtenFileHeader;
+		if (currentFileHeader.getCrc32() != 0 && currentFileHeader.getUncompressedSize() != 0) {
+			writtenFileHeader = bufferedOutputStream.finishFileData(currentFileHeader.getCrc32(),
+					currentFileHeader.getUncompressedSize());
+		} else {
+			// calculate the crc and size from the incoming file data
+			writtenFileHeader = bufferedOutputStream.finishFileData(incomingFileDateInfo.getCrc32(),
+					incomingFileDateInfo.getByteCount());
+		}
 		if (writtenFileHeader == null) {
 			writtenFileHeader = currentFileHeader;
 		}
@@ -303,8 +342,11 @@ public class ZipFileOutput implements Closeable {
 			// XXX: need to handle zip64
 			dirFileBuilder.setCompressedSize((int) bufferedOutputStream.getEncodedSize());
 		}
-		dirFileBuilder.setUncompressedSize((int) incomingFileDateInfo.getByteCount());
-		dirFileBuilder.setCrc32(incomingFileDateInfo.getCrc32());
+		if (currentFileHeader.getCrc32() == 0 || currentFileHeader.getUncompressedSize() == 0) {
+			// calculate the crc and size from the incoming file data
+			dirFileBuilder.setUncompressedSize((int) incomingFileDateInfo.getByteCount());
+			dirFileBuilder.setCrc32(incomingFileDateInfo.getCrc32());
+		}
 		// set our optional data-descriptor info
 		if (writtenFileHeader.needsDataDescriptor()) {
 			dataDescriptorBuilder.reset();
@@ -315,7 +357,11 @@ public class ZipFileOutput implements Closeable {
 			ZipDataDescriptor dataDescriptor = dataDescriptorBuilder.build();
 			dataDescriptor.write(bufferedOutputStream);
 		}
-		dirFileHeaders.add(dirFileBuilder.build());
+		dirFileEntryBuilders.add(dirFileBuilder);
+		String fileName = dirFileBuilder.getFileName();
+		if (fileName != null) {
+			dirFileEntryBuilderMap.put(fileName, dirFileBuilder);
+		}
 		fileDataEncoder = null;
 		fileFinished = true;
 		return bufferedOutputStream.getWriteCount();
@@ -327,16 +373,7 @@ public class ZipFileOutput implements Closeable {
 	 * @return Returns the number of bytes written to the stream so far.
 	 */
 	public long finishZip() throws IOException {
-		return finishZip((byte[]) null);
-	}
-
-	/**
-	 * Finish writing the zip-file with a comment. See the {@link #finishZip(byte[])} for more information.
-	 * 
-	 * @return Returns the number of bytes written to the stream so far.
-	 */
-	public long finishZip(String comment) throws IOException {
-		return finishZip(comment.getBytes());
+		return finishZip(null);
 	}
 
 	/**
@@ -347,7 +384,7 @@ public class ZipFileOutput implements Closeable {
 	 *
 	 * @return Returns the number of bytes written to the stream so far.
 	 */
-	public long finishZip(byte[] commentBytes) throws IOException {
+	public long finishZip(ZipCentralDirectoryEndInfo endInfo) throws IOException {
 
 		if (zipFinished) {
 			return bufferedOutputStream.getWriteCount();
@@ -357,21 +394,23 @@ public class ZipFileOutput implements Closeable {
 		}
 
 		// start our directory end
-		ZipCentralDirectoryEnd.Builder dirEndBuilder = ZipCentralDirectoryEnd.builder();
+		ZipCentralDirectoryEnd.Builder dirEndBuilder;
+		if (endInfo == null) {
+			dirEndBuilder = ZipCentralDirectoryEnd.builder();
+		} else {
+			dirEndBuilder = ZipCentralDirectoryEnd.Builder.fromEnd(endInfo);
+		}
 		dirEndBuilder.setDirectoryOffset(bufferedOutputStream.getWriteCount());
 
 		// write out our recorded central-directory file-headers
-		for (ZipCentralDirectoryFileEntry dirHeader : dirFileHeaders) {
-			dirHeader.write(bufferedOutputStream);
+		for (ZipCentralDirectoryFileEntry.Builder dirEntryBuilder : dirFileEntryBuilders) {
+			ZipCentralDirectoryFileEntry dirEntry = dirEntryBuilder.build();
+			dirEntry.write(bufferedOutputStream);
 		}
 
 		// now write our directory end
 		dirEndBuilder.setNumRecordsOnDisk(fileCount);
 		dirEndBuilder.setNumRecordsTotal(fileCount);
-		// not sure what to do with these
-		dirEndBuilder.setDiskNumber(1);
-		dirEndBuilder.setDiskNumberStart(1);
-		dirEndBuilder.setCommentBytes(commentBytes);
 		long startOffset = dirEndBuilder.getDirectoryOffset();
 		// XXX: should be long? and need to handle zip64
 		int size = (int) (bufferedOutputStream.getWriteCount() - startOffset);
@@ -402,7 +441,7 @@ public class ZipFileOutput implements Closeable {
 	@Override
 	public void close() throws IOException {
 		if (!zipFinished) {
-			finishZip((byte[]) null);
+			finishZip(null);
 		}
 		bufferedOutputStream.close();
 	}

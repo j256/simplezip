@@ -145,6 +145,17 @@ public class ZipCentralDirectoryEnd {
 					directorySize, directoryOffset, commentBytes);
 		}
 
+		/**
+		 * Create an end from the directory-end-info.
+		 */
+		public static Builder fromEnd(ZipCentralDirectoryEndInfo endInfo) {
+			Builder builder = new Builder();
+			builder.diskNumber = endInfo.getDiskNumber();
+			builder.diskNumberStart = endInfo.getDiskNumberStart();
+			builder.commentBytes = endInfo.getCommentBytes();
+			return builder;
+		}
+
 		public int getDiskNumber() {
 			return diskNumber;
 		}
