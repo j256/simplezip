@@ -85,6 +85,7 @@ if [ -r "src/main/doc/$LIBRARY.texi" ]; then
 	grep "^@set ${LIBRARY}_version" src/main/doc/$LIBRARY.texi
 	bad=1
     fi
+    ( cd src/main/doc ; make install )
 fi
 
 if [ -r "src/main/javadoc/doc-files/$LIBRARY.html" ]; then

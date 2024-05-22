@@ -62,7 +62,7 @@ or `OutputStream`.
 	zipOutput.finishFileData();
 	// can write more file-headers and data here
 	...
-	// this writes the recorded central-directory data and closes tbe zip
+	// this writes the recorded central-directory entries, end, and closes tbe zip
 	zipOutput.close();
 
 # Maven Configuration
@@ -73,7 +73,7 @@ Maven packages are published via [![Maven Central](https://maven-badges.herokuap
 <dependency>
 	<groupId>com.j256.simplezip</groupId>
 	<artifactId>simplezip</artifactId>
-	<version>0.9</version>
+	<version>1.0</version>
 </dependency>
 ```
 
