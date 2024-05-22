@@ -48,6 +48,17 @@ public class IoUtils {
 	}
 
 	/**
+	 * Read an int in little-endian from the input stream throwing EOFException if end is reached.
+	 */
+	public static long readIntAsLong(InputStream input, String label) throws IOException {
+		long value = readAddByte(input, label, 0, 0);
+		value = readAddByte(input, label, value, 8);
+		value = readAddByte(input, label, value, 16);
+		value = readAddByte(input, label, value, 24);
+		return value;
+	}
+
+	/**
 	 * Read a long in little-endian from the input stream throwing EOFException if end is reached.
 	 */
 	public static long readLong(InputStream input, String label) throws IOException {

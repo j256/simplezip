@@ -71,7 +71,7 @@ public class ZipFileHeader {
 		builder.compressionMethod = IoUtils.readShort(inputStream, "LocalFileHeader.compressionMethod");
 		builder.lastModifiedTime = IoUtils.readShort(inputStream, "LocalFileHeader.lastModifiedTime");
 		builder.lastModifiedDate = IoUtils.readShort(inputStream, "LocalFileHeader.lastModifiedDate");
-		builder.crc32 = IoUtils.readInt(inputStream, "LocalFileHeader.crc32");
+		builder.crc32 = IoUtils.readIntAsLong(inputStream, "LocalFileHeader.crc32");
 		builder.compressedSize = IoUtils.readInt(inputStream, "LocalFileHeader.compressedSize");
 		builder.uncompressedSize = IoUtils.readInt(inputStream, "LocalFileHeader.uncompressedSize");
 		int fileNameLength = IoUtils.readShort(inputStream, "LocalFileHeader.fileNameLength");
@@ -115,11 +115,18 @@ public class ZipFileHeader {
 		return versionNeeded;
 	}
 
+	/**
+	 * Get the version needed as a processed enum.
+	 */
+	public ZipVersion getZipVersionNeeded() {
+		return ZipVersion.fromValue(versionNeeded);
+	}
+
 	public int getGeneralPurposeFlags() {
 		return generalPurposeFlags;
 	}
 
-	public Set<GeneralPurposeFlag> getGeneralPurposeFlagAsEnums() {
+	public Set<GeneralPurposeFlag> getGeneralPurposeFlagsAsEnums() {
 		return GeneralPurposeFlag.fromInt(generalPurposeFlags);
 	}
 
@@ -224,9 +231,9 @@ public class ZipFileHeader {
 
 	@Override
 	public String toString() {
-		return "ZipFileHeader [name=" + getFileName() + ", compSize " + compressedSize + ", uncompSize="
-				+ uncompressedSize + ", extra-#-bytes=" + (extraFieldBytes == null ? "null" : extraFieldBytes.length)
-				+ "]";
+		return "ZipFileHeader [name=" + getFileName() + ", method=" + compressionMethod + ", compSize=" + compressedSize
+				+ ", uncompSize=" + uncompressedSize + ", extra-#-bytes="
+				+ (extraFieldBytes == null ? "null" : extraFieldBytes.length) + "]";
 	}
 
 	/**

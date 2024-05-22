@@ -48,7 +48,7 @@ public class ZipDataDescriptor {
 		 */
 		int first = IoUtils.readInt(inputStream, "DataDescriptor.signature-or-crc32");
 		if (first == OPTIONAL_EXPECTED_SIGNATURE) {
-			builder.crc32 = IoUtils.readInt(inputStream, "DataDescriptor.crc32");
+			builder.crc32 = IoUtils.readIntAsLong(inputStream, "DataDescriptor.crc32");
 		} else {
 			// guess that we have crc, compressed-size, uncompressed-size with the crc matching the signature
 			builder.crc32 = first;
