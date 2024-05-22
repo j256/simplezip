@@ -8,7 +8,7 @@ import java.io.File;
  * 
  * @author graywatson
  */
-public class CentralDirectoryFileInfo {
+public class ZipCentralDirectoryFileInfo {
 
 	private static final int MS_DOS_EXTERNAL_ATTRIBUTES_MASK = 0xFFFF;
 
@@ -19,8 +19,8 @@ public class CentralDirectoryFileInfo {
 	private int externalFileAttributes;
 	private final byte[] commentBytes;
 
-	public CentralDirectoryFileInfo(int versionMade, int versionNeeded, int diskNumberStart, int internalFileAttributes,
-			int externalFileAttributes, byte[] commentBytes) {
+	public ZipCentralDirectoryFileInfo(int versionMade, int versionNeeded, int diskNumberStart,
+			int internalFileAttributes, int externalFileAttributes, byte[] commentBytes) {
 		this.versionMade = versionMade;
 		this.versionNeeded = versionNeeded;
 		this.diskNumberStart = diskNumberStart;
@@ -70,7 +70,7 @@ public class CentralDirectoryFileInfo {
 	 * Return whether this is a text file or not based on the internalFileAttributes.
 	 */
 	public boolean isTextFile() {
-		return ((internalFileAttributes & CentralDirectoryFileHeader.INTERNAL_ATTRIBUTES_TEXT_FILE) != 0);
+		return ((internalFileAttributes & ZipCentralDirectoryFileEntry.INTERNAL_ATTRIBUTES_TEXT_FILE) != 0);
 	}
 
 	public int getExternalFileAttributes() {
@@ -86,12 +86,12 @@ public class CentralDirectoryFileInfo {
 	}
 
 	/**
-	 * Builder for the {@link CentralDirectoryFileInfo}.
+	 * Builder for the {@link ZipCentralDirectoryFileInfo}.
 	 */
 	public static class Builder {
 		private int versionMade;
 		private int versionNeeded;
-		private int diskNumberStart = CentralDirectoryFileHeader.DEFAULT_DISK_NUMBER;
+		private int diskNumberStart = ZipCentralDirectoryFileEntry.DEFAULT_DISK_NUMBER;
 		private int internalFileAttributes;
 		private int externalFileAttributes;
 		private byte[] commentBytes;
@@ -103,9 +103,9 @@ public class CentralDirectoryFileInfo {
 		}
 
 		/**
-		 * Create a builder from an existing central-directory file-header.
+		 * Create a builder from an existing central-directory file-entry.
 		 */
-		public static Builder fromFileHeader(CentralDirectoryFileHeader header) {
+		public static Builder fromCentralDirectoryFileEntry(ZipCentralDirectoryFileEntry header) {
 			Builder builder = new Builder();
 			builder.versionMade = header.getVersionMade();
 			builder.versionNeeded = header.getVersionNeeded();
@@ -119,8 +119,8 @@ public class CentralDirectoryFileInfo {
 		/**
 		 * Builder an instance of the central-directory file-header.
 		 */
-		public CentralDirectoryFileInfo build() {
-			return new CentralDirectoryFileInfo(versionMade, versionNeeded, diskNumberStart, internalFileAttributes,
+		public ZipCentralDirectoryFileInfo build() {
+			return new ZipCentralDirectoryFileInfo(versionMade, versionNeeded, diskNumberStart, internalFileAttributes,
 					externalFileAttributes, commentBytes);
 		}
 
@@ -206,7 +206,7 @@ public class CentralDirectoryFileInfo {
 		 * Gets from the internalFileAttributes.
 		 */
 		public boolean isTextFile() {
-			return ((internalFileAttributes & CentralDirectoryFileHeader.INTERNAL_ATTRIBUTES_TEXT_FILE) != 0);
+			return ((internalFileAttributes & ZipCentralDirectoryFileEntry.INTERNAL_ATTRIBUTES_TEXT_FILE) != 0);
 		}
 
 		/**
@@ -214,9 +214,9 @@ public class CentralDirectoryFileInfo {
 		 */
 		public void setTextFile(boolean textFile) {
 			if (textFile) {
-				internalFileAttributes |= CentralDirectoryFileHeader.INTERNAL_ATTRIBUTES_TEXT_FILE;
+				internalFileAttributes |= ZipCentralDirectoryFileEntry.INTERNAL_ATTRIBUTES_TEXT_FILE;
 			} else {
-				internalFileAttributes &= ~CentralDirectoryFileHeader.INTERNAL_ATTRIBUTES_TEXT_FILE;
+				internalFileAttributes &= ~ZipCentralDirectoryFileEntry.INTERNAL_ATTRIBUTES_TEXT_FILE;
 			}
 		}
 

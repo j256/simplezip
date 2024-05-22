@@ -4,13 +4,13 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.j256.simplezip.format.DataDescriptor.Builder;
+import com.j256.simplezip.format.ZipDataDescriptor.Builder;
 
 public class DataDescriptorTest {
 
 	@Test
 	public void testCoverage() {
-		Builder builder = DataDescriptor.builder();
+		Builder builder = ZipDataDescriptor.builder();
 
 		int crc32 = 1312;
 		builder.setCrc32(crc32);
@@ -22,12 +22,12 @@ public class DataDescriptorTest {
 		builder.setUncompressedSize(uncompressedSize);
 		assertEquals(uncompressedSize, builder.getUncompressedSize());
 
-		DataDescriptor dataDesc = builder.build();
+		ZipDataDescriptor dataDesc = builder.build();
 		assertEquals(crc32, dataDesc.getCrc32());
 		assertEquals(compressedSize, dataDesc.getCompressedSize());
 		assertEquals(uncompressedSize, dataDesc.getUncompressedSize());
 
-		builder = DataDescriptor.Builder.fromDescriptor(dataDesc);
+		builder = ZipDataDescriptor.Builder.fromDescriptor(dataDesc);
 		assertEquals(crc32, builder.getCrc32());
 		assertEquals(compressedSize, builder.getCompressedSize());
 		assertEquals(uncompressedSize, builder.getUncompressedSize());

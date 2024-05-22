@@ -8,13 +8,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 
-import com.j256.simplezip.format.DataDescriptor;
+import com.j256.simplezip.format.ZipDataDescriptor;
 import com.j256.simplezip.format.ZipFileHeader;
 import com.j256.simplezip.format.ZipFileHeader.Builder;
 
 /**
  * Class which helps the writer by absorbing the encoded file information so that we can annotate the
- * {@link ZipFileHeader} and not have to use the {@link DataDescriptor}.
+ * {@link ZipFileHeader} and not have to use the {@link ZipDataDescriptor}.
  * 
  * @author graywatson
  */

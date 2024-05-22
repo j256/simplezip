@@ -24,10 +24,10 @@ import java.util.zip.ZipOutputStream;
 
 import org.junit.Test;
 
-import com.j256.simplezip.format.CentralDirectoryEnd;
-import com.j256.simplezip.format.CentralDirectoryFileHeader;
+import com.j256.simplezip.format.ZipCentralDirectoryEnd;
+import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
 import com.j256.simplezip.format.CompressionMethod;
-import com.j256.simplezip.format.DataDescriptor;
+import com.j256.simplezip.format.ZipDataDescriptor;
 import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 import com.j256.simplezip.format.ZipFileHeader.Builder;
@@ -60,8 +60,8 @@ public class ZipFileInputTest {
 		assertTrue(header.getGeneralPurposeFlagAsEnums().contains(GeneralPurposeFlag.DATA_DESCRIPTOR));
 		assertEquals(CompressionMethod.DEFLATED, header.getCompressionMethodAsEnum());
 
-		System.out.println("header " + header.getFileName() + ", date " + header.getLastModFileDateTime() + ", time "
-				+ header.getLastModifiedFileTimeString() + ", size " + header.getUncompressedSize() + ", method "
+		System.out.println("header " + header.getFileName() + ", date " + header.getLastModifiedDateTime() + ", time "
+				+ header.getLastModifiedTimeString() + ", size " + header.getUncompressedSize() + ", method "
 				+ header.getCompressionMethod() + ", extra " + Arrays.toString(header.getExtraFieldBytes()));
 
 		baos.reset();
@@ -71,7 +71,7 @@ public class ZipFileInputTest {
 		assertEquals(bytes.length, numRead);
 		assertArrayEquals(bytes, baos.toByteArray());
 
-		DataDescriptor dataDescriptor = input.getCurrentDataDescriptor();
+		ZipDataDescriptor dataDescriptor = input.getCurrentDataDescriptor();
 		assertNotNull(dataDescriptor);
 		assertEquals(bytes.length, dataDescriptor.getUncompressedSize());
 		CRC32 crc32 = new CRC32();
@@ -80,13 +80,13 @@ public class ZipFileInputTest {
 
 		assertNull(input.readFileHeader());
 
-		CentralDirectoryFileHeader dirHeader = input.readDirectoryFileHeader();
+		ZipCentralDirectoryFileEntry dirHeader = input.readDirectoryFileEntry();
 		assertNotNull(dirHeader);
 		System.out.println("dir " + dirHeader.getFileName() + ", size " + dirHeader.getUncompressedSize() + ", method "
 				+ dirHeader.getCompressionMethod() + ", extra " + Arrays.toString(dirHeader.getExtraFieldBytes()));
 
-		assertNull(input.readDirectoryFileHeader());
-		CentralDirectoryEnd end = input.readDirectoryEnd();
+		assertNull(input.readDirectoryFileEntry());
+		ZipCentralDirectoryEnd end = input.readDirectoryEnd();
 		assertNotNull(end);
 		System.out.println("end: num-records " + end.getNumRecordsTotal() + ", size " + end.getDirectorySize());
 
@@ -409,11 +409,34 @@ public class ZipFileInputTest {
 		output = readFileToBytes(file2);
 		assertArrayEquals(bytes, output);
 
-		assertTrue(input.readDirectoryFileHeadersAndAssignPermissions());
+		assertTrue(input.readDirectoryFileEntriesAndAssignPermissions());
 
 		file1.delete();
 		file2.delete();
 
+		input.close();
+	}
+
+	@Test
+	public void testReadJustHeaders() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		String fileName = "hello";
+		ZipOutputStream zos = new ZipOutputStream(baos);
+		zos.putNextEntry(new ZipEntry(fileName));
+		byte[] bytes = new byte[] { 1, 2, 3 };
+		zos.write(bytes);
+		zos.closeEntry();
+		zos.putNextEntry(new ZipEntry(fileName + "2"));
+		bytes = new byte[] { 3, 2, 1 };
+		zos.write(bytes);
+		zos.closeEntry();
+		zos.close();
+
+		InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+		ZipFileInput input = new ZipFileInput(inputStream);
+		assertNotNull(input.readFileHeader());
+		assertNotNull(input.readFileHeader());
+		assertNull(input.readFileHeader());
 		input.close();
 	}
 

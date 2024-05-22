@@ -5,8 +5,8 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 import com.j256.simplezip.RewindableInputStream;
-import com.j256.simplezip.format.CentralDirectoryEnd;
-import com.j256.simplezip.format.CentralDirectoryFileHeader;
+import com.j256.simplezip.format.ZipCentralDirectoryEnd;
+import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
 
 /**
  * Decoded for the DEFLATED Zip file format.
@@ -23,7 +23,7 @@ public class InflatorFileDataDecoder implements FileDataDecoder {
 	 * that is a maximum of a CentralDirectoryFileHeader and a CentralDirectoryEnd.
 	 */
 	private final byte[] tmpBuffer =
-			new byte[CentralDirectoryFileHeader.MINIMUM_READ_SIZE + CentralDirectoryEnd.MINIMUM_READ_SIZE];
+			new byte[ZipCentralDirectoryFileEntry.MINIMUM_READ_SIZE + ZipCentralDirectoryEnd.MINIMUM_READ_SIZE];
 
 	public InflatorFileDataDecoder(RewindableInputStream inputStream) throws IOException {
 		this.delegate = inputStream;

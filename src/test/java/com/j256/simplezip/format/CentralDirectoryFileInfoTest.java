@@ -15,7 +15,7 @@ public class CentralDirectoryFileInfoTest {
 
 	@Test
 	public void testCoverage() {
-		CentralDirectoryFileInfo.Builder builder = CentralDirectoryFileInfo.builder();
+		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
 
 		int versionMade = 1312;
 		builder.setVersionMade(versionMade);
@@ -50,9 +50,9 @@ public class CentralDirectoryFileInfoTest {
 		textFile = true;
 		builder.setTextFile(textFile);
 		// NOTE: this changes the internal file attributes
-		internalFileAttributes |= CentralDirectoryFileHeader.INTERNAL_ATTRIBUTES_TEXT_FILE;
+		internalFileAttributes |= ZipCentralDirectoryFileEntry.INTERNAL_ATTRIBUTES_TEXT_FILE;
 
-		CentralDirectoryFileInfo fileInfo = builder.build();
+		ZipCentralDirectoryFileInfo fileInfo = builder.build();
 		assertEquals(versionMade, fileInfo.getVersionMade());
 		assertEquals(versionNeeded, fileInfo.getVersionNeeded());
 		assertEquals(diskNumberStart, fileInfo.getDiskNumberStart());
@@ -65,7 +65,7 @@ public class CentralDirectoryFileInfoTest {
 
 	@Test
 	public void testBuildWith() {
-		CentralDirectoryFileInfo.Builder builder = CentralDirectoryFileInfo.builder();
+		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
 
 		int versionMade = 1312;
 		builder.withVersionMade(versionMade);
@@ -97,9 +97,9 @@ public class CentralDirectoryFileInfoTest {
 		textFile = true;
 		builder.withTextFile(textFile);
 		// NOTE: this changes the internal file attributes
-		internalFileAttributes |= CentralDirectoryFileHeader.INTERNAL_ATTRIBUTES_TEXT_FILE;
+		internalFileAttributes |= ZipCentralDirectoryFileEntry.INTERNAL_ATTRIBUTES_TEXT_FILE;
 
-		CentralDirectoryFileInfo fileInfo = builder.build();
+		ZipCentralDirectoryFileInfo fileInfo = builder.build();
 		assertEquals(versionMade, fileInfo.getVersionMade());
 		assertEquals(versionNeeded, fileInfo.getVersionNeeded());
 		assertEquals(diskNumberStart, fileInfo.getDiskNumberStart());
@@ -112,16 +112,16 @@ public class CentralDirectoryFileInfoTest {
 
 	@Test
 	public void testNotText() {
-		CentralDirectoryFileInfo.Builder builder = CentralDirectoryFileInfo.builder();
+		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
 		boolean textFile = false;
 		builder.setTextFile(textFile);
-		CentralDirectoryFileInfo fileInfo = builder.build();
+		ZipCentralDirectoryFileInfo fileInfo = builder.build();
 		assertEquals(textFile, fileInfo.isTextFile());
 	}
 
 	@Test
 	public void testFromFileHeader() {
-		CentralDirectoryFileHeader.Builder headerBuilder = CentralDirectoryFileHeader.builder();
+		ZipCentralDirectoryFileEntry.Builder headerBuilder = ZipCentralDirectoryFileEntry.builder();
 
 		int versionMade = 1312;
 		headerBuilder.setVersionMade(versionMade);
@@ -139,11 +139,11 @@ public class CentralDirectoryFileInfoTest {
 		boolean textFile = true;
 		headerBuilder.setTextFile(textFile);
 		// NOTE: this changes the internal file attributes
-		internalFileAttributes |= CentralDirectoryFileHeader.INTERNAL_ATTRIBUTES_TEXT_FILE;
+		internalFileAttributes |= ZipCentralDirectoryFileEntry.INTERNAL_ATTRIBUTES_TEXT_FILE;
 
-		CentralDirectoryFileHeader fileHeader = headerBuilder.build();
+		ZipCentralDirectoryFileEntry fileHeader = headerBuilder.build();
 
-		CentralDirectoryFileInfo.Builder builder = CentralDirectoryFileInfo.Builder.fromFileHeader(fileHeader);
+		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.Builder.fromCentralDirectoryFileEntry(fileHeader);
 		assertEquals(versionMade, builder.getVersionMade());
 		assertEquals(versionNeeded, builder.getVersionNeeded());
 		assertEquals(diskNumberStart, builder.getDiskNumberStart());
@@ -156,7 +156,7 @@ public class CentralDirectoryFileInfoTest {
 
 	@Test
 	public void testPlatformAndVersion() {
-		CentralDirectoryFileInfo.Builder builder = CentralDirectoryFileInfo.builder();
+		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
 
 		Platform platform = Platform.UNIX;
 		builder.setPlatform(platform);
@@ -170,14 +170,14 @@ public class CentralDirectoryFileInfoTest {
 		builder.withZipVersion(version);
 		assertEquals(version, builder.getZipVersion());
 
-		CentralDirectoryFileInfo fileInfo = builder.build();
+		ZipCentralDirectoryFileInfo fileInfo = builder.build();
 		assertEquals(platform, fileInfo.getPlatform());
 		assertEquals(version, fileInfo.getZipVersion());
 	}
 
 	@Test
 	public void testFileIsDirectory() {
-		CentralDirectoryFileInfo.Builder builder = CentralDirectoryFileInfo.builder();
+		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
 		assertEquals(0, builder.getExternalFileAttributes());
 		builder.setFileIsDirectory(true);
 		assertNotEquals(0, builder.getExternalFileAttributes());
@@ -187,7 +187,7 @@ public class CentralDirectoryFileInfoTest {
 
 	@Test
 	public void testFileIsReadOnly() {
-		CentralDirectoryFileInfo.Builder builder = CentralDirectoryFileInfo.builder();
+		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
 		assertEquals(0, builder.getExternalFileAttributes());
 		builder.setFileIsReadOnly(true);
 		assertNotEquals(0, builder.getExternalFileAttributes());
@@ -198,7 +198,7 @@ public class CentralDirectoryFileInfoTest {
 
 	@Test
 	public void testFileIsSymlink() {
-		CentralDirectoryFileInfo.Builder builder = CentralDirectoryFileInfo.builder();
+		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
 		assertEquals(0, builder.getExternalFileAttributes());
 		builder.setFileIsSymlink(true);
 		assertNotEquals(0, builder.getExternalFileAttributes());
@@ -208,7 +208,7 @@ public class CentralDirectoryFileInfoTest {
 
 	@Test
 	public void testFileIsRegular() {
-		CentralDirectoryFileInfo.Builder builder = CentralDirectoryFileInfo.builder();
+		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
 		assertEquals(0, builder.getExternalFileAttributes());
 		builder.setFileIsRegular(true);
 		assertNotEquals(0, builder.getExternalFileAttributes());
@@ -218,7 +218,7 @@ public class CentralDirectoryFileInfoTest {
 
 	@Test
 	public void testSetMsDosAttrs() {
-		CentralDirectoryFileInfo.Builder builder = CentralDirectoryFileInfo.builder();
+		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
 		assertEquals(0, builder.getExternalFileAttributes());
 		int attrs = 10;
 		builder.setMsDosExternalFileAttributes(attrs);
@@ -233,7 +233,7 @@ public class CentralDirectoryFileInfoTest {
 		File file = File.createTempFile(getClass().getSimpleName(), ".t");
 		file.deleteOnExit();
 
-		CentralDirectoryFileInfo.Builder builder = CentralDirectoryFileInfo.builder();
+		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
 
 		file.setReadable(true);
 		file.setExecutable(false);
@@ -260,7 +260,7 @@ public class CentralDirectoryFileInfoTest {
 
 	@Test
 	public void testSetUnixExternalAttrs() {
-		CentralDirectoryFileInfo.Builder builder = CentralDirectoryFileInfo.builder();
+		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
 
 		int mode = 0644;
 		builder.setUnixExternalFileAttributes(mode);

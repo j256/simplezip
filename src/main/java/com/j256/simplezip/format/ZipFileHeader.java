@@ -23,22 +23,22 @@ public class ZipFileHeader {
 	private final int versionNeeded;
 	private final int generalPurposeFlags;
 	private final int compressionMethod;
-	private final int lastModifiedFileTime;
-	private final int lastModifiedFileDate;
+	private final int lastModifiedTime;
+	private final int lastModifiedDate;
 	private final long crc32;
 	private final int compressedSize;
 	private final int uncompressedSize;
 	private final byte[] fileNameBytes;
 	private final byte[] extraFieldBytes;
 
-	public ZipFileHeader(int versionNeeded, int generalPurposeFlags, int compressionMethod, int lastModifiedFileTime,
-			int lastModifiedFileDate, long crc32, int compressedSize, int uncompressedSize, byte[] fileName,
+	public ZipFileHeader(int versionNeeded, int generalPurposeFlags, int compressionMethod, int lastModifiedTime,
+			int lastModifiedDate, long crc32, int compressedSize, int uncompressedSize, byte[] fileName,
 			byte[] extraFieldBytes) {
 		this.versionNeeded = versionNeeded;
 		this.generalPurposeFlags = generalPurposeFlags;
 		this.compressionMethod = compressionMethod;
-		this.lastModifiedFileTime = lastModifiedFileTime;
-		this.lastModifiedFileDate = lastModifiedFileDate;
+		this.lastModifiedTime = lastModifiedTime;
+		this.lastModifiedDate = lastModifiedDate;
 		this.crc32 = crc32;
 		this.compressedSize = compressedSize;
 		this.uncompressedSize = uncompressedSize;
@@ -69,8 +69,8 @@ public class ZipFileHeader {
 		builder.versionNeeded = IoUtils.readShort(inputStream, "LocalFileHeader.versionNeeded");
 		builder.generalPurposeFlags = IoUtils.readShort(inputStream, "LocalFileHeader.generalPurposeFlags");
 		builder.compressionMethod = IoUtils.readShort(inputStream, "LocalFileHeader.compressionMethod");
-		builder.lastModifiedFileTime = IoUtils.readShort(inputStream, "LocalFileHeader.lastModFileTime");
-		builder.lastModifiedFileDate = IoUtils.readShort(inputStream, "LocalFileHeader.lastModFileDate");
+		builder.lastModifiedTime = IoUtils.readShort(inputStream, "LocalFileHeader.lastModifiedTime");
+		builder.lastModifiedDate = IoUtils.readShort(inputStream, "LocalFileHeader.lastModifiedDate");
 		builder.crc32 = IoUtils.readInt(inputStream, "LocalFileHeader.crc32");
 		builder.compressedSize = IoUtils.readInt(inputStream, "LocalFileHeader.compressedSize");
 		builder.uncompressedSize = IoUtils.readInt(inputStream, "LocalFileHeader.uncompressedSize");
@@ -93,8 +93,8 @@ public class ZipFileHeader {
 		}
 		IoUtils.writeShort(outputStream, flags);
 		IoUtils.writeShort(outputStream, compressionMethod);
-		IoUtils.writeShort(outputStream, lastModifiedFileTime);
-		IoUtils.writeShort(outputStream, lastModifiedFileDate);
+		IoUtils.writeShort(outputStream, lastModifiedTime);
+		IoUtils.writeShort(outputStream, lastModifiedDate);
 		IoUtils.writeInt(outputStream, crc32);
 		IoUtils.writeInt(outputStream, compressedSize);
 		IoUtils.writeInt(outputStream, uncompressedSize);
@@ -151,39 +151,39 @@ public class ZipFileHeader {
 		return CompressionMethod.fromValue(compressionMethod);
 	}
 
-	public int getLastModifiedFileTime() {
-		return lastModifiedFileTime;
+	public int getLastModifiedTime() {
+		return lastModifiedTime;
 	}
 
 	/**
 	 * Return last modified time as a string in 24-hour HH:MM:SS format.
 	 */
-	public String getLastModifiedFileTimeString() {
-		String result = String.format("%d:%02d:%02d", (lastModifiedFileTime >> 11),
-				((lastModifiedFileTime >> 5) & 0x3F), ((lastModifiedFileTime & 0x1F) * 2));
+	public String getLastModifiedTimeString() {
+		String result = String.format("%d:%02d:%02d", (lastModifiedTime >> 11), ((lastModifiedTime >> 5) & 0x3F),
+				((lastModifiedTime & 0x1F) * 2));
 		return result;
 	}
 
-	public int getLastModifiedFileDate() {
-		return lastModifiedFileDate;
+	public int getLastModifiedDate() {
+		return lastModifiedDate;
 	}
 
 	/**
 	 * Return last modified date as a string in YYYY.mm.dd format.
 	 */
-	public String getLastModifiedFileDateString() {
-		String result = String.format("%d.%02d.%02d", (((lastModifiedFileDate >> 9) & 0x7F) + 1980),
-				((lastModifiedFileDate >> 5) & 0x0F), (lastModifiedFileDate & 0x1F));
+	public String getLastModifiedDateString() {
+		String result = String.format("%d.%02d.%02d", (((lastModifiedDate >> 9) & 0x7F) + 1980),
+				((lastModifiedDate >> 5) & 0x0F), (lastModifiedDate & 0x1F));
 		return result;
 	}
 
 	/**
 	 * Return last modified date and time as a {@link LocalDateTime}.
 	 */
-	public LocalDateTime getLastModFileDateTime() {
-		LocalDateTime localDateTime = LocalDateTime.of((((lastModifiedFileDate >> 9) & 0x7F) + 1980),
-				((lastModifiedFileDate >> 5) & 0x0F), (lastModifiedFileDate & 0x1F), (lastModifiedFileTime >> 11),
-				((lastModifiedFileTime >> 5) & 0x3F), ((lastModifiedFileTime & 0x1F) * 2));
+	public LocalDateTime getLastModifiedDateTime() {
+		LocalDateTime localDateTime = LocalDateTime.of((((lastModifiedDate >> 9) & 0x7F) + 1980),
+				((lastModifiedDate >> 5) & 0x0F), (lastModifiedDate & 0x1F), (lastModifiedTime >> 11),
+				((lastModifiedTime >> 5) & 0x3F), ((lastModifiedTime & 0x1F) * 2));
 		return localDateTime;
 	}
 
@@ -237,8 +237,8 @@ public class ZipFileHeader {
 		/** NOTE: we turn on the data-descriptor flag by default until a size or crc32 is set */
 		private int generalPurposeFlags;
 		private int compressionMethod = CompressionMethod.DEFLATED.getValue();
-		private int lastModifiedFileTime;
-		private int lastModifiedFileDate;
+		private int lastModifiedTime;
+		private int lastModifiedDate;
 		private long crc32;
 		private int compressedSize;
 		private int uncompressedSize;
@@ -246,8 +246,8 @@ public class ZipFileHeader {
 		private byte[] extraFieldBytes;
 
 		public ZipFileHeader build() {
-			return new ZipFileHeader(versionNeeded, generalPurposeFlags, compressionMethod, lastModifiedFileTime,
-					lastModifiedFileDate, crc32, compressedSize, uncompressedSize, fileNameBytes, extraFieldBytes);
+			return new ZipFileHeader(versionNeeded, generalPurposeFlags, compressionMethod, lastModifiedTime,
+					lastModifiedDate, crc32, compressedSize, uncompressedSize, fileNameBytes, extraFieldBytes);
 		}
 
 		/**
@@ -258,8 +258,8 @@ public class ZipFileHeader {
 			builder.versionNeeded = header.versionNeeded;
 			builder.generalPurposeFlags = header.generalPurposeFlags;
 			builder.compressionMethod = header.compressionMethod;
-			builder.lastModifiedFileTime = header.lastModifiedFileTime;
-			builder.lastModifiedFileDate = header.lastModifiedFileDate;
+			builder.lastModifiedTime = header.lastModifiedTime;
+			builder.lastModifiedDate = header.lastModifiedDate;
 			builder.crc32 = header.crc32;
 			builder.compressedSize = header.compressedSize;
 			builder.uncompressedSize = header.uncompressedSize;
@@ -275,8 +275,8 @@ public class ZipFileHeader {
 			versionNeeded = 0;
 			generalPurposeFlags = 0;
 			compressionMethod = CompressionMethod.DEFLATED.getValue();
-			lastModifiedFileTime = 0;
-			lastModifiedFileDate = 0;
+			lastModifiedTime = 0;
+			lastModifiedDate = 0;
 			crc32 = 0;
 			compressedSize = 0;
 			uncompressedSize = 0;
@@ -407,29 +407,29 @@ public class ZipFileHeader {
 			return this;
 		}
 
-		public int getLastModifiedFileTime() {
-			return lastModifiedFileTime;
+		public int getLastModifiedTime() {
+			return lastModifiedTime;
 		}
 
-		public void setLastModifiedFileTime(int lastModFileTime) {
-			this.lastModifiedFileTime = lastModFileTime;
+		public void setLastModifiedTime(int lastModifiedTime) {
+			this.lastModifiedTime = lastModifiedTime;
 		}
 
-		public Builder withLastModifiedFileTime(int lastModFileTime) {
-			this.lastModifiedFileTime = lastModFileTime;
+		public Builder withLastModifiedTime(int lastModifiedTime) {
+			this.lastModifiedTime = lastModifiedTime;
 			return this;
 		}
 
-		public int getLastModifiedFileDate() {
-			return lastModifiedFileDate;
+		public int getLastModifiedDate() {
+			return lastModifiedDate;
 		}
 
-		public void setLastModifiedFileDate(int lastModifiedFileDate) {
-			this.lastModifiedFileDate = lastModifiedFileDate;
+		public void setLastModifiedDate(int lastModifiedDate) {
+			this.lastModifiedDate = lastModifiedDate;
 		}
 
-		public Builder withLastModifiedFileDate(int lastModifiedFileDate) {
-			this.lastModifiedFileDate = lastModifiedFileDate;
+		public Builder withLastModifiedDate(int lastModifiedDate) {
+			this.lastModifiedDate = lastModifiedDate;
 			return this;
 		}
 
@@ -437,19 +437,19 @@ public class ZipFileHeader {
 		 * Set the lastModFileDate and lastModFileTime as a {@link LocalDateTime}. Warning, the time has a 2 second
 		 * resolution so some normalization will occur.
 		 */
-		public void setLastModifiedDateTime(LocalDateTime localDateTime) {
-			this.lastModifiedFileDate = (((localDateTime.getYear() - 1980) << 9) | (localDateTime.getMonthValue() << 5)
-					| (localDateTime.getDayOfMonth()));
-			this.lastModifiedFileTime = ((localDateTime.getHour() << 11) | (localDateTime.getMinute() << 5)
-					| (localDateTime.getSecond() / 2));
+		public void setLastModifiedDateTime(LocalDateTime lastModifiedDateTime) {
+			this.lastModifiedDate = (((lastModifiedDateTime.getYear() - 1980) << 9)
+					| (lastModifiedDateTime.getMonthValue() << 5) | (lastModifiedDateTime.getDayOfMonth()));
+			this.lastModifiedTime = ((lastModifiedDateTime.getHour() << 11) | (lastModifiedDateTime.getMinute() << 5)
+					| (lastModifiedDateTime.getSecond() / 2));
 		}
 
 		/**
 		 * Set the lastModFileDate and lastModFileTime as a {@link LocalDateTime}. Warning, the time has a 2 second
 		 * resolution so some normalization will occur.
 		 */
-		public Builder withLastModifiedDateTime(LocalDateTime localDateTime) {
-			setLastModifiedDateTime(localDateTime);
+		public Builder withLastModifiedDateTime(LocalDateTime lastModifiedDateTime) {
+			setLastModifiedDateTime(lastModifiedDateTime);
 			return this;
 		}
 

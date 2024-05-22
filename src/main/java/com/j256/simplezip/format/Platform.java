@@ -1,7 +1,7 @@
 package com.j256.simplezip.format;
 
 /**
- * Encoded as "version made by" in the {@link CentralDirectoryFileHeader#getVersionMade()}.
+ * Encoded as "version made by" in the {@link ZipCentralDirectoryFileEntry#getVersionMade()}.
  * 
  * @author graywatson
  */

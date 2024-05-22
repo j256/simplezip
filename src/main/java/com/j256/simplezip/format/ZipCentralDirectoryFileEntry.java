@@ -2,6 +2,7 @@ package com.j256.simplezip.format;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.LocalDateTime;
 
 import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
@@ -11,7 +12,7 @@ import com.j256.simplezip.RewindableInputStream;
  * 
  * @author graywatson
  */
-public class CentralDirectoryFileHeader {
+public class ZipCentralDirectoryFileEntry {
 
 	/** signature that is expected to be at the start of the central directory */
 	private static final int EXPECTED_SIGNATURE = 0x2014b50;
@@ -24,8 +25,8 @@ public class CentralDirectoryFileHeader {
 	private final int versionNeeded;
 	private final int generalPurposeFlags;
 	private final int compressionMethod;
-	private final int lastModifiedFileTime;
-	private final int lastModifiedFileDate;
+	private final int lastModifiedTime;
+	private final int lastModifiedDate;
 	private final long crc32;
 	private final int compressedSize;
 	private final int uncompressedSize;
@@ -37,16 +38,16 @@ public class CentralDirectoryFileHeader {
 	private final byte[] extraFieldBytes;
 	private final byte[] commentBytes;
 
-	public CentralDirectoryFileHeader(int versionMade, int versionNeeded, int generalPurposeFlags,
-			int compressionMethod, int lastModifiedFileTime, int lastModifiedFileDate, long crc32, int compressedSize,
+	public ZipCentralDirectoryFileEntry(int versionMade, int versionNeeded, int generalPurposeFlags,
+			int compressionMethod, int lastModifiedTime, int lastModifiedDate, long crc32, int compressedSize,
 			int uncompressedSize, int diskNumberStart, int internalFileAttributes, int externalFileAttributes,
 			int relativeOffsetOfLocalHeader, byte[] fileNameBytes, byte[] extraFieldBytes, byte[] commentBytes) {
 		this.versionMade = versionMade;
 		this.versionNeeded = versionNeeded;
 		this.generalPurposeFlags = generalPurposeFlags;
 		this.compressionMethod = compressionMethod;
-		this.lastModifiedFileTime = lastModifiedFileTime;
-		this.lastModifiedFileDate = lastModifiedFileDate;
+		this.lastModifiedTime = lastModifiedTime;
+		this.lastModifiedDate = lastModifiedDate;
 		this.crc32 = crc32;
 		this.compressedSize = compressedSize;
 		this.uncompressedSize = uncompressedSize;
@@ -69,9 +70,9 @@ public class CentralDirectoryFileHeader {
 	/**
 	 * Read one from the input-stream.
 	 */
-	public static CentralDirectoryFileHeader read(RewindableInputStream inputStream) throws IOException {
+	public static ZipCentralDirectoryFileEntry read(RewindableInputStream inputStream) throws IOException {
 
-		Builder builder = new CentralDirectoryFileHeader.Builder();
+		Builder builder = new ZipCentralDirectoryFileEntry.Builder();
 
 		int signature = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.signature");
 
@@ -84,10 +85,8 @@ public class CentralDirectoryFileHeader {
 		builder.versionNeeded = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.versionNeeded");
 		builder.generalPurposeFlags = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.generalPurposeFlags");
 		builder.compressionMethod = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.compressionMethod");
-		builder.lastModifiedFileTime =
-				IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.lastModifiedFileTime");
-		builder.lastModifiedFileDate =
-				IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.lastModifiedFileDate");
+		builder.lastModifiedTime = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.lastModifiedTime");
+		builder.lastModifiedDate = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.lastModifiedDate");
 		builder.crc32 = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.crc32");
 		builder.compressedSize = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.compressedSize");
 		builder.uncompressedSize = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.uncompressedSize");
@@ -120,8 +119,8 @@ public class CentralDirectoryFileHeader {
 		IoUtils.writeShort(outputStream, versionNeeded);
 		IoUtils.writeShort(outputStream, generalPurposeFlags);
 		IoUtils.writeShort(outputStream, compressionMethod);
-		IoUtils.writeShort(outputStream, lastModifiedFileTime);
-		IoUtils.writeShort(outputStream, lastModifiedFileDate);
+		IoUtils.writeShort(outputStream, lastModifiedTime);
+		IoUtils.writeShort(outputStream, lastModifiedDate);
 		IoUtils.writeInt(outputStream, crc32);
 		IoUtils.writeInt(outputStream, compressedSize);
 		IoUtils.writeInt(outputStream, uncompressedSize);
@@ -172,12 +171,40 @@ public class CentralDirectoryFileHeader {
 		return CompressionMethod.fromValue(compressionMethod);
 	}
 
-	public int getLastModifiedFileTime() {
-		return lastModifiedFileTime;
+	public int getLastModifiedTime() {
+		return lastModifiedTime;
 	}
 
-	public int getLastModifiedFileDate() {
-		return lastModifiedFileDate;
+	/**
+	 * Return last modified time as a string in 24-hour HH:MM:SS format.
+	 */
+	public String getLastModifiedTimeString() {
+		String result = String.format("%d:%02d:%02d", (lastModifiedTime >> 11), ((lastModifiedTime >> 5) & 0x3F),
+				((lastModifiedTime & 0x1F) * 2));
+		return result;
+	}
+
+	public int getLastModifiedDate() {
+		return lastModifiedDate;
+	}
+
+	/**
+	 * Return last modified date as a string in YYYY.mm.dd format.
+	 */
+	public String getLastModifiedDateString() {
+		String result = String.format("%d.%02d.%02d", (((lastModifiedDate >> 9) & 0x7F) + 1980),
+				((lastModifiedDate >> 5) & 0x0F), (lastModifiedDate & 0x1F));
+		return result;
+	}
+
+	/**
+	 * Return last modified date and time as a {@link LocalDateTime}.
+	 */
+	public LocalDateTime getLastModifiedDateTime() {
+		LocalDateTime localDateTime = LocalDateTime.of((((lastModifiedDate >> 9) & 0x7F) + 1980),
+				((lastModifiedDate >> 5) & 0x0F), (lastModifiedDate & 0x1F), (lastModifiedTime >> 11),
+				((lastModifiedTime >> 5) & 0x3F), ((lastModifiedTime & 0x1F) * 2));
+		return localDateTime;
 	}
 
 	public long getCrc32() {
@@ -243,15 +270,15 @@ public class CentralDirectoryFileHeader {
 	}
 
 	/**
-	 * Builder for the {@link CentralDirectoryFileHeader}.
+	 * Builder for the {@link ZipCentralDirectoryFileEntry}.
 	 */
 	public static class Builder {
 		private int versionMade;
 		private int versionNeeded = ZipVersion.detectVersion().getValue();
 		private int generalPurposeFlags;
 		private int compressionMethod;
-		private int lastModifiedFileTime;
-		private int lastModifiedFileDate;
+		private int lastModifiedTime;
+		private int lastModifiedDate;
 		private long crc32;
 		private int compressedSize;
 		private int uncompressedSize;
@@ -266,14 +293,14 @@ public class CentralDirectoryFileHeader {
 		/**
 		 * Create a builder from an existing directory-end
 		 */
-		public static Builder fromFileHeader(CentralDirectoryFileHeader header) {
+		public static Builder fromFileHeader(ZipCentralDirectoryFileEntry header) {
 			Builder builder = new Builder();
 			builder.versionMade = header.versionMade;
 			builder.versionNeeded = header.versionNeeded;
 			builder.generalPurposeFlags = header.generalPurposeFlags;
 			builder.compressionMethod = header.compressionMethod;
-			builder.lastModifiedFileTime = header.lastModifiedFileTime;
-			builder.lastModifiedFileDate = header.lastModifiedFileDate;
+			builder.lastModifiedTime = header.lastModifiedTime;
+			builder.lastModifiedDate = header.lastModifiedDate;
 			builder.crc32 = header.crc32;
 			builder.compressedSize = header.compressedSize;
 			builder.uncompressedSize = header.uncompressedSize;
@@ -293,8 +320,8 @@ public class CentralDirectoryFileHeader {
 		public void setFileHeader(ZipFileHeader header) {
 			this.generalPurposeFlags = header.getGeneralPurposeFlags();
 			this.compressionMethod = header.getCompressionMethod();
-			this.lastModifiedFileTime = header.getLastModifiedFileTime();
-			this.lastModifiedFileDate = header.getLastModifiedFileDate();
+			this.lastModifiedTime = header.getLastModifiedTime();
+			this.lastModifiedDate = header.getLastModifiedDate();
 			this.crc32 = header.getCrc32();
 			this.compressedSize = header.getCompressedSize();
 			this.uncompressedSize = header.getUncompressedSize();
@@ -310,8 +337,8 @@ public class CentralDirectoryFileHeader {
 			versionNeeded = ZipVersion.detectVersion().getValue();
 			generalPurposeFlags = 0;
 			compressionMethod = 0;
-			lastModifiedFileTime = 0;
-			lastModifiedFileDate = 0;
+			lastModifiedTime = 0;
+			lastModifiedDate = 0;
 			crc32 = 0;
 			compressedSize = 0;
 			uncompressedSize = 0;
@@ -327,7 +354,7 @@ public class CentralDirectoryFileHeader {
 		/**
 		 * Add to this builder the additional file information.
 		 */
-		public void addFileInfo(CentralDirectoryFileInfo fileInfo) {
+		public void addFileInfo(ZipCentralDirectoryFileInfo fileInfo) {
 			this.versionMade = fileInfo.getVersionMade();
 			this.versionNeeded = fileInfo.getVersionNeeded();
 			this.diskNumberStart = fileInfo.getDiskNumberStart();
@@ -339,11 +366,11 @@ public class CentralDirectoryFileHeader {
 		/**
 		 * Builder an instance of the central-directory file-header.
 		 */
-		public CentralDirectoryFileHeader build() {
-			return new CentralDirectoryFileHeader(versionMade, versionNeeded, generalPurposeFlags, compressionMethod,
-					lastModifiedFileTime, lastModifiedFileDate, crc32, compressedSize, uncompressedSize,
-					diskNumberStart, internalFileAttributes, externalFileAttributes, relativeOffsetOfLocalHeader,
-					fileNameBytes, extraFieldBytes, commentBytes);
+		public ZipCentralDirectoryFileEntry build() {
+			return new ZipCentralDirectoryFileEntry(versionMade, versionNeeded, generalPurposeFlags, compressionMethod,
+					lastModifiedTime, lastModifiedDate, crc32, compressedSize, uncompressedSize, diskNumberStart,
+					internalFileAttributes, externalFileAttributes, relativeOffsetOfLocalHeader, fileNameBytes,
+					extraFieldBytes, commentBytes);
 		}
 
 		public int getVersionMade() {
@@ -413,20 +440,20 @@ public class CentralDirectoryFileHeader {
 			this.compressionMethod = compressionMethod.getValue();
 		}
 
-		public int getLastModifiedFileTime() {
-			return lastModifiedFileTime;
+		public int getLastModifiedTime() {
+			return lastModifiedTime;
 		}
 
-		public void setLastModifiedFileTime(int lastModifiedFileTime) {
-			this.lastModifiedFileTime = lastModifiedFileTime;
+		public void setLastModifiedTime(int lastModifiedTime) {
+			this.lastModifiedTime = lastModifiedTime;
 		}
 
-		public int getLastModifiedFileDate() {
-			return lastModifiedFileDate;
+		public int getLastModifiedDate() {
+			return lastModifiedDate;
 		}
 
-		public void setLastModifiedFileDate(int lastModifiedFileDate) {
-			this.lastModifiedFileDate = lastModifiedFileDate;
+		public void setLastModifiedDate(int lastModifiedDate) {
+			this.lastModifiedDate = lastModifiedDate;
 		}
 
 		public long getCrc32() {

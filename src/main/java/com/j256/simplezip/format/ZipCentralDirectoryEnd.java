@@ -11,7 +11,7 @@ import com.j256.simplezip.RewindableInputStream;
  * 
  * @author graywatson
  */
-public class CentralDirectoryEnd {
+public class ZipCentralDirectoryEnd {
 
 	/** signature that is expected to be at the start of the central directory */
 	private static final int EXPECTED_SIGNATURE = 0x6054b50;
@@ -26,7 +26,7 @@ public class CentralDirectoryEnd {
 	private final long directoryOffset;
 	private final byte[] commentBytes;
 
-	public CentralDirectoryEnd(int diskNumber, int diskNumberStart, int numRecordsOnDisk, int numRecordsTotal,
+	public ZipCentralDirectoryEnd(int diskNumber, int diskNumberStart, int numRecordsOnDisk, int numRecordsTotal,
 			int directorySize, long directoryOffset, byte[] commentBytes) {
 		this.diskNumber = diskNumber;
 		this.diskNumberStart = diskNumberStart;
@@ -47,9 +47,9 @@ public class CentralDirectoryEnd {
 	/**
 	 * Read one from the input-stream.
 	 */
-	public static CentralDirectoryEnd read(RewindableInputStream inputStream) throws IOException {
+	public static ZipCentralDirectoryEnd read(RewindableInputStream inputStream) throws IOException {
 
-		Builder builder = new CentralDirectoryEnd.Builder();
+		Builder builder = new ZipCentralDirectoryEnd.Builder();
 
 		int signature = IoUtils.readInt(inputStream, "CentralDirectoryEnd.signature");
 		if (signature != EXPECTED_SIGNATURE) {
@@ -126,11 +126,11 @@ public class CentralDirectoryEnd {
 	}
 
 	/**
-	 * Builder for the {@link CentralDirectoryEnd}.
+	 * Builder for the {@link ZipCentralDirectoryEnd}.
 	 */
 	public static class Builder {
-		private int diskNumber = CentralDirectoryFileHeader.DEFAULT_DISK_NUMBER;
-		private int diskNumberStart = CentralDirectoryFileHeader.DEFAULT_DISK_NUMBER;
+		private int diskNumber = ZipCentralDirectoryFileEntry.DEFAULT_DISK_NUMBER;
+		private int diskNumberStart = ZipCentralDirectoryFileEntry.DEFAULT_DISK_NUMBER;
 		private int numRecordsOnDisk;
 		private int numRecordsTotal;
 		private int directorySize;
@@ -140,8 +140,8 @@ public class CentralDirectoryEnd {
 		/**
 		 * Build a copy of our directory end.
 		 */
-		public CentralDirectoryEnd build() {
-			return new CentralDirectoryEnd(diskNumber, diskNumberStart, numRecordsOnDisk, numRecordsTotal,
+		public ZipCentralDirectoryEnd build() {
+			return new ZipCentralDirectoryEnd(diskNumber, diskNumberStart, numRecordsOnDisk, numRecordsTotal,
 					directorySize, directoryOffset, commentBytes);
 		}
 

@@ -3,7 +3,7 @@ package com.j256.simplezip.format;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import com.j256.simplezip.CountingInfo;
+import com.j256.simplezip.ZipFileDataInfo;
 import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
 
@@ -13,7 +13,7 @@ import com.j256.simplezip.RewindableInputStream;
  * 
  * @author graywatson
  */
-public class DataDescriptor {
+public class ZipDataDescriptor {
 
 	/** optional signature at the start of the data-descriptor */
 	private static final int OPTIONAL_EXPECTED_SIGNATURE = 0x8074b50;
@@ -22,7 +22,7 @@ public class DataDescriptor {
 	private final int compressedSize;
 	private final int uncompressedSize;
 
-	public DataDescriptor(long crc32, int compressedSize, int uncompressedSize) {
+	public ZipDataDescriptor(long crc32, int compressedSize, int uncompressedSize) {
 		this.crc32 = crc32;
 		this.compressedSize = compressedSize;
 		this.uncompressedSize = uncompressedSize;
@@ -38,8 +38,8 @@ public class DataDescriptor {
 	/**
 	 * Read from the input-stream.
 	 */
-	public static DataDescriptor read(RewindableInputStream inputStream, CountingInfo countingInfo) throws IOException {
-		Builder builder = new DataDescriptor.Builder();
+	public static ZipDataDescriptor read(RewindableInputStream inputStream, ZipFileDataInfo countingInfo) throws IOException {
+		Builder builder = new ZipDataDescriptor.Builder();
 		/*
 		 * This is a little strange since there is an optional magic value according to Wikipedia. If the first value
 		 * doesn't match the expected then we assume it is the CRC. If it does match the expected value then check the
@@ -96,7 +96,7 @@ public class DataDescriptor {
 		/**
 		 * Create a builder from an existing entry.
 		 */
-		public static Builder fromDescriptor(DataDescriptor dataDescriptor) {
+		public static Builder fromDescriptor(ZipDataDescriptor dataDescriptor) {
 			Builder builder = new Builder();
 			builder.crc32 = dataDescriptor.crc32;
 			builder.compressedSize = dataDescriptor.compressedSize;
@@ -113,8 +113,8 @@ public class DataDescriptor {
 			uncompressedSize = 0;
 		}
 
-		public DataDescriptor build() {
-			return new DataDescriptor(crc32, compressedSize, uncompressedSize);
+		public ZipDataDescriptor build() {
+			return new ZipDataDescriptor(crc32, compressedSize, uncompressedSize);
 		}
 
 		public long getCrc32() {

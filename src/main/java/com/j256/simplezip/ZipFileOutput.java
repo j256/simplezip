@@ -14,12 +14,12 @@ import java.util.List;
 import com.j256.simplezip.code.DeflatorFileDataEncoder;
 import com.j256.simplezip.code.FileDataEncoder;
 import com.j256.simplezip.code.StoredFileDataEncoder;
-import com.j256.simplezip.format.CentralDirectoryEnd;
-import com.j256.simplezip.format.CentralDirectoryFileHeader;
-import com.j256.simplezip.format.CentralDirectoryFileInfo;
 import com.j256.simplezip.format.CompressionMethod;
-import com.j256.simplezip.format.DataDescriptor;
 import com.j256.simplezip.format.GeneralPurposeFlag;
+import com.j256.simplezip.format.ZipCentralDirectoryEnd;
+import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
+import com.j256.simplezip.format.ZipCentralDirectoryFileInfo;
+import com.j256.simplezip.format.ZipDataDescriptor;
 import com.j256.simplezip.format.ZipFileHeader;
 
 /**
@@ -30,15 +30,15 @@ import com.j256.simplezip.format.ZipFileHeader;
 public class ZipFileOutput implements Closeable {
 
 	private final BufferedOutputStream bufferedOutputStream;
-	private final CountingInfo incomingFileDateInfo = new CountingInfo();
+	private final ZipFileDataInfo incomingFileDateInfo = new ZipFileDataInfo();
 	private final byte[] tmpBuffer = new byte[IoUtils.STANDARD_BUFFER_SIZE];
 
 	private ZipFileHeader currentFileHeader;
 	private FileDataEncoder fileDataEncoder;
-	private DataDescriptor.Builder dataDescriptorBuilder = DataDescriptor.builder();
-	private CentralDirectoryFileHeader.Builder dirFileBuilder = CentralDirectoryFileHeader.builder();
-	private List<CentralDirectoryFileHeader> dirFileHeaders = new ArrayList<>();
-	private FileDataOutputStream fileDataOutputStream;
+	private ZipDataDescriptor.Builder dataDescriptorBuilder = ZipDataDescriptor.builder();
+	private ZipCentralDirectoryFileEntry.Builder dirFileBuilder = ZipCentralDirectoryFileEntry.builder();
+	private List<ZipCentralDirectoryFileEntry> dirFileHeaders = new ArrayList<>();
+	private ZipFileDataOutputStream fileDataOutputStream;
 	private boolean fileFinished = true;
 	private boolean zipFinished;
 	private int fileCount;
@@ -68,16 +68,20 @@ public class ZipFileOutput implements Closeable {
 	/**
 	 * Attaches a buffered output stream to record the file-data _before_ writing out the file-header. This is useful
 	 * because it means that the {@link ZipFileHeader} written before the file-data will contain the encoded size and
-	 * the crc32 information as opposed to the {@link DataDescriptor} which is written _after_ the file-data.
+	 * the crc32 information as opposed to the {@link ZipDataDescriptor} which is written _after_ the file-data.
 	 * 
 	 * @param maxSizeBuffered
-	 *            Maximum number of bytes that will be stored by the buffer before it gives up and will write a
-	 *            {@link DataDescriptor}.
+	 *            Maximum number of bytes that will be stored by the buffer before it gives up and will write out the
+	 *            header and the a {@link ZipDataDescriptor} after the file-data.
 	 * @param maxSizeInMemory
 	 *            Maximum number of bytes that will be stored by in memory. If there is any space above this number but
 	 *            below the maxSizeBuffered then it will be written to a temporary file.
 	 */
 	public void enableBufferedOutput(int maxSizeBuffered, int maxSizeInMemory) {
+		if (maxSizeBuffered < maxSizeInMemory) {
+			throw new IllegalArgumentException(
+					"maxSizeBuffered " + maxSizeBuffered + " should be >= maxSizeInMemory " + maxSizeInMemory);
+		}
 		bufferedOutputStream.enableBuffer(maxSizeBuffered, maxSizeInMemory);
 	}
 
@@ -104,7 +108,7 @@ public class ZipFileOutput implements Closeable {
 	 * Add additional information (most optional_ to the Zip central-directory file-header that is written to the end of
 	 * the Zip-file and which holds information about the files that is not contained in the {@link ZipFileHeader}.
 	 */
-	public void addDirectoryFileInfo(CentralDirectoryFileInfo fileInfo) {
+	public void addDirectoryFileInfo(ZipCentralDirectoryFileInfo fileInfo) {
 		if (zipFinished) {
 			throw new IllegalStateException("Cannot add directory file-info if the zip has been finished");
 		}
@@ -119,8 +123,8 @@ public class ZipFileOutput implements Closeable {
 	 * 
 	 * @return Returns the number of bytes written to the stream so far.
 	 */
-	public long writeFile(String filePath) throws IOException {
-		return writeFile(new File(filePath));
+	public long writeFileData(String filePath) throws IOException {
+		return writeFileData(new File(filePath));
 	}
 
 	/**
@@ -131,8 +135,8 @@ public class ZipFileOutput implements Closeable {
 	 * 
 	 * @return Returns the number of bytes written to the stream so far.
 	 */
-	public long writeRawFile(String filePath) throws IOException {
-		return writeRawFile(new File(filePath));
+	public long writeRawFileData(String filePath) throws IOException {
+		return writeRawFileData(new File(filePath));
 	}
 
 	/**
@@ -143,7 +147,7 @@ public class ZipFileOutput implements Closeable {
 	 * 
 	 * @return Returns the number of bytes written to the stream so far.
 	 */
-	public long writeFile(File file) throws IOException {
+	public long writeFileData(File file) throws IOException {
 		try (InputStream inputStream = new FileInputStream(file)) {
 			return writeFileData(inputStream);
 		}
@@ -157,7 +161,7 @@ public class ZipFileOutput implements Closeable {
 	 * 
 	 * @return Returns the number of bytes written to the stream so far.
 	 */
-	public long writeRawFile(File file) throws IOException {
+	public long writeRawFileData(File file) throws IOException {
 		try (InputStream inputStream = new FileInputStream(file)) {
 			return writeRawFileData(inputStream);
 		}
@@ -208,12 +212,12 @@ public class ZipFileOutput implements Closeable {
 	 * {@link #finishFileData()}.
 	 * 
 	 * @param raw
-	 *            Set to true to make calls to {@link #writeRawFileDataPart(byte[], int, int)} or false to call
-	 *            {@link #writeFileDataPart(byte[], int, int)}.
+	 *            Set to true to have write() call thru to {@link #writeRawFileDataPart(byte[], int, int)} or false to
+	 *            have it call thru tol {@link #writeFileDataPart(byte[], int, int)}.
 	 */
 	public OutputStream openFileDataOutputStream(boolean raw) {
 		if (fileDataOutputStream == null) {
-			fileDataOutputStream = new FileDataOutputStream(raw);
+			fileDataOutputStream = new ZipFileDataOutputStream(raw);
 		}
 		return fileDataOutputStream;
 	}
@@ -274,8 +278,8 @@ public class ZipFileOutput implements Closeable {
 	 * Called at the end of the file data. Must be called after the {@link #writeFileDataPart(byte[])} or
 	 * {@link #writeFileDataPart(byte[], int, int)} methods have been called.
 	 * 
-	 * NOTE: This will write a {@link DataDescriptor} at the end of the file unless a CRC32, compressed, or uncompressed
-	 * size was specified in the header.
+	 * NOTE: This will write a {@link ZipDataDescriptor} at the end of the file unless a CRC32, compressed, or
+	 * uncompressed size was specified in the header.
 	 * 
 	 * @return Returns the number of bytes written to the stream so far.
 	 */
@@ -308,7 +312,7 @@ public class ZipFileOutput implements Closeable {
 			dataDescriptorBuilder.setCompressedSize((int) bufferedOutputStream.getEncodedSize());
 			dataDescriptorBuilder.setUncompressedSize((int) incomingFileDateInfo.getByteCount());
 			dataDescriptorBuilder.setCrc32(incomingFileDateInfo.getCrc32());
-			DataDescriptor dataDescriptor = dataDescriptorBuilder.build();
+			ZipDataDescriptor dataDescriptor = dataDescriptorBuilder.build();
 			dataDescriptor.write(bufferedOutputStream);
 		}
 		dirFileHeaders.add(dirFileBuilder.build());
@@ -338,7 +342,7 @@ public class ZipFileOutput implements Closeable {
 	/**
 	 * Finish writing the Zip-file with a comment. This will write out the central-directory file-headers at the end of
 	 * the Zip-file followed by the directory-end information. The central-directory file-headers have been accumulated
-	 * from the {@link #writeFileHeader(ZipFileHeader)} and {@link #addDirectoryFileInfo(CentralDirectoryFileInfo)}
+	 * from the {@link #writeFileHeader(ZipFileHeader)} and {@link #addDirectoryFileInfo(ZipCentralDirectoryFileInfo)}
 	 * methods.
 	 *
 	 * @return Returns the number of bytes written to the stream so far.
@@ -353,11 +357,11 @@ public class ZipFileOutput implements Closeable {
 		}
 
 		// start our directory end
-		CentralDirectoryEnd.Builder dirEndBuilder = CentralDirectoryEnd.builder();
+		ZipCentralDirectoryEnd.Builder dirEndBuilder = ZipCentralDirectoryEnd.builder();
 		dirEndBuilder.setDirectoryOffset(bufferedOutputStream.getWriteCount());
 
 		// write out our recorded central-directory file-headers
-		for (CentralDirectoryFileHeader dirHeader : dirFileHeaders) {
+		for (ZipCentralDirectoryFileEntry dirHeader : dirFileHeaders) {
 			dirHeader.write(bufferedOutputStream);
 		}
 
@@ -432,12 +436,12 @@ public class ZipFileOutput implements Closeable {
 	 * Output stream that can be used to write data for a single zip file. Once you close this output-stream then
 	 * {@link ZipFileOutput#finishFileData()} will be automatically called.
 	 */
-	public class FileDataOutputStream extends OutputStream {
+	public class ZipFileDataOutputStream extends OutputStream {
 
 		private final byte[] singleByteBuffer = new byte[1];
 		private final boolean raw;
 
-		public FileDataOutputStream(boolean raw) {
+		public ZipFileDataOutputStream(boolean raw) {
 			this.raw = raw;
 		}
 

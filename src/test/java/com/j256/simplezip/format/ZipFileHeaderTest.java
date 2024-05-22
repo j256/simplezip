@@ -34,18 +34,18 @@ public class ZipFileHeaderTest {
 
 		Builder builder = ZipFileHeader.builder();
 		builder.setLastModifiedDateTime(input);
-		int date = builder.getLastModifiedFileDate();
-		int time = builder.getLastModifiedFileTime();
+		int date = builder.getLastModifiedDate();
+		int time = builder.getLastModifiedTime();
 		// coverage
 		builder.withLastModifiedDateTime(input);
 		ZipFileHeader header = builder.build();
 
-		LocalDateTime output = header.getLastModFileDateTime();
-		System.out.println("last-mod date is: " + header.getLastModifiedFileDate());
-		System.out.println("last-mod time is: " + header.getLastModifiedFileTime());
+		LocalDateTime output = header.getLastModifiedDateTime();
+		System.out.println("last-mod date is: " + header.getLastModifiedDate());
+		System.out.println("last-mod time is: " + header.getLastModifiedTime());
 		assertEquals(input, output);
-		assertEquals(date, header.getLastModifiedFileDate());
-		assertEquals(time, header.getLastModifiedFileTime());
+		assertEquals(date, header.getLastModifiedDate());
+		assertEquals(time, header.getLastModifiedTime());
 	}
 
 	@Test
@@ -66,11 +66,11 @@ public class ZipFileHeaderTest {
 		builder.setCompressionMethod(compressionMethodEnum);
 		assertEquals(compressionMethodEnum, builder.getCompressionMethodAsEnum());
 		int lastModifiedFileTime = 29912;
-		builder.setLastModifiedFileTime(lastModifiedFileTime);
-		assertEquals(lastModifiedFileTime, builder.getLastModifiedFileTime());
+		builder.setLastModifiedTime(lastModifiedFileTime);
+		assertEquals(lastModifiedFileTime, builder.getLastModifiedTime());
 		int lastModifiedFileDate = 22708;
-		builder.setLastModifiedFileDate(lastModifiedFileDate);
-		assertEquals(lastModifiedFileDate, builder.getLastModifiedFileDate());
+		builder.setLastModifiedDate(lastModifiedFileDate);
+		assertEquals(lastModifiedFileDate, builder.getLastModifiedDate());
 		int crc32 = 654654;
 		builder.setCrc32(crc32);
 		assertEquals(crc32, builder.getCrc32());
@@ -99,16 +99,16 @@ public class ZipFileHeaderTest {
 		assertEquals(compressionMethodEnum.getValue(), header.getCompressionMethod());
 		assertEquals(versionNeeded, header.getVersionNeeded());
 		assertEquals(generalPurposeFlags, header.getGeneralPurposeFlags());
-		assertEquals(lastModifiedFileTime, header.getLastModifiedFileTime());
-		assertEquals(lastModifiedFileDate, header.getLastModifiedFileDate());
+		assertEquals(lastModifiedFileTime, header.getLastModifiedTime());
+		assertEquals(lastModifiedFileDate, header.getLastModifiedDate());
 		assertEquals(crc32, header.getCrc32());
 		assertEquals(compressedSize, header.getCompressedSize());
 		assertEquals(uncompressedSize, header.getUncompressedSize());
 		assertArrayEquals(fileNameBytes, header.getFileNameBytes());
 		assertArrayEquals(extraBytes, header.getExtraFieldBytes());
 
-		System.out.println("last-mod date is: " + header.getLastModifiedFileDateString());
-		System.out.println("last-mod time is: " + header.getLastModifiedFileTimeString());
+		System.out.println("last-mod date is: " + header.getLastModifiedDateString());
+		System.out.println("last-mod time is: " + header.getLastModifiedTimeString());
 		System.out.println("to-string is: " + header);
 
 		Builder copyBuilder = Builder.fromHeader(header);
@@ -117,8 +117,8 @@ public class ZipFileHeaderTest {
 		assertEquals(compressionMethodEnum.getValue(), copy.getCompressionMethod());
 		assertEquals(versionNeeded, copy.getVersionNeeded());
 		assertEquals(generalPurposeFlags, copy.getGeneralPurposeFlags());
-		assertEquals(lastModifiedFileTime, copy.getLastModifiedFileTime());
-		assertEquals(lastModifiedFileDate, copy.getLastModifiedFileDate());
+		assertEquals(lastModifiedFileTime, copy.getLastModifiedTime());
+		assertEquals(lastModifiedFileDate, copy.getLastModifiedDate());
 		assertEquals(crc32, copy.getCrc32());
 		assertEquals(compressedSize, copy.getCompressedSize());
 		assertEquals(uncompressedSize, copy.getUncompressedSize());
@@ -131,8 +131,8 @@ public class ZipFileHeaderTest {
 		assertEquals(CompressionMethod.DEFLATED.getValue(), copy.getCompressionMethod());
 		assertEquals(0, copy.getVersionNeeded());
 		assertEquals(0, copy.getGeneralPurposeFlags());
-		assertEquals(0, copy.getLastModifiedFileTime());
-		assertEquals(0, copy.getLastModifiedFileDate());
+		assertEquals(0, copy.getLastModifiedTime());
+		assertEquals(0, copy.getLastModifiedDate());
 		assertEquals(0, copy.getCrc32());
 		assertEquals(0, copy.getCompressedSize());
 		assertEquals(0, copy.getUncompressedSize());
@@ -158,11 +158,11 @@ public class ZipFileHeaderTest {
 		builder.withCompressionMethod(compressionMethodEnum);
 		assertEquals(compressionMethodEnum, builder.getCompressionMethodAsEnum());
 		int lastModifiedFileTime = 29912;
-		builder.withLastModifiedFileTime(lastModifiedFileTime);
-		assertEquals(lastModifiedFileTime, builder.getLastModifiedFileTime());
+		builder.withLastModifiedTime(lastModifiedFileTime);
+		assertEquals(lastModifiedFileTime, builder.getLastModifiedTime());
 		int lastModifiedFileDate = 22708;
-		builder.withLastModifiedFileDate(lastModifiedFileDate);
-		assertEquals(lastModifiedFileDate, builder.getLastModifiedFileDate());
+		builder.withLastModifiedDate(lastModifiedFileDate);
+		assertEquals(lastModifiedFileDate, builder.getLastModifiedDate());
 		int crc32 = 654654;
 		builder.withCrc32(crc32);
 		assertEquals(crc32, builder.getCrc32());
@@ -184,8 +184,8 @@ public class ZipFileHeaderTest {
 		assertEquals(compressionMethodEnum.getValue(), header.getCompressionMethod());
 		assertEquals(versionNeeded, header.getVersionNeeded());
 		assertEquals(generalPurposeFlags, header.getGeneralPurposeFlags());
-		assertEquals(lastModifiedFileTime, header.getLastModifiedFileTime());
-		assertEquals(lastModifiedFileDate, header.getLastModifiedFileDate());
+		assertEquals(lastModifiedFileTime, header.getLastModifiedTime());
+		assertEquals(lastModifiedFileDate, header.getLastModifiedDate());
 		assertEquals(crc32, header.getCrc32());
 		assertEquals(compressedSize, header.getCompressedSize());
 		assertEquals(uncompressedSize, header.getUncompressedSize());

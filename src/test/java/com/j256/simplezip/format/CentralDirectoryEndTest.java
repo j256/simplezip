@@ -5,13 +5,13 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.j256.simplezip.format.CentralDirectoryEnd.Builder;
+import com.j256.simplezip.format.ZipCentralDirectoryEnd.Builder;
 
 public class CentralDirectoryEndTest {
 
 	@Test
 	public void testCoverage() {
-		Builder builder = CentralDirectoryEnd.builder();
+		Builder builder = ZipCentralDirectoryEnd.builder();
 
 		int diskNumber = 1312;
 		builder.setDiskNumber(diskNumber);
@@ -36,7 +36,7 @@ public class CentralDirectoryEndTest {
 		builder.setCommentBytes(commentBytes);
 		assertEquals(commentBytes, builder.getCommentBytes());
 
-		CentralDirectoryEnd dirEnd = builder.build();
+		ZipCentralDirectoryEnd dirEnd = builder.build();
 		assertEquals(diskNumber, dirEnd.getDiskNumber());
 		assertEquals(diskNumberStart, dirEnd.getDiskNumberStart());
 		assertEquals(numRecordsOnDisk, dirEnd.getNumRecordsOnDisk());

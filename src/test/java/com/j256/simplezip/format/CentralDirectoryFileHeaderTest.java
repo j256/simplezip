@@ -5,13 +5,13 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.j256.simplezip.format.CentralDirectoryFileHeader.Builder;
+import com.j256.simplezip.format.ZipCentralDirectoryFileEntry.Builder;
 
 public class CentralDirectoryFileHeaderTest {
 
 	@Test
 	public void testCoverage() {
-		Builder builder = CentralDirectoryFileHeader.builder();
+		Builder builder = ZipCentralDirectoryFileEntry.builder();
 
 		int versionMade = 1312;
 		builder.setVersionMade(versionMade);
@@ -26,11 +26,11 @@ public class CentralDirectoryFileHeaderTest {
 		builder.setCompressionMethod(compressionMethodValue);
 		assertEquals(compressionMethodValue, builder.getCompressionMethod());
 		int lastModifiedFileTime = 322342434;
-		builder.setLastModifiedFileTime(lastModifiedFileTime);
-		assertEquals(lastModifiedFileTime, builder.getLastModifiedFileTime());
+		builder.setLastModifiedTime(lastModifiedFileTime);
+		assertEquals(lastModifiedFileTime, builder.getLastModifiedTime());
 		int lastModifiedFileDate = 8567056;
-		builder.setLastModifiedFileDate(lastModifiedFileDate);
-		assertEquals(lastModifiedFileDate, builder.getLastModifiedFileDate());
+		builder.setLastModifiedDate(lastModifiedFileDate);
+		assertEquals(lastModifiedFileDate, builder.getLastModifiedDate());
 		int crc32 = 654654;
 		builder.setCrc32(crc32);
 		assertEquals(crc32, builder.getCrc32());
@@ -70,15 +70,15 @@ public class CentralDirectoryFileHeaderTest {
 		textFile = true;
 		builder.setTextFile(textFile);
 		// NOTE: this changes the internal file attributes
-		internalFileAttributes |= CentralDirectoryFileHeader.INTERNAL_ATTRIBUTES_TEXT_FILE;
+		internalFileAttributes |= ZipCentralDirectoryFileEntry.INTERNAL_ATTRIBUTES_TEXT_FILE;
 
-		CentralDirectoryFileHeader fileHeader = builder.build();
+		ZipCentralDirectoryFileEntry fileHeader = builder.build();
 		assertEquals(versionMade, fileHeader.getVersionMade());
 		assertEquals(versionNeeded, fileHeader.getVersionNeeded());
 		assertEquals(generalPurposeFlags, fileHeader.getGeneralPurposeFlags());
 		assertEquals(compressionMethodValue, fileHeader.getCompressionMethod());
-		assertEquals(lastModifiedFileTime, fileHeader.getLastModifiedFileTime());
-		assertEquals(lastModifiedFileDate, fileHeader.getLastModifiedFileDate());
+		assertEquals(lastModifiedFileTime, fileHeader.getLastModifiedTime());
+		assertEquals(lastModifiedFileDate, fileHeader.getLastModifiedDate());
 		assertEquals(crc32, fileHeader.getCrc32());
 		assertEquals(compressedSize, fileHeader.getCompressedSize());
 		assertEquals(uncompressedSize, fileHeader.getUncompressedSize());
@@ -95,7 +95,7 @@ public class CentralDirectoryFileHeaderTest {
 
 	@Test
 	public void testPlatformAndVersion() {
-		Builder builder = CentralDirectoryFileHeader.builder();
+		Builder builder = ZipCentralDirectoryFileEntry.builder();
 
 		Platform platform = Platform.UNIX;
 		builder.setPlatform(platform);
@@ -104,27 +104,27 @@ public class CentralDirectoryFileHeaderTest {
 		builder.setZipVersion(version);
 		assertEquals(version, builder.getZipVersion());
 
-		CentralDirectoryFileHeader fileHeader = builder.build();
+		ZipCentralDirectoryFileEntry fileHeader = builder.build();
 		assertEquals(platform, fileHeader.getPlatform());
 		assertEquals(version, fileHeader.getZipVersion());
 	}
 
 	@Test
 	public void testMethod() {
-		Builder builder = CentralDirectoryFileHeader.builder();
+		Builder builder = ZipCentralDirectoryFileEntry.builder();
 
 		CompressionMethod method = CompressionMethod.DEFLATED;
 		builder.setCompressionMethod(method);
 		assertEquals(method, builder.getCompressionMethodAsEnum());
 
-		CentralDirectoryFileHeader fileHeader = builder.build();
+		ZipCentralDirectoryFileEntry fileHeader = builder.build();
 		assertEquals(method, fileHeader.getCompressionMethodAsEnum());
 	}
 
 	@Test
 	public void testAddFileInfo() {
 
-		CentralDirectoryFileInfo.Builder fileInfoBuilder = CentralDirectoryFileInfo.builder();
+		ZipCentralDirectoryFileInfo.Builder fileInfoBuilder = ZipCentralDirectoryFileInfo.builder();
 		int versionMade = 345534534;
 		fileInfoBuilder.setVersionMade(versionMade);
 		assertEquals(versionMade, fileInfoBuilder.getVersionMade());
@@ -143,12 +143,12 @@ public class CentralDirectoryFileHeaderTest {
 		byte[] commentBytes = "zipper".getBytes();
 		fileInfoBuilder.setCommentBytes(commentBytes);
 		assertArrayEquals(commentBytes, fileInfoBuilder.getCommentBytes());
-		CentralDirectoryFileInfo fileInfo = fileInfoBuilder.build();
+		ZipCentralDirectoryFileInfo fileInfo = fileInfoBuilder.build();
 
-		Builder builder = CentralDirectoryFileHeader.builder();
+		Builder builder = ZipCentralDirectoryFileEntry.builder();
 		builder.addFileInfo(fileInfo);
 
-		CentralDirectoryFileHeader fileHeader = builder.build();
+		ZipCentralDirectoryFileEntry fileHeader = builder.build();
 		assertEquals(versionMade, fileHeader.getVersionMade());
 		assertEquals(versionNeeded, fileHeader.getVersionNeeded());
 		assertEquals(diskNumberStart, fileHeader.getDiskNumberStart());
@@ -159,7 +159,7 @@ public class CentralDirectoryFileHeaderTest {
 
 	@Test
 	public void testFromFileHeader() {
-		Builder builder = CentralDirectoryFileHeader.builder();
+		Builder builder = ZipCentralDirectoryFileEntry.builder();
 
 		int versionMade = 1312;
 		builder.setVersionMade(versionMade);
@@ -170,9 +170,9 @@ public class CentralDirectoryFileHeaderTest {
 		int compressionMethodValue = 6334324;
 		builder.setCompressionMethod(compressionMethodValue);
 		int lastModifiedFileTime = 322342434;
-		builder.setLastModifiedFileTime(lastModifiedFileTime);
+		builder.setLastModifiedTime(lastModifiedFileTime);
 		int lastModifiedFileDate = 8567056;
-		builder.setLastModifiedFileDate(lastModifiedFileDate);
+		builder.setLastModifiedDate(lastModifiedFileDate);
 		int crc32 = 654654;
 		builder.setCrc32(crc32);
 		int compressedSize = 42343423;
@@ -195,16 +195,16 @@ public class CentralDirectoryFileHeaderTest {
 		builder.setCommentBytes(commentBytes);
 		boolean textFile = true;
 		builder.setTextFile(textFile);
-		internalFileAttributes |= CentralDirectoryFileHeader.INTERNAL_ATTRIBUTES_TEXT_FILE;
+		internalFileAttributes |= ZipCentralDirectoryFileEntry.INTERNAL_ATTRIBUTES_TEXT_FILE;
 
-		CentralDirectoryFileHeader fileHeader = builder.build();
+		ZipCentralDirectoryFileEntry fileHeader = builder.build();
 		builder = Builder.fromFileHeader(fileHeader);
 		assertEquals(versionMade, builder.getVersionMade());
 		assertEquals(versionNeeded, builder.getVersionNeeded());
 		assertEquals(generalPurposeFlags, builder.getGeneralPurposeFlags());
 		assertEquals(compressionMethodValue, builder.getCompressionMethod());
-		assertEquals(lastModifiedFileTime, builder.getLastModifiedFileTime());
-		assertEquals(lastModifiedFileDate, builder.getLastModifiedFileDate());
+		assertEquals(lastModifiedFileTime, builder.getLastModifiedTime());
+		assertEquals(lastModifiedFileDate, builder.getLastModifiedDate());
 		assertEquals(crc32, builder.getCrc32());
 		assertEquals(compressedSize, builder.getCompressedSize());
 		assertEquals(uncompressedSize, builder.getUncompressedSize());

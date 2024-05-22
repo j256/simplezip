@@ -14,10 +14,10 @@ import java.util.Map;
 import com.j256.simplezip.code.FileDataDecoder;
 import com.j256.simplezip.code.InflatorFileDataDecoder;
 import com.j256.simplezip.code.StoredFileDataDecoder;
-import com.j256.simplezip.format.CentralDirectoryEnd;
-import com.j256.simplezip.format.CentralDirectoryFileHeader;
+import com.j256.simplezip.format.ZipCentralDirectoryEnd;
+import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
 import com.j256.simplezip.format.CompressionMethod;
-import com.j256.simplezip.format.DataDescriptor;
+import com.j256.simplezip.format.ZipDataDescriptor;
 import com.j256.simplezip.format.FilePermissions;
 import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
@@ -30,15 +30,15 @@ import com.j256.simplezip.format.ZipFileHeader;
 public class ZipFileInput implements Closeable {
 
 	private final RewindableInputStream countingInputStream;
-	private final CountingInfo countingInfo = new CountingInfo();
+	private final ZipFileDataInfo fileDataCountingInfo = new ZipFileDataInfo();
 	private final byte[] tmpBuffer = new byte[IoUtils.STANDARD_BUFFER_SIZE];
 
 	private FileDataDecoder fileDataDecoder;
 	private ZipFileHeader currentFileHeader;
-	private CentralDirectoryFileHeader currentDirHeader;
-	private DataDescriptor currentDataDescriptor;
-	private boolean currentFileEofReached;
-	private FileDataInputStream fileDataInputStream;
+	private ZipCentralDirectoryFileEntry currentDirHeader;
+	private ZipDataDescriptor currentDataDescriptor;
+	private boolean currentFileEofReached = true;
+	private ZipFileDataInputStream fileDataInputStream;
 	private boolean readTillEof = true;
 	private Map<String, File> outputFileMap;
 
@@ -67,14 +67,17 @@ public class ZipFileInput implements Closeable {
 	}
 
 	/**
-	 * Read the next file header from the zip file. This is first thing that you will call.
+	 * Read the next file header from the zip file. This is first thing that you will call after opening the Zip file.
 	 */
 	public ZipFileHeader readFileHeader() throws IOException {
-		this.currentFileHeader = ZipFileHeader.read(countingInputStream);
-		currentFileEofReached = false;
+		if (!currentFileEofReached) {
+			skipFileData();
+		}
 		currentDataDescriptor = null;
-		fileDataDecoder = null;
-		countingInfo.reset();
+		currentFileEofReached = false;
+		currentFileHeader = ZipFileHeader.read(countingInputStream);
+		// reset the counting info now that we are ready to read the next file
+		fileDataCountingInfo.reset();
 		return currentFileHeader;
 	}
 
@@ -92,6 +95,7 @@ public class ZipFileInput implements Closeable {
 			}
 			byteCount += numRead;
 		}
+		// NOTE: close gets called in readFileDataPart()
 		return byteCount;
 	}
 
@@ -109,7 +113,7 @@ public class ZipFileInput implements Closeable {
 	/**
 	 * Read file data from the Zip stream, decode it, and write it to the file argument. This will associate the File
 	 * with the current header file-name so you can call assign the permissions for the file with a later call to
-	 * {@link #assignFilePermissions()} or {@link #readDirectoryFileHeadersAndAssignPermissions()}.
+	 * {@link #assignDirectoryFileEntryPermissions()} or {@link #readDirectoryFileEntriesAndAssignPermissions()}.
 	 * 
 	 * @param outputFile
 	 *            Where to write the data read from the zip stream.
@@ -168,13 +172,13 @@ public class ZipFileInput implements Closeable {
 	 * NOTE: you _must_ read from the input-stream until it returns EOF (-1).
 	 * 
 	 * @param raw
-	 *            Set to true to make calls to {@link #readRawFileDataPart(byte[], int, int)} or false to call
-	 *            {@link #readFileDataPart(byte[], int, int)}.
+	 *            Set to true to have read() call thru to {@link #readRawFileDataPart(byte[], int, int)} or false to
+	 *            have it call thru to {@link #readFileDataPart(byte[], int, int)}.
 	 * @return Stream that can be used to read the file bytes. Calling close() on this stream is a no-op.
 	 */
 	public InputStream openFileDataInputStream(boolean raw) {
 		if (fileDataInputStream == null || fileDataInputStream.raw != raw) {
-			fileDataInputStream = new FileDataInputStream(raw);
+			fileDataInputStream = new ZipFileDataInputStream(raw);
 		}
 		return fileDataInputStream;
 	}
@@ -235,20 +239,20 @@ public class ZipFileInput implements Closeable {
 	 * 
 	 * @return The next central-directory file-header or null if all entries have been read.
 	 */
-	public CentralDirectoryFileHeader readDirectoryFileHeader() throws IOException {
-		currentDirHeader = CentralDirectoryFileHeader.read(countingInputStream);
+	public ZipCentralDirectoryFileEntry readDirectoryFileEntry() throws IOException {
+		currentDirHeader = ZipCentralDirectoryFileEntry.read(countingInputStream);
 		return currentDirHeader;
 	}
 
 	/**
-	 * Assigns the file permissions from the current dir-header to the File that was previously read by
-	 * {@link #readFileData(File)}. A previous call to {@link #readDirectoryFileHeader()} must have been made with a
+	 * Assigns the file permissions from the current dir-entry to the File that was previously read by
+	 * {@link #readFileData(File)}. A previous call to {@link #readDirectoryFileEntry()} must have been made with a
 	 * file-name that matches the file-header written with the File previously. This assigns the permissions based on a
 	 * call to {@link FilePermissions#assignToFile(File, int)}.
 	 * 
 	 * @return True if successful otherwise false if the file was not found.
 	 */
-	public boolean assignFilePermissions() {
+	public boolean assignDirectoryFileEntryPermissions() {
 		if (outputFileMap == null) {
 			return false;
 		}
@@ -262,19 +266,19 @@ public class ZipFileInput implements Closeable {
 	}
 
 	/**
-	 * Reads in all of the file-headers from the Zip central-directory and assigns the permissions on the files that
+	 * Reads in all of the file-entries from the Zip central-directory and assigns the permissions on the files that
 	 * were previously read by {@link #readFileData(File)} and that matches the file-header written with the File.
 	 * 
 	 * @return True if successful or false if any of the files were not found.
 	 */
-	public boolean readDirectoryFileHeadersAndAssignPermissions() throws IOException {
+	public boolean readDirectoryFileEntriesAndAssignPermissions() throws IOException {
 		boolean result = true;
 		while (true) {
-			currentDirHeader = CentralDirectoryFileHeader.read(countingInputStream);
+			currentDirHeader = ZipCentralDirectoryFileEntry.read(countingInputStream);
 			if (currentDirHeader == null) {
 				break;
 			}
-			if (!assignFilePermissions()) {
+			if (!assignDirectoryFileEntryPermissions()) {
 				result = false;
 			}
 		}
@@ -285,8 +289,8 @@ public class ZipFileInput implements Closeable {
 	 * Read the central-directory end which is after all of the central-directory file-headers at the very end of the
 	 * Zip file.
 	 */
-	public CentralDirectoryEnd readDirectoryEnd() throws IOException {
-		return CentralDirectoryEnd.read(countingInputStream);
+	public ZipCentralDirectoryEnd readDirectoryEnd() throws IOException {
+		return ZipCentralDirectoryEnd.read(countingInputStream);
 	}
 
 	/**
@@ -330,6 +334,13 @@ public class ZipFileInput implements Closeable {
 	}
 
 	/**
+	 * Return some counting and CRC information from the current file that was read.
+	 */
+	public ZipFileDataInfo getCurrentFileCountingInfo() {
+		return fileDataCountingInfo;
+	}
+
+	/**
 	 * Returns true if the current file's data EOF has been reached. read() should have returned -1.
 	 */
 	public boolean isFileDataEofReached() {
@@ -342,7 +353,7 @@ public class ZipFileInput implements Closeable {
 	 * descriptor then null is returned here. Once the next header is read this will return null until the end of the
 	 * Zip data again has been reached by the next file entry.
 	 */
-	public DataDescriptor getCurrentDataDescriptor() {
+	public ZipDataDescriptor getCurrentDataDescriptor() {
 		return currentDataDescriptor;
 	}
 
@@ -371,17 +382,25 @@ public class ZipFileInput implements Closeable {
 		int result = fileDataDecoder.decode(buffer, offset, length);
 		if (result >= 0) {
 			// update our counts for the length and crc information
-			countingInfo.update(buffer, offset, result);
+			fileDataCountingInfo.update(buffer, offset, result);
 		} else {
-			// EOF
-			fileDataDecoder.close();
-			if (currentFileHeader.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR)) {
-				currentDataDescriptor = DataDescriptor.read(countingInputStream, countingInfo);
-			}
-			currentFileEofReached = true;
-			fileDataDecoder = null;
+			closeFileData();
 		}
 		return result;
+	}
+
+	/**
+	 * Close a specific file-data portion.
+	 */
+	private void closeFileData() throws IOException {
+		if (fileDataDecoder != null) {
+			fileDataDecoder.close();
+			fileDataDecoder = null;
+		}
+		if (currentFileHeader.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR)) {
+			currentDataDescriptor = ZipDataDescriptor.read(countingInputStream, fileDataCountingInfo);
+		}
+		currentFileEofReached = true;
 	}
 
 	private void assignFileDataDecoder(int compressionMethod) throws IOException {
@@ -399,12 +418,12 @@ public class ZipFileInput implements Closeable {
 	/**
 	 * Input stream that can be used to read data for a single Zip file-entry.
 	 */
-	public class FileDataInputStream extends InputStream {
+	public class ZipFileDataInputStream extends InputStream {
 
 		private final byte[] singleByteBuffer = new byte[1];
 		private final boolean raw;
 
-		public FileDataInputStream(boolean raw) {
+		public ZipFileDataInputStream(boolean raw) {
 			this.raw = raw;
 		}
 

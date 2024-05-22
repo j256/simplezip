@@ -6,7 +6,7 @@ import java.util.Set;
 
 /**
  * Encoded into the {@link ZipFileHeader#getGeneralPurposeFlags()} and
- * {@link CentralDirectoryFileHeader#getGeneralPurposeFlags()}
+ * {@link ZipCentralDirectoryFileEntry#getGeneralPurposeFlags()}
  * 
  * @author graywatson
  */

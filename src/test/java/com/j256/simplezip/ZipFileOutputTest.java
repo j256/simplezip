@@ -21,9 +21,9 @@ import java.util.zip.ZipInputStream;
 
 import org.junit.Test;
 
-import com.j256.simplezip.format.CentralDirectoryEnd;
-import com.j256.simplezip.format.CentralDirectoryFileHeader;
-import com.j256.simplezip.format.CentralDirectoryFileInfo;
+import com.j256.simplezip.format.ZipCentralDirectoryEnd;
+import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
+import com.j256.simplezip.format.ZipCentralDirectoryFileInfo;
 import com.j256.simplezip.format.CompressionMethod;
 import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
@@ -165,7 +165,7 @@ public class ZipFileOutputTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ZipFileOutput output = new ZipFileOutput(baos);
 		output.close();
-		output.addDirectoryFileInfo(CentralDirectoryFileInfo.builder().build());
+		output.addDirectoryFileInfo(ZipCentralDirectoryFileInfo.builder().build());
 	}
 
 	@Test(expected = IllegalStateException.class)
@@ -230,9 +230,9 @@ public class ZipFileOutputTest {
 		Builder builder = ZipFileHeader.builder();
 		builder.setFileName(file.getName());
 		output.writeFileHeader(builder.build());
-		output.writeFile(file);
+		output.writeFileData(file);
 		output.writeFileHeader(builder.build());
-		output.writeFile(file.getPath());
+		output.writeFileData(file.getPath());
 		output.writeFileHeader(builder.build());
 		output.writeFileDataPart(fileBytes);
 		output.finishFileData();
@@ -284,9 +284,9 @@ public class ZipFileOutputTest {
 		crc32.update(fileBytes);
 		builder.setCrc32Value(crc32);
 		output.writeFileHeader(builder.build());
-		System.out.println("wrote raw file, offset = " + output.writeRawFile(file));
+		System.out.println("wrote raw file, offset = " + output.writeRawFileData(file));
 		output.writeFileHeader(builder.build());
-		System.out.println("wrote raw file, offset = " + output.writeRawFile(file.getPath()));
+		System.out.println("wrote raw file, offset = " + output.writeRawFileData(file.getPath()));
 		System.out.println("wrote end, offset = " + output.finishZip());
 		output.close();
 		file.delete();
@@ -327,10 +327,10 @@ public class ZipFileOutputTest {
 		builder.setCompressionMethod(CompressionMethod.NONE);
 		builder.setFileName(file.getName() + "1");
 		output.writeFileHeader(builder.build());
-		System.out.println("wrote raw file, offset = " + output.writeRawFile(file));
+		System.out.println("wrote raw file, offset = " + output.writeRawFileData(file));
 		builder.setFileName(file.getName() + "2");
 		output.writeFileHeader(builder.build());
-		System.out.println("wrote raw file, offset = " + output.writeRawFile(file.getPath()));
+		System.out.println("wrote raw file, offset = " + output.writeRawFileData(file.getPath()));
 		System.out.println("wrote end, offset = " + output.finishZip());
 		output.close();
 		file.delete();
@@ -369,10 +369,10 @@ public class ZipFileOutputTest {
 		builder.setCompressionMethod(CompressionMethod.NONE);
 		builder.setFileName(file.getName() + "1");
 		output.writeFileHeader(builder.build());
-		System.out.println("wrote raw file, offset = " + output.writeRawFile(file));
+		System.out.println("wrote raw file, offset = " + output.writeRawFileData(file));
 		builder.setFileName(file.getName() + "2");
 		output.writeFileHeader(builder.build());
-		System.out.println("wrote raw file, offset = " + output.writeRawFile(file.getPath()));
+		System.out.println("wrote raw file, offset = " + output.writeRawFileData(file.getPath()));
 		System.out.println("wrote end, offset = " + output.finishZip());
 		output.flush();
 		output.close();
@@ -406,7 +406,7 @@ public class ZipFileOutputTest {
 		ZipFileHeader.Builder builder = ZipFileHeader.builder();
 		builder.setFileName("hello");
 		output.writeFileHeader(builder.build());
-		CentralDirectoryFileInfo.Builder fileInfoBuilder = CentralDirectoryFileInfo.builder();
+		ZipCentralDirectoryFileInfo.Builder fileInfoBuilder = ZipCentralDirectoryFileInfo.builder();
 		String comment = "hrm a nice lookin' file";
 		fileInfoBuilder.setComment(comment);
 		output.addDirectoryFileInfo(fileInfoBuilder.build());
@@ -420,7 +420,7 @@ public class ZipFileOutputTest {
 		assertNotNull(input.readFileHeader());
 		assertEquals(fileBytes.length, input.skipFileData());
 		assertNull(input.readFileHeader());
-		CentralDirectoryFileHeader dirHeader = input.readDirectoryFileHeader();
+		ZipCentralDirectoryFileEntry dirHeader = input.readDirectoryFileEntry();
 		assertNotNull(dirHeader);
 		assertEquals(comment, dirHeader.getComment());
 		input.close();
@@ -439,8 +439,8 @@ public class ZipFileOutputTest {
 		// now try to read it back in with the jdk stuff
 		ZipFileInput input = new ZipFileInput(bais);
 		assertNull(input.readFileHeader());
-		assertNull(input.readDirectoryFileHeader());
-		CentralDirectoryEnd end = input.readDirectoryEnd();
+		assertNull(input.readDirectoryFileEntry());
+		ZipCentralDirectoryEnd end = input.readDirectoryEnd();
 		assertEquals(comment, end.getComment());
 		input.close();
 	}
@@ -525,6 +525,7 @@ public class ZipFileOutputTest {
 		ZipFileHeader header = input.readFileHeader();
 		assertEquals(outerFileName, header.getFileName());
 		num = input.readFileDataPart(buffer);
+		assertEquals(outerFileBytes.length, num);
 		assertArrayEquals(outerFileBytes, Arrays.copyOf(buffer, num));
 		assertEquals(-1, input.readFileDataPart(buffer));
 
@@ -539,17 +540,17 @@ public class ZipFileOutputTest {
 		assertArrayEquals(innerFileBytes, Arrays.copyOf(buffer, num));
 		assertEquals(-1, innerReader.readFileDataPart(buffer));
 		assertNull(innerReader.readFileHeader());
-		CentralDirectoryFileHeader dirHeader = innerReader.readDirectoryFileHeader();
+		ZipCentralDirectoryFileEntry dirHeader = innerReader.readDirectoryFileEntry();
 		assertNotNull(dirHeader);
 		assertEquals(innerFileName, dirHeader.getFileName());
-		assertNull(innerReader.readDirectoryFileHeader());
+		assertNull(innerReader.readDirectoryFileEntry());
 
 		// NOTE we need to make sure that we read all of the bytes from the inner file
 		innerReader.close();
 		innerReader = null;
 
 		assertNull(input.readFileHeader());
-		dirHeader = input.readDirectoryFileHeader();
+		dirHeader = input.readDirectoryFileEntry();
 		assertNotNull(dirHeader);
 		assertEquals(outerFileName, dirHeader.getFileName());
 
@@ -568,7 +569,7 @@ public class ZipFileOutputTest {
 		builder.setLastModifiedDateTime(LocalDateTime.now());
 		builder.setFileName("hello");
 		output.writeFileHeader(builder.build());
-		CentralDirectoryFileInfo.Builder fileInfoBuilder = CentralDirectoryFileInfo.builder();
+		ZipCentralDirectoryFileInfo.Builder fileInfoBuilder = ZipCentralDirectoryFileInfo.builder();
 		String comment = "hrm a nice lookin' file";
 		fileInfoBuilder.setComment(comment);
 		fileInfoBuilder.setTextFile(true);
@@ -589,7 +590,7 @@ public class ZipFileOutputTest {
 		assertNotNull(input.readFileHeader());
 		assertEquals(fileBytes.length, input.skipFileData());
 		assertNull(input.readFileHeader());
-		CentralDirectoryFileHeader dirHeader = input.readDirectoryFileHeader();
+		ZipCentralDirectoryFileEntry dirHeader = input.readDirectoryFileEntry();
 		assertNotNull(dirHeader);
 		assertEquals(comment, dirHeader.getComment());
 		input.close();

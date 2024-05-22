@@ -30,11 +30,11 @@ file path, or an `InputStream`.
 	...
 	// can also call readFileData(File) to write out a file from input
 	// NOTE: descriptor can be null if none in the zip
-	DataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
+	ZipDataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
 	// read in the optional central-directory file-headers, null when no more
-	CentralDirectoryFileHeader dirHeader = zipInput.readDirectoryFileHeader();
+	ZipCentralDirectoryFileHeader dirHeader = zipInput.readDirectoryFileHeader();
 	// read in the optional central-directory end data
-	CentralDirectoryEnd end = zipInput.readDirectoryEnd();
+	ZipCentralDirectoryEnd end = zipInput.readDirectoryEnd();
 	zipInput.close();
 
 ## Writing a Zip File
@@ -53,7 +53,7 @@ or `OutputStream`.
 	// add optional central-directory info to the file such as text flag
 	// this will be written to disk at the end of the zip
 	zipOutput.addDirectoryFileInfo(
-		CentralDirectoryFileInfo.builder().withTextFile(true).build());
+		ZipCentralDirectoryFileInfo.builder().withTextFile(true).build());
 	// write file data from file, buffer, or InputStream
 	zipOutput.writeFileDataPart(fileBytes);
 	...
@@ -72,7 +72,7 @@ Maven packages are published via [![Maven Central](https://maven-badges.herokuap
 <dependency>
 	<groupId>com.j256.simplezip</groupId>
 	<artifactId>simplezip</artifactId>
-	<version>0.8</version>
+	<version>0.9</version>
 </dependency>
 ```
 

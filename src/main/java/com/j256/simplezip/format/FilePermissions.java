@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class that sets file permissions to be assigned to the {@link CentralDirectoryFileHeader}.
+ * Class that sets file permissions to be assigned to the {@link ZipCentralDirectoryFileEntry}.
  * 
  * @author graywatson
  */
