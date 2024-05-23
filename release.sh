@@ -34,6 +34,13 @@ if [ $? -ne 0 ]; then
 fi
 
 cd $LOCAL_DIR
+mvn -B -q javadoc:javadoc
+if [ $? -ne 0 ]; then
+    /bin/echo "ERROR: javadoc errors exist"
+    bad=1
+fi
+
+cd $LOCAL_DIR
 mvn javadoc:javadoc | grep WARNING
 if [ $? -eq 0 ]; then
     /bin/echo "ERROR: javadoc warnings exist"

@@ -365,7 +365,7 @@ public class ZipFileOutput implements Closeable {
 	}
 
 	/**
-	 * Finish writing the zip-file. See the {@link #finishZip(byte[])} for more information.
+	 * Finish writing the zip-file. See the {@link #finishZip(ZipCentralDirectoryEndInfo)} for more information.
 	 * 
 	 * @return Returns the number of bytes written to the stream so far.
 	 */
