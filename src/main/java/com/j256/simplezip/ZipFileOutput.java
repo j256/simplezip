@@ -133,9 +133,6 @@ public class ZipFileOutput implements Closeable {
 	 * @return True if this works otherwise false if the file-name is not found.
 	 */
 	public boolean addDirectoryFileInfo(String fileName, ZipCentralDirectoryFileInfo fileInfo) {
-		if (dirFileBuilder == null) {
-			throw new IllegalStateException("Cannot add directory file-info a file header has not been written");
-		}
 		if (zipFinished) {
 			throw new IllegalStateException("Cannot add directory file-info if the zip has been finished");
 		}

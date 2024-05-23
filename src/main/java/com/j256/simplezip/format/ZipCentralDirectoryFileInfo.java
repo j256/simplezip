@@ -38,8 +38,26 @@ public class ZipCentralDirectoryFileInfo {
 		return versionMade;
 	}
 
+	/**
+	 * Extract the platform from the version-made information.
+	 */
+	public Platform getMadePlatform() {
+		return Platform.fromValue((versionMade >> 8) & 0xFF);
+	}
+
+	/**
+	 * Extract the needed version from the version-made information.
+	 */
+	public ZipVersion getMadeZipVersion() {
+		return ZipVersion.fromValue(versionMade & 0xFF);
+	}
+
 	public int getVersionNeeded() {
 		return versionNeeded;
+	}
+
+	public ZipVersion getNeededZipVersion() {
+		return ZipVersion.fromValue(versionNeeded);
 	}
 
 	/**
@@ -49,20 +67,6 @@ public class ZipCentralDirectoryFileInfo {
 		int high = versionNeeded / 10;
 		int low = versionNeeded % 10;
 		return high + "." + low;
-	}
-
-	/**
-	 * Extract the platform from the version-made information.
-	 */
-	public Platform getPlatform() {
-		return Platform.fromValue((versionMade >> 8) & 0xFF);
-	}
-
-	/**
-	 * Extract the needed version from the version-made information.
-	 */
-	public ZipVersion getZipVersion() {
-		return ZipVersion.fromValue(versionMade & 0xFF);
 	}
 
 	public int getDiskNumberStart() {
@@ -109,8 +113,8 @@ public class ZipCentralDirectoryFileInfo {
 
 		public Builder() {
 			// detect and set the platform and version automatically
-			setPlatform(Platform.detectPlatform());
-			setZipVersion(ZipVersion.detectVersion());
+			setMadePlatform(Platform.detectPlatform());
+			setMadeZipVersion(ZipVersion.detectVersion());
 		}
 
 		/**
@@ -148,29 +152,29 @@ public class ZipCentralDirectoryFileInfo {
 			return this;
 		}
 
-		public Platform getPlatform() {
+		public Platform getMadePlatform() {
 			return Platform.fromValue((versionMade >> 8) & 0xFF);
 		}
 
-		public void setPlatform(Platform platform) {
+		public void setMadePlatform(Platform platform) {
 			this.versionMade = ((this.versionMade & 0xFF) | (platform.getValue() << 8));
 		}
 
-		public Builder withPlatform(Platform platform) {
-			setPlatform(platform);
+		public Builder withMadePlatform(Platform platform) {
+			setMadePlatform(platform);
 			return this;
 		}
 
-		public ZipVersion getZipVersion() {
+		public ZipVersion getMadeZipVersion() {
 			return ZipVersion.fromValue(versionMade & 0xFF);
 		}
 
-		public void setZipVersion(ZipVersion version) {
+		public void setMadeZipVersion(ZipVersion version) {
 			this.versionMade = ((this.versionMade & 0xFF00) | version.getValue());
 		}
 
-		public Builder withZipVersion(ZipVersion version) {
-			setZipVersion(version);
+		public Builder withMadeZipVersion(ZipVersion version) {
+			setMadeZipVersion(version);
 			return this;
 		}
 
@@ -184,6 +188,19 @@ public class ZipCentralDirectoryFileInfo {
 
 		public Builder withVersionNeeded(int versionNeeded) {
 			this.versionNeeded = versionNeeded;
+			return this;
+		}
+
+		public ZipVersion getNeededZipVersion() {
+			return ZipVersion.fromValue(versionNeeded);
+		}
+
+		public void setNeededZipVersion(ZipVersion version) {
+			this.versionNeeded = version.getValue();
+		}
+
+		public Builder withNeededZipVersion(ZipVersion version) {
+			setNeededZipVersion(version);
 			return this;
 		}
 

@@ -64,6 +64,15 @@ public class ZipCentralDirectoryFileInfoTest {
 	}
 
 	@Test
+	public void testNoComment() {
+		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
+		builder.setComment(null);
+		ZipCentralDirectoryFileInfo fileInfo = builder.build();
+		assertNull(fileInfo.getComment());
+		assertNull(fileInfo.getCommentBytes());
+	}
+
+	@Test
 	public void testBuildWith() {
 		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
 
@@ -82,6 +91,7 @@ public class ZipCentralDirectoryFileInfoTest {
 		int externalFileAttributes = 56357634;
 		builder.withExternalFileAttributes(externalFileAttributes);
 		assertEquals(externalFileAttributes, builder.getExternalFileAttributes());
+		assertNull(builder.getComment());
 		String comment = "fewjpfjewp";
 		byte[] commentBytes = comment.getBytes();
 		builder.withComment(comment);
@@ -156,24 +166,41 @@ public class ZipCentralDirectoryFileInfoTest {
 	}
 
 	@Test
-	public void testPlatformAndVersion() {
+	public void testMadePlatformAndVersion() {
 		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
 
 		Platform platform = Platform.UNIX;
-		builder.setPlatform(platform);
-		assertEquals(platform, builder.getPlatform());
+		builder.setMadePlatform(platform);
+		assertEquals(platform, builder.getMadePlatform());
 		platform = Platform.MACINTOSH;
-		builder.withPlatform(platform);
-		assertEquals(platform, builder.getPlatform());
+		builder.withMadePlatform(platform);
+		assertEquals(platform, builder.getMadePlatform());
 		ZipVersion version = ZipVersion.V4_5;
-		builder.setZipVersion(version);
+		builder.setMadeZipVersion(version);
 		version = ZipVersion.V2_0;
-		builder.withZipVersion(version);
-		assertEquals(version, builder.getZipVersion());
+		builder.withMadeZipVersion(version);
+		assertEquals(version, builder.getMadeZipVersion());
 
 		ZipCentralDirectoryFileInfo fileInfo = builder.build();
-		assertEquals(platform, fileInfo.getPlatform());
-		assertEquals(version, fileInfo.getZipVersion());
+		assertEquals(platform, fileInfo.getMadePlatform());
+		assertEquals(version, fileInfo.getMadeZipVersion());
+	}
+
+	@Test
+	public void testNeededVersion() {
+		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
+
+		ZipVersion version = ZipVersion.V4_6;
+		builder.setNeededZipVersion(version);
+		version = ZipVersion.V2_0;
+		builder.withNeededZipVersion(version);
+		assertEquals(version, builder.getNeededZipVersion());
+		assertEquals(version.getValue(), builder.getVersionNeeded());
+
+		ZipCentralDirectoryFileInfo fileInfo = builder.build();
+		assertEquals(version, fileInfo.getNeededZipVersion());
+		assertEquals(version.getValue(), fileInfo.getVersionNeeded());
+		assertEquals("2.0", fileInfo.getVersionNeededString());
 	}
 
 	@Test

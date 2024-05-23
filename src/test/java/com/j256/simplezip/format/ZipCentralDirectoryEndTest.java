@@ -2,9 +2,14 @@ package com.j256.simplezip.format;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 import org.junit.Test;
 
+import com.j256.simplezip.RewindableInputStream;
 import com.j256.simplezip.format.ZipCentralDirectoryEnd.Builder;
 
 public class ZipCentralDirectoryEndTest {
@@ -45,5 +50,21 @@ public class ZipCentralDirectoryEndTest {
 		assertEquals(directoryOffset, dirEnd.getDirectoryOffset());
 		assertArrayEquals(commentBytes, dirEnd.getCommentBytes());
 		assertEquals(comment, dirEnd.getComment());
+	}
+
+	@Test
+	public void testNoCommernt() {
+		Builder builder = ZipCentralDirectoryEnd.builder();
+		assertNull(builder.getCommentBytes());
+
+		ZipCentralDirectoryEnd dirEnd = builder.build();
+		assertNull(dirEnd.getCommentBytes());
+		assertNull(dirEnd.getComment());
+	}
+
+	@Test
+	public void testReadWrong() throws IOException {
+		assertNull(ZipCentralDirectoryEnd
+				.read(new RewindableInputStream(new ByteArrayInputStream(new byte[] { 1, 2, 3, 4, 5 }), 1024)));
 	}
 }

@@ -2,9 +2,11 @@ package com.j256.simplezip;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -18,6 +20,7 @@ import java.util.Arrays;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import org.junit.Test;
 
@@ -399,7 +402,8 @@ public class ZipFileOutputTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ZipFileOutput output = new ZipFileOutput(baos);
 		ZipFileHeader.Builder builder = ZipFileHeader.builder();
-		builder.setFileName("hello");
+		String fileName = "hello.txt";
+		builder.setFileName(fileName);
 		output.writeFileHeader(builder.build());
 		ZipCentralDirectoryFileInfo.Builder fileInfoBuilder = ZipCentralDirectoryFileInfo.builder();
 		String comment = "hrm a nice lookin' file";
@@ -407,6 +411,10 @@ public class ZipFileOutputTest {
 		output.addDirectoryFileInfo(fileInfoBuilder.build());
 		output.writeFileDataPart(fileBytes, 0, 1);
 		output.writeFileDataPart(fileBytes, 1, fileBytes.length - 1);
+		output.finishFileData();
+		// do it twice
+		assertTrue(output.addDirectoryFileInfo(fileName, fileInfoBuilder.build()));
+		assertFalse(output.addDirectoryFileInfo("unknown-file", fileInfoBuilder.build()));
 		output.close();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
@@ -450,6 +458,30 @@ public class ZipFileOutputTest {
 		output.writeFileHeader(builder.build());
 		output.writeFileDataPart(new byte[0]);
 		output.close();
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testAddFileInfoAfterFinished() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ZipFileOutput output = new ZipFileOutput(baos);
+		ZipFileHeader.Builder builder = ZipFileHeader.builder();
+		builder.setFileName("hello");
+		output.writeFileHeader(builder.build());
+		output.writeFileDataPart(new byte[0]);
+		output.close();
+		output.addDirectoryFileInfo(ZipCentralDirectoryFileInfo.builder().build());
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testAddFileStringInfoAfterFinished() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ZipFileOutput output = new ZipFileOutput(baos);
+		ZipFileHeader.Builder builder = ZipFileHeader.builder();
+		builder.setFileName("hello");
+		output.writeFileHeader(builder.build());
+		output.writeFileDataPart(new byte[0]);
+		output.close();
+		output.addDirectoryFileInfo("foo", ZipCentralDirectoryFileInfo.builder().build());
 	}
 
 	@Test
@@ -550,6 +582,13 @@ public class ZipFileOutputTest {
 		assertEquals(outerFileName, dirHeader.getFileName());
 
 		input.close();
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testBadEnable() throws IOException {
+		ZipFileOutput zipOutput = new ZipFileOutput(new ByteArrayOutputStream());
+		zipOutput.enableBufferedOutput(1, 2);
+		zipOutput.close();
 	}
 
 	public static void main(String[] args) throws IOException {

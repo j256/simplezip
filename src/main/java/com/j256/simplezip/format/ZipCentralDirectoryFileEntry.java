@@ -142,26 +142,6 @@ public class ZipCentralDirectoryFileEntry {
 	}
 
 	/**
-	 * Get the version needed value as a #.# string.
-	 */
-	public String getVersionMadeString() {
-		int high = versionNeeded / 10;
-		int low = versionNeeded % 10;
-		return high + "." + low;
-	}
-
-	public int getVersionNeeded() {
-		return versionNeeded;
-	}
-
-	/**
-	 * Get the version needed value as an enum;
-	 */
-	public ZipVersion getZipVersionNeeded() {
-		return ZipVersion.fromValue(versionNeeded);
-	}
-
-	/**
 	 * Extract the platform from the version-made information.
 	 */
 	public Platform getPlatformMade() {
@@ -173,6 +153,17 @@ public class ZipCentralDirectoryFileEntry {
 	 */
 	public ZipVersion getZipVersionMade() {
 		return ZipVersion.fromValue(versionMade & 0xFF);
+	}
+
+	public int getVersionNeeded() {
+		return versionNeeded;
+	}
+
+	/**
+	 * Get the version needed value as an enum;
+	 */
+	public ZipVersion getZipVersionNeeded() {
+		return ZipVersion.fromValue(versionNeeded);
 	}
 
 	public int getGeneralPurposeFlags() {
@@ -355,28 +346,6 @@ public class ZipCentralDirectoryFileEntry {
 			this.uncompressedSize = header.getUncompressedSize();
 			this.fileNameBytes = header.getFileNameBytes();
 			this.extraFieldBytes = header.getExtraFieldBytes();
-		}
-
-		/**
-		 * Reset the builder in case you want to reuse. This does set a couple of default fields.
-		 */
-		public void reset() {
-			versionMade = ZipVersion.detectVersion().getValue();
-			versionNeeded = ZipVersion.V1_0.getValue();
-			generalPurposeFlags = 0;
-			compressionMethod = 0;
-			lastModifiedTime = 0;
-			lastModifiedDate = 0;
-			crc32 = 0;
-			compressedSize = 0;
-			uncompressedSize = 0;
-			diskNumberStart = DEFAULT_DISK_NUMBER;
-			internalFileAttributes = 0;
-			externalFileAttributes = 0;
-			relativeOffsetOfLocalHeader = 0;
-			fileNameBytes = null;
-			extraFieldBytes = null;
-			commentBytes = null;
 		}
 
 		/**

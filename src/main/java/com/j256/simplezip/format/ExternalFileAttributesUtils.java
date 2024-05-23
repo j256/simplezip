@@ -22,9 +22,10 @@ public class ExternalFileAttributesUtils {
 	public static int UNIX_REGULAR_FILE = (0100000 << 16);
 	public static int UNIX_DIRECTORY = (040000 << 16);
 	public static int UNIX_SYMLINK = (0120000 << 16);
+
 	public static int UNIX_READ_ONLY_PERMISSIONS = (0444 << 16);
 	public static int UNIX_READ_WRITE_PERMISSIONS = (0644 << 16);
-	private static int UNIX_READ_ONLY_EXECUTE_PERMISSIONS = (0555 << 16);
+	public static int UNIX_READ_ONLY_EXECUTE_PERMISSIONS = (0555 << 16);
 	private static int UNIX_READ_WRITE_EXECUTE_PERMISSIONS = (0755 << 16);
 	private static final int MS_DOS_EXTERNAL_ATTRIBUTES_MASK = 0xFFFF;
 
@@ -35,6 +36,14 @@ public class ExternalFileAttributesUtils {
 	 * Get the permissions flags from a file.
 	 */
 	public static int fromFile(File file) {
+		return fromFile(file, false);
+	}
+
+	/**
+	 * Get the permissions flags from a file using the Java permissions calls on {@link File}. This is exposed mostly
+	 * for testing purposes.
+	 */
+	public static int fromFile(File file, boolean useJavaAttributes) {
 		if (!file.exists()) {
 			return 0;
 		}
@@ -48,6 +57,9 @@ public class ExternalFileAttributesUtils {
 			permissions |= UNIX_REGULAR_FILE;
 		}
 		try {
+			if (useJavaAttributes) {
+				throw new UnsupportedOperationException("simulated for testing");
+			}
 			// try to read in the posix permissions
 			Path path = FileSystems.getDefault().getPath(file.getPath());
 			Set<PosixFilePermission> perms = Files.getPosixFilePermissions(path);
@@ -116,7 +128,7 @@ public class ExternalFileAttributesUtils {
 			if (!first) {
 				sb.append(", ");
 			}
-			sb.append("unix:").append(Integer.toOctalString(unixAttributes));
+			sb.append("unix: 0").append(Integer.toOctalString(unixAttributes));
 		}
 		return sb.toString();
 	}

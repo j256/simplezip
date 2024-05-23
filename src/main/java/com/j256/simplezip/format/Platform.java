@@ -46,7 +46,13 @@ public enum Platform {
 	 * Detect our platform by looking at various JDK attributes.
 	 */
 	public static Platform detectPlatform() {
-		String os = System.getProperty("os.name");
+		return detectPlatform(System.getProperty("os.name"));
+	}
+
+	/**
+	 * Detect our platform by string. Exposed mainly for testing purposes.
+	 */
+	public static Platform detectPlatform(String os) {
 		if (os == null) {
 			return OTHER;
 		}
