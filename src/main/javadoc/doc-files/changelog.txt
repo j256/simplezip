@@ -1,4 +1,4 @@
-1.1: ?/?/2024
+1.1: 5/23/2024
 	* Fixed some of the logic to allow us to control all bytes in the output Zip.
 	* Fixed some of the logic which determined if a data-descriptor was necessary.
 	* Added ZipCentralDirectoryEndInfo to be able to control the end structure.
