@@ -173,7 +173,7 @@ public class ZipCentralDirectoryFileEntry {
 	 */
 	public String getVersionNeededMajorMinorString() {
 		int high = (versionNeeded & 0xFF) / 10;
-		int low = (versionMade & 0xFF) % 10;
+		int low = (versionNeeded & 0xFF) % 10;
 		return high + "." + low;
 	}
 

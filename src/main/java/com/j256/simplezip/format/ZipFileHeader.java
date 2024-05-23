@@ -125,7 +125,7 @@ public class ZipFileHeader {
 	/**
 	 * Return the version needed in the from "#.#".
 	 */
-	public String getVersionMajorMinorNeededString() {
+	public String getVersionNeededMajorMinorString() {
 		int high = (versionNeeded & 0xFF) / 10;
 		int low = (versionNeeded & 0xFF) % 10;
 		return high + "." + low;

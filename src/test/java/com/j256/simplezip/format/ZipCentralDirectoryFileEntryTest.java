@@ -23,10 +23,10 @@ public class ZipCentralDirectoryFileEntryTest {
 	public void testCoverage() {
 		Builder builder = ZipCentralDirectoryFileEntry.builder();
 
-		int versionMade = 1312;
+		int versionMade = 131;
 		builder.setVersionMade(versionMade);
 		assertEquals(versionMade, builder.getVersionMade());
-		int versionNeeded = 5251312;
+		int versionNeeded = 212;
 		builder.setVersionNeeded(versionNeeded);
 		assertEquals(versionNeeded, builder.getVersionNeeded());
 		List<GeneralPurposeFlag> generalPurposeFlagList =
@@ -94,7 +94,7 @@ public class ZipCentralDirectoryFileEntryTest {
 		ZipCentralDirectoryFileEntry fileEntry = builder.build();
 		assertEquals(versionMade, fileEntry.getVersionMade());
 		assertEquals(versionNeeded, fileEntry.getVersionNeeded());
-		assertEquals("525131.2", fileEntry.getVersionNeededMajorMinorString());
+		assertEquals("21.2", fileEntry.getVersionNeededMajorMinorString());
 		List<GeneralPurposeFlag> resultList = new ArrayList<>(fileEntry.getGeneralPurposeFlagsAsEnums());
 		Collections.sort(resultList);
 		assertEquals(generalPurposeFlagList, resultList);

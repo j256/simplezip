@@ -59,7 +59,7 @@ public class ZipFileInfoUtil {
 			}
 
 			System.out.println(INDENT + "file-name: " + fileHeader.getFileName());
-			System.out.println(INDENT + INDENT + "version-needed: " + fileHeader.getVersionMajorMinorNeededString()
+			System.out.println(INDENT + INDENT + "version-needed: " + fileHeader.getVersionNeededMajorMinorString()
 					+ " (" + fileHeader.getVersionNeeded() + ")");
 			System.out.println(INDENT + INDENT + "flags: " + fileHeader.getGeneralPurposeFlagsAsEnums() + " (0x"
 					+ Integer.toHexString(fileHeader.getGeneralPurposeFlags()) + ")");
