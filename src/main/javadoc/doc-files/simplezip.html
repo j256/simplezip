@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html401/loose.dtd">
 <html>
-<!-- Created on May 22, 2024 by texi2html 1.82
+<!-- Created on May 23, 2024 by texi2html 1.82
 texi2html was written by: 
             Lionel Cons <Lionel.Cons@cern.ch> (original author)
             Karl Berry  <karl@freefriends.org>
@@ -51,7 +51,7 @@ ul.toc {list-style: none}
 <a name="SimpleZip"></a>
 <h1 class="settitle">SimpleZip</h1>
 
-<p>Version 1.0 &ndash; May 2024
+<p>Version 1.1 &ndash; May 2024
 </p>
 <a name="index-introduction"></a>
 <a name="index-author"></a>
@@ -71,11 +71,11 @@ There is also a <a href="http://256stuff.com/sources/simplezip/docs/simplezip.pd
 </td></tr>
 <tr><td align="left" valign="top"><a href="#Using">2. Using SimpleZip</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">                      How to use SimpleZip.
 </td></tr>
-<tr><td align="left" valign="top"><a href="#Zip-File-Format">2.5 Various Parts of a Zip File</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">           Various parts of a Zip file
+<tr><td align="left" valign="top"><a href="#Zip-File-Format">3. Various Parts of a Zip File</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">           Various parts of a Zip file
 </td></tr>
-<tr><td align="left" valign="top"><a href="#Examples">3. Example Code</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">                   Usage examples to help you get started.
+<tr><td align="left" valign="top"><a href="#Examples">4. Example Code</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">                   Usage examples to help you get started.
 </td></tr>
-<tr><td align="left" valign="top"><a href="#License">4. Open Source License</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">                    Open Source license for the project.
+<tr><td align="left" valign="top"><a href="#License">5. Open Source License</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">                    Open Source license for the project.
 </td></tr>
 <tr><td align="left" valign="top"><a href="#Index-of-Concepts">Index of Concepts</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">          Index of concepts in the manual.
 </td></tr>
@@ -146,7 +146,7 @@ zipOutput.close();
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="#Quick-Start" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="#Top" title="Up section"> Up </a>]</td>
-<td valign="middle" align="left">[<a href="#Examples" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left">[<a href="#Zip-File-Format" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -180,7 +180,7 @@ zipOutput.close();
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="#Using" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="#Using" title="Up section"> Up </a>]</td>
-<td valign="middle" align="left">[<a href="#Examples" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left">[<a href="#Zip-File-Format" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -208,7 +208,7 @@ zipOutput.close();
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="#Using" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="#Using" title="Up section"> Up </a>]</td>
-<td valign="middle" align="left">[<a href="#Examples" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left">[<a href="#Zip-File-Format" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -241,7 +241,7 @@ zipOutput.close();
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="#Using" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="#Reading" title="Up section"> Up </a>]</td>
-<td valign="middle" align="left">[<a href="#Examples" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left">[<a href="#Zip-File-Format" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -276,7 +276,7 @@ ZipFileInput zipInput = new ZipFileInput(inputStream);
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="#Using" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="#Reading" title="Up section"> Up </a>]</td>
-<td valign="middle" align="left">[<a href="#Examples" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left">[<a href="#Zip-File-Format" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -327,7 +327,7 @@ file-data.  See <a href="#Data-Descriptor">Data Descriptor</a>.
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="#Using" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="#Reading" title="Up section"> Up </a>]</td>
-<td valign="middle" align="left">[<a href="#Examples" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left">[<a href="#Zip-File-Format" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -406,7 +406,7 @@ ZipDataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="#Using" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="#Reading" title="Up section"> Up </a>]</td>
-<td valign="middle" align="left">[<a href="#Examples" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left">[<a href="#Zip-File-Format" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -493,7 +493,7 @@ CentralDirectoryEnd directoryEnd = zipInput.readDirectoryEnd();
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="#Using" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="#Using" title="Up section"> Up </a>]</td>
-<td valign="middle" align="left">[<a href="#Examples" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left">[<a href="#Zip-File-Format" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -526,7 +526,7 @@ CentralDirectoryEnd directoryEnd = zipInput.readDirectoryEnd();
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="#Using" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="#Writing" title="Up section"> Up </a>]</td>
-<td valign="middle" align="left">[<a href="#Examples" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left">[<a href="#Zip-File-Format" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -577,7 +577,7 @@ zipOutput.enableBufferedOutput(1024 * 1024 /* maxSizeBuffered */, 100 * 1024 /* 
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="#Using" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="#Writing" title="Up section"> Up </a>]</td>
-<td valign="middle" align="left">[<a href="#Examples" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left">[<a href="#Zip-File-Format" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -617,7 +617,7 @@ if buffering is enabled.  Once the method has been called, you can start writing
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="#Using" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="#Writing" title="Up section"> Up </a>]</td>
-<td valign="middle" align="left">[<a href="#Examples" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left">[<a href="#Zip-File-Format" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -685,7 +685,7 @@ that it needs to write a <code>ZipDataDescriptor</code> entry with the sizes and
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="#Using" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="#Writing" title="Up section"> Up </a>]</td>
-<td valign="middle" align="left">[<a href="#Examples" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left">[<a href="#Zip-File-Format" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -728,7 +728,7 @@ information.
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="#Using" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="#Using" title="Up section"> Up </a>]</td>
-<td valign="middle" align="left">[<a href="#Examples" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left">[<a href="#Zip-File-Format" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -748,7 +748,7 @@ information.
 <table><tr><td>&nbsp;</td><td><pre class="example">&lt;dependency&gt;
 	&lt;groupId&gt;com.j256.simplezip&lt;/groupId&gt;
 	&lt;artifactId&gt;simplezip&lt;/artifactId&gt;
-	&lt;version&gt;1.0&lt;/version&gt;
+	&lt;version&gt;1.1&lt;/version&gt;
 &lt;/dependency&gt;
 </pre></td></tr></table>
 
@@ -760,7 +760,7 @@ information.
 <td valign="middle" align="left">[<a href="#Examples" title="Next section in reading order"> &gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="#Using" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
-<td valign="middle" align="left">[<a href="#Using" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="#Top" title="Up section"> Up </a>]</td>
 <td valign="middle" align="left">[<a href="#Examples" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -772,7 +772,7 @@ information.
 <td valign="middle" align="left">[<a href="#SEC_About" title="About (help)"> ? </a>]</td>
 </tr></table>
 <a name="Various-Parts-of-a-Zip-File"></a>
-<h2 class="section">2.5 Various Parts of a Zip File</h2>
+<h1 class="chapter">3. Various Parts of a Zip File</h1>
 
 <p>A Zip file is made up of the following pieces of information. 
 </p>
@@ -794,7 +794,7 @@ information.
 <tr><td valign="middle" align="left">[<a href="#Zip-File-Format" title="Previous section in reading order"> &lt; </a>]</td>
 <td valign="middle" align="left">[<a href="#License" title="Next section in reading order"> &gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
-<td valign="middle" align="left">[<a href="#Using" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="#Zip-File-Format" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="#Top" title="Up section"> Up </a>]</td>
 <td valign="middle" align="left">[<a href="#License" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -807,59 +807,41 @@ information.
 <td valign="middle" align="left">[<a href="#SEC_About" title="About (help)"> ? </a>]</td>
 </tr></table>
 <a name="Example-Code"></a>
-<h1 class="chapter">3. Example Code</h1>
+<h1 class="chapter">4. Example Code</h1>
 
-<a name="index-examples-of-code"></a>
-<a name="index-code-examples"></a>
 <p>Here is some example code to help you get going with SimpleZip.  I often find that code is the best documentation of how
 to get something working.  Please feel free to suggest additional example packages for inclusion here.  Source code submissions
 are welcome as long as you don&rsquo;t get piqued if we don&rsquo;t chose your&rsquo;s.
 </p>
-<a name="index-simple-input-example"></a>
-<p>Simple input example:
-</p>
-<table><tr><td>&nbsp;</td><td><pre class="example">ZipFileInput zipInput = new ZipFileInput(input);
-// readFileHeader() will return null when no more files to read
-ZipFileHeader header = zipInput.readFileHeader();
-byte[] buffer = new byte[4096];
-// read into buffers or via InputStream until it returns -1
-long numRead = zipInput.readFileDataPart(buffer);
-...
-// can also call readFileData(File) to write out a file from input
-// NOTE: descriptor can be null if none in the zip
-DataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
-// read in the optional central-directory file-headers, null when no more
-CentralDirectoryFileHeader dirHeader = zipInput.readDirectoryFileHeader();
-// read in the optional central-directory end data
-CentralDirectoryEnd end = zipInput.readDirectoryEnd();
-zipInput.close();
-</pre></td></tr></table>
+<a name="index-examples-of-code"></a>
+<a name="index-code-examples"></a>
 
-<a name="index-simple-output-example"></a>
-<p>Simple output example:
+<ul>
+<li>
+<a name="index-simple-zip-output-example"></a>
+<a name="simple-zip-output-example"></a>
+</li><li> SimpleZipOutput.java
+
+<p>This example writes out a zip file with a file, a directory, and a file inside of that directory.
+See the <a href="http://256stuff.com/sources/simplezip/docs/example-simple">source code</a>.
 </p>
-<table><tr><td>&nbsp;</td><td><pre class="example">ZipFileOutput zipOutput = new ZipFileOutput(output);
-ZipFileHeader header = ZipFileHeader.builder()
-	.withFileName(&quot;hello.txt&quot;)
-	.withGeneralPurposeFlags(GeneralPurposeFlag.DEFLATING_MAXIMUM)
-	.withLastModifiedDateTime(LocalDateTime.now())
-	.build();
-// write a file-header to the zip-file
-zipOutput.writeFileHeader(header);
-// add optional central-directory info to the file such as text flag
-// this will be written to disk at the end of the zip
-zipOutput.addDirectoryFileInfo(
-	CentralDirectoryFileInfo.builder().withTextFile(true).build());
-// write file data from file, buffer, or InputStream
-zipOutput.writeFileDataPart(fileBytes);
-...
-// must be called after all file parts written
-zipOutput.finishFileData();
-// can write more file-headers and data here
-...
-// this writes the recorded central-directory data and closes tbe zip
-zipOutput.close();
-</pre></td></tr></table>
+<a name="index-example_002c-zip-file-copy"></a>
+<a name="index-copy-zip-file_002c-example"></a>
+<p><a name="zip-file-copy"></a>
+</p></li><li> ZipFileCopy.java 
+
+<p>This example reads in a zip file using ZipFileInput and writes it out with ZipFileOutput while hopefully not
+changing any of the internal structures.  Please report a zip that doesn&rsquo;t get copied perfectly with this.
+See the <a href="http://256stuff.com/sources/simplezip/docs/example-copy">source code</a>.
+</p>
+<a name="index-zip-file-info-example"></a>
+<p><a name="zip-file-info"></a>
+</p></li><li> ZipFileCopy.java 
+
+<p>This example reads in a Zip file and spits out the details about the file in excruciating detail.
+See the <a href="http://256stuff.com/sources/simplezip/docs/example-info">source code</a>.
+</p>
+</li></ul>
 
 <hr size="6">
 <a name="License"></a>
@@ -880,7 +862,7 @@ zipOutput.close();
 <td valign="middle" align="left">[<a href="#SEC_About" title="About (help)"> ? </a>]</td>
 </tr></table>
 <a name="Open-Source-License"></a>
-<h1 class="chapter">4. Open Source License</h1>
+<h1 class="chapter">5. Open Source License</h1>
 
 <a name="index-license"></a>
 <a name="index-open-source-license"></a>
@@ -971,7 +953,8 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <tr><td></td><td valign="top"><a href="#index-central_002ddirectory-end_002c-writing">central-directory end, writing</a></td><td valign="top"><a href="#Write-Directory-Entries">2.3.4 Writing Central-Directory Entries</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-central_002ddirectory-entries_002c-reading">central-directory entries, reading</a></td><td valign="top"><a href="#Read-Directory-Entries">2.2.4 Reading Zip Central-Directory Entries</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-central_002ddirectory-entries_002c-writing">central-directory entries, writing</a></td><td valign="top"><a href="#Write-Directory-Entries">2.3.4 Writing Central-Directory Entries</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-code-examples">code examples</a></td><td valign="top"><a href="#Examples">3. Example Code</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-code-examples">code examples</a></td><td valign="top"><a href="#Examples">4. Example Code</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-copy-zip-file_002c-example">copy zip file, example</a></td><td valign="top"><a href="#Examples">4. Example Code</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-D">D</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-data-descriptor">data descriptor</a></td><td valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data from Buffer, File, or Stream</a></td></tr>
@@ -979,7 +962,8 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <tr><td></td><td valign="top"><a href="#index-downloading-the-jars">downloading the jars</a></td><td valign="top"><a href="#Downloading">2.1 Downloading Jar</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-E">E</a></th><td></td><td></td></tr>
-<tr><td></td><td valign="top"><a href="#index-examples-of-code">examples of code</a></td><td valign="top"><a href="#Examples">3. Example Code</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-example_002c-zip-file-copy">example, zip file copy</a></td><td valign="top"><a href="#Examples">4. Example Code</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-examples-of-code">examples of code</a></td><td valign="top"><a href="#Examples">4. Example Code</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-examples_002c-simple">examples, simple</a></td><td valign="top"><a href="#Quick-Start">1. Start Using Quickly</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-external-file-attributes">external file attributes</a></td><td valign="top"><a href="#Read-Directory-Entries">2.2.4 Reading Zip Central-Directory Entries</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
@@ -1001,13 +985,13 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <tr><td></td><td valign="top"><a href="#index-introduction">introduction</a></td><td valign="top"><a href="#Top">SimpleZip</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-L">L</a></th><td></td><td></td></tr>
-<tr><td></td><td valign="top"><a href="#index-license">license</a></td><td valign="top"><a href="#License">4. Open Source License</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-license">license</a></td><td valign="top"><a href="#License">5. Open Source License</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-M">M</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-Maven_002c-use-with">Maven, use with</a></td><td valign="top"><a href="#Maven">2.4 Using With Maven</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-O">O</a></th><td></td><td></td></tr>
-<tr><td></td><td valign="top"><a href="#index-open-source-license">open source license</a></td><td valign="top"><a href="#License">4. Open Source License</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-open-source-license">open source license</a></td><td valign="top"><a href="#License">5. Open Source License</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-P">P</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-pom_002exml-dependency">pom.xml dependency</a></td><td valign="top"><a href="#Maven">2.4 Using With Maven</a></td></tr>
@@ -1023,9 +1007,8 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-S">S</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-simple-examples">simple examples</a></td><td valign="top"><a href="#Quick-Start">1. Start Using Quickly</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-simple-input-example">simple input example</a></td><td valign="top"><a href="#Examples">3. Example Code</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-simple-output-example">simple output example</a></td><td valign="top"><a href="#Examples">3. Example Code</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-simple-zip">simple zip</a></td><td valign="top"><a href="#Top">SimpleZip</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-simple-zip-output-example">simple zip output example</a></td><td valign="top"><a href="#Examples">4. Example Code</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-U">U</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-using-SimpleZip">using SimpleZip</a></td><td valign="top"><a href="#Using">2. Using SimpleZip</a></td></tr>
@@ -1034,8 +1017,8 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <tr><td></td><td valign="top"><a href="#index-where-to-get-new-jars">where to get new jars</a></td><td valign="top"><a href="#Downloading">2.1 Downloading Jar</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-write-zip-file-data">write zip file data</a></td><td valign="top"><a href="#Write-File-Data">2.3.3 Writing File Data to Buffer, File, or Stream</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-write-zip-file-header">write zip file header</a></td><td valign="top"><a href="#Write-File-Headers">2.3.2 Writing File Header Entries</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-write-zip-files">write zip files</a></td><td valign="top"><a href="#ZipFileOutput">2.3.1 Constructing a ZipFileOutput</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-write-Zip-files">write Zip files</a></td><td valign="top"><a href="#Writing">2.3 Writing Zip Files</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-write-zip-files">write zip files</a></td><td valign="top"><a href="#ZipFileOutput">2.3.1 Constructing a ZipFileOutput</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-Z">Z</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-zip-data-end_002c-reading">zip data end, reading</a></td><td valign="top"><a href="#Read-Directory-Entries">2.2.4 Reading Zip Central-Directory Entries</a></td></tr>
@@ -1044,6 +1027,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <tr><td></td><td valign="top"><a href="#index-zip-file-data-1">zip file data</a></td><td valign="top"><a href="#Write-File-Data">2.3.3 Writing File Data to Buffer, File, or Stream</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-zip-file-header">zip file header</a></td><td valign="top"><a href="#Read-File-Headers">2.2.2 Reading Zip File Header Entries</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-zip-file-header_002c-writing">zip file header, writing</a></td><td valign="top"><a href="#Write-File-Headers">2.3.2 Writing File Header Entries</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-zip-file-info-example">zip file info example</a></td><td valign="top"><a href="#Examples">4. Example Code</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-ZipFileHeader">ZipFileHeader</a></td><td valign="top"><a href="#Read-File-Headers">2.2.2 Reading Zip File Header Entries</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-ZipFileInput">ZipFileInput</a></td><td valign="top"><a href="#ZipFileInput">2.2.1 Constructing a ZipFileInput</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-ZipFileOutput">ZipFileOutput</a></td><td valign="top"><a href="#ZipFileOutput">2.3.1 Constructing a ZipFileOutput</a></td></tr>
@@ -1119,10 +1103,10 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
       <li><a name="toc-Writing-Central_002dDirectory-Entries" href="#Write-Directory-Entries">2.3.4 Writing Central-Directory Entries</a></li>
     </ul></li>
     <li><a name="toc-Using-With-Maven" href="#Maven">2.4 Using With Maven</a></li>
-    <li><a name="toc-Various-Parts-of-a-Zip-File" href="#Zip-File-Format">2.5 Various Parts of a Zip File</a></li>
   </ul></li>
-  <li><a name="toc-Example-Code" href="#Examples">3. Example Code</a></li>
-  <li><a name="toc-Open-Source-License" href="#License">4. Open Source License</a></li>
+  <li><a name="toc-Various-Parts-of-a-Zip-File" href="#Zip-File-Format">3. Various Parts of a Zip File</a></li>
+  <li><a name="toc-Example-Code" href="#Examples">4. Example Code</a></li>
+  <li><a name="toc-Open-Source-License" href="#License">5. Open Source License</a></li>
   <li><a name="toc-Index-of-Concepts-1" href="#Index-of-Concepts">Index of Concepts</a></li>
 </ul>
 </div>
@@ -1136,7 +1120,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 </tr></table>
 <h1>About This Document</h1>
 <p>
-  This document was generated by <em>Gray Watson</em> on <em>May 22, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
+  This document was generated by <em>Gray Watson</em> on <em>May 23, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
 </p>
 <p>
   The buttons in the navigation panels have the following meaning:
@@ -1238,7 +1222,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <hr size="1">
 <p>
  <font size="-1">
-  This document was generated by <em>Gray Watson</em> on <em>May 22, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
+  This document was generated by <em>Gray Watson</em> on <em>May 23, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
  </font>
  <br>
 

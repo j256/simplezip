@@ -6,7 +6,7 @@
 @c %**end of header
 
 @c ----------------------------------------------------------------
-@set simplezip_version 1.0
+@set simplezip_version 1.1
 @set simplezip_year 2024
 @set simplezip_date May @value{simplezip_year}
 @set package SimpleZip
@@ -515,7 +515,7 @@ To use SimpleZip with maven, include the following dependency in your @file{pom.
 
 @c ----------------------------------------------------------------
 @node Zip File Format, Examples, Maven, Top
-@section Various Parts of a Zip File
+@chapter Various Parts of a Zip File
 
 A Zip file is made up of the following pieces of information. 
 
@@ -546,10 +546,26 @@ are welcome as long as you don't get piqued if we don't chose your's.
 
 @cindex simple zip output example
 @anchor{simple zip output example}
-@item SimpleZipOutput.java -- 
+@item SimpleZipOutput.java
 
 This example writes out a zip file with a file, a directory, and a file inside of that directory.
 See the @uref{http://256stuff.com/sources/simplezip/docs/example-simple, source code}.
+
+@cindex example, zip file copy
+@cindex copy zip file, example
+@anchor{zip file copy}
+@item ZipFileCopy.java 
+
+This example reads in a zip file using ZipFileInput and writes it out with ZipFileOutput while hopefully not
+changing any of the internal structures.  Please report a zip that doesn't get copied perfectly with this.
+See the @uref{http://256stuff.com/sources/simplezip/docs/example-copy, source code}.
+
+@cindex zip file info example
+@anchor{zip file info}
+@item ZipFileCopy.java 
+
+This example reads in a Zip file and spits out the details about the file in excruciating detail.
+See the @uref{http://256stuff.com/sources/simplezip/docs/example-info, source code}.
 
 @end itemize
 
