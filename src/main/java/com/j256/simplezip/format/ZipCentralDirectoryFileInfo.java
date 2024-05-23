@@ -41,31 +41,43 @@ public class ZipCentralDirectoryFileInfo {
 	/**
 	 * Extract the platform from the version-made information.
 	 */
-	public Platform getMadePlatform() {
+	public Platform getPlatformMade() {
 		return Platform.fromValue((versionMade >> 8) & 0xFF);
 	}
 
 	/**
-	 * Extract the needed version from the version-made information.
+	 * Extract the needed version from the version-made field.
 	 */
-	public ZipVersion getMadeZipVersion() {
-		return ZipVersion.fromValue(versionMade & 0xFF);
+	public int getVersionMadeMajorMinor() {
+		return (versionMade & 0xFF);
+	}
+
+	/**
+	 * Get the version made value as a #.# string.
+	 */
+	public String getVersionMadeString() {
+		int high = (versionMade & 0xFF) / 10;
+		int low = (versionMade & 0xFF) % 10;
+		return high + "." + low;
 	}
 
 	public int getVersionNeeded() {
 		return versionNeeded;
 	}
 
-	public ZipVersion getNeededZipVersion() {
-		return ZipVersion.fromValue(versionNeeded);
+	/**
+	 * Extract the needed version from the version-needed field.
+	 */
+	public int getVersionNeededMajorMinor() {
+		return (versionNeeded & 0xFF);
 	}
 
 	/**
 	 * Get the version needed value as a #.# string.
 	 */
 	public String getVersionNeededString() {
-		int high = versionNeeded / 10;
-		int low = versionNeeded % 10;
+		int high = (versionNeeded & 0xFF) / 10;
+		int low = (versionNeeded & 0xFF) % 10;
 		return high + "." + low;
 	}
 
@@ -113,9 +125,9 @@ public class ZipCentralDirectoryFileInfo {
 
 		public Builder() {
 			// detect and set the platform and version automatically
-			setMadePlatform(Platform.detectPlatform());
-			setMadeZipVersion(ZipVersion.detectVersion());
-			this.versionNeeded = ZipVersion.V1_0.getValue();
+			setPlatformMade(Platform.detectPlatform());
+			setVersionMadeMajorMinor(2, 0);
+			setVersionNeededMajorMinor(1, 0);
 		}
 
 		/**
@@ -153,29 +165,37 @@ public class ZipCentralDirectoryFileInfo {
 			return this;
 		}
 
-		public Platform getMadePlatform() {
+		public Platform getPlatformMade() {
 			return Platform.fromValue((versionMade >> 8) & 0xFF);
 		}
 
-		public void setMadePlatform(Platform platform) {
+		public void setPlatformMade(Platform platform) {
 			this.versionMade = ((this.versionMade & 0xFF) | (platform.getValue() << 8));
 		}
 
-		public Builder withMadePlatform(Platform platform) {
-			setMadePlatform(platform);
+		public Builder withPlatformMade(Platform platform) {
+			setPlatformMade(platform);
 			return this;
 		}
 
-		public ZipVersion getMadeZipVersion() {
-			return ZipVersion.fromValue(versionMade & 0xFF);
+		public int getVersionMadeMajorMinor() {
+			return (versionMade & 0xFF);
 		}
 
-		public void setMadeZipVersion(ZipVersion version) {
-			this.versionMade = ((this.versionMade & 0xFF00) | version.getValue());
+		/**
+		 * Set the made zip version as a major and minor value. So if version 4.5 made this zip then you should pass in
+		 * major 4 and minor 5.
+		 */
+		public void setVersionMadeMajorMinor(int major, int minor) {
+			this.versionMade = ((this.versionMade & 0xFF00) | (major * 10 + minor));
 		}
 
-		public Builder withMadeZipVersion(ZipVersion version) {
-			setMadeZipVersion(version);
+		/**
+		 * Set the made zip version as a major and minor value. So if version 4.5 made this zip then you should pass in
+		 * major 4 and minor 5.
+		 */
+		public Builder withVersionMadeMajorMinor(int major, int minor) {
+			setVersionMadeMajorMinor(major, minor);
 			return this;
 		}
 
@@ -192,16 +212,20 @@ public class ZipCentralDirectoryFileInfo {
 			return this;
 		}
 
-		public ZipVersion getNeededZipVersion() {
-			return ZipVersion.fromValue(versionNeeded);
+		/**
+		 * Set the needed zip version as a major and minor value. So if version 2.0 made this zip then you should pass
+		 * in major 2 and minor 0.
+		 */
+		public void setVersionNeededMajorMinor(int major, int minor) {
+			this.versionNeeded = (major * 10 + minor);
 		}
 
-		public void setNeededZipVersion(ZipVersion version) {
-			this.versionNeeded = version.getValue();
-		}
-
-		public Builder withNeededZipVersion(ZipVersion version) {
-			setNeededZipVersion(version);
+		/**
+		 * Set the needed zip version as a major and minor value. So if version 2.0 made this zip then you should pass
+		 * in major 2 and minor 0.
+		 */
+		public Builder withVersionNeededMajorMinor(int major, int minor) {
+			setVersionNeededMajorMinor(major, minor);
 			return this;
 		}
 

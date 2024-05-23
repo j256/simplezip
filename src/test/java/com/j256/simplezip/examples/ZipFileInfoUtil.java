@@ -59,8 +59,8 @@ public class ZipFileInfoUtil {
 			}
 
 			System.out.println(INDENT + "file-name: " + fileHeader.getFileName());
-			System.out.println(INDENT + INDENT + "version-needed: "
-					+ fileHeader.getZipVersionNeeded().getVersionString() + " (" + fileHeader.getVersionNeeded() + ")");
+			System.out.println(INDENT + INDENT + "version-needed: " + fileHeader.getVersionMajorMinorNeededString()
+					+ " (" + fileHeader.getVersionNeeded() + ")");
 			System.out.println(INDENT + INDENT + "flags: " + fileHeader.getGeneralPurposeFlagsAsEnums() + " (0x"
 					+ Integer.toHexString(fileHeader.getGeneralPurposeFlags()) + ")");
 			System.out.println(INDENT + INDENT + "compression-method: " + fileHeader.getCompressionMethodAsEnum() + " ("
@@ -96,9 +96,9 @@ public class ZipFileInfoUtil {
 
 			System.out.println(INDENT + "directory-entry: " + dirEntry.getFileName());
 			System.out.println(INDENT + INDENT + "version-made: platform " + dirEntry.getPlatformMade() + ", version "
-					+ dirEntry.getZipVersionMade().getVersionString() + " (" + dirEntry.getVersionMade() + ")");
-			System.out.println(INDENT + INDENT + "version-needed: " + dirEntry.getZipVersionNeeded().getVersionString()
-					+ " (" + dirEntry.getVersionNeeded() + ")");
+					+ dirEntry.getVersionMadeMajorMinorString() + " (" + dirEntry.getVersionMade() + ")");
+			System.out.println(INDENT + INDENT + "version-needed: " + dirEntry.getVersionNeededMajorMinorString() + " ("
+					+ dirEntry.getVersionNeeded() + ")");
 			System.out.println(INDENT + INDENT + "flags: " + dirEntry.getGeneralPurposeFlagsAsEnums() + " (0x"
 					+ Integer.toHexString(dirEntry.getGeneralPurposeFlags()) + ")");
 			System.out.println(INDENT + INDENT + "compression-method: " + dirEntry.getCompressionMethodAsEnum() + " ("

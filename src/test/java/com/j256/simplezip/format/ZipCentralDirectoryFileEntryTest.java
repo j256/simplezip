@@ -94,7 +94,7 @@ public class ZipCentralDirectoryFileEntryTest {
 		ZipCentralDirectoryFileEntry fileEntry = builder.build();
 		assertEquals(versionMade, fileEntry.getVersionMade());
 		assertEquals(versionNeeded, fileEntry.getVersionNeeded());
-		assertEquals(ZipVersion.UNKNOWN, fileEntry.getZipVersionNeeded());
+		assertEquals("525131.2", fileEntry.getVersionNeededMajorMinorString());
 		List<GeneralPurposeFlag> resultList = new ArrayList<>(fileEntry.getGeneralPurposeFlagsAsEnums());
 		Collections.sort(resultList);
 		assertEquals(generalPurposeFlagList, resultList);
@@ -197,13 +197,14 @@ public class ZipCentralDirectoryFileEntryTest {
 		Platform platform = Platform.UNIX;
 		builder.setPlatformMade(platform);
 		assertEquals(platform, builder.getPlatformMade());
-		ZipVersion version = ZipVersion.V4_5;
-		builder.setZipVersionMade(version);
-		assertEquals(version, builder.getZipVersionMade());
+		int major = 4;
+		int minor = 5;
+		builder.setVersionMadeMajorMinor(4, 5);
+		assertEquals(major * 10 + minor, builder.getVersionMadeMajorMinor());
 
 		ZipCentralDirectoryFileEntry fileEntry = builder.build();
 		assertEquals(platform, fileEntry.getPlatformMade());
-		assertEquals(version, fileEntry.getZipVersionMade());
+		assertEquals(major + "." + minor, fileEntry.getVersionMadeMajorMinorString());
 	}
 
 	@Test

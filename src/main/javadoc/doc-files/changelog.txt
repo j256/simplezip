@@ -1,3 +1,6 @@
+1.2: 5/??/2024
+	* Removed the ZipVersion which seemed artificial and replaced with major+minor numbers.
+
 1.1: 5/23/2024
 	* Fixed some of the logic to allow us to control all bytes in the output Zip.
 	* Fixed some of the logic which determined if a data-descriptor was necessary.
