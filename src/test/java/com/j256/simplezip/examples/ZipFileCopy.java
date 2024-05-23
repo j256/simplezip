@@ -61,6 +61,7 @@ public class ZipFileCopy {
 			}
 
 			zipOutput.writeFileHeader(fileHeader);
+			// copy raw bytes from the input to the output
 			try (InputStream fileDataInput = zipInput.openFileDataInputStream(true);
 					OutputStream fileDataOUtput = zipOutput.openFileDataOutputStream(true);) {
 				IoUtils.copyStream(fileDataInput, fileDataOUtput);

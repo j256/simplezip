@@ -8,6 +8,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -25,7 +29,13 @@ public class ZipCentralDirectoryFileEntryTest {
 		int versionNeeded = 5251312;
 		builder.setVersionNeeded(versionNeeded);
 		assertEquals(versionNeeded, builder.getVersionNeeded());
-		int generalPurposeFlags = 565479567;
+		List<GeneralPurposeFlag> generalPurposeFlagList =
+				Arrays.asList(GeneralPurposeFlag.DEFLATING_MAXIMUM, GeneralPurposeFlag.ENCRYPTED);
+		Collections.sort(generalPurposeFlagList);
+		int generalPurposeFlags = 0;
+		for (GeneralPurposeFlag flag : generalPurposeFlagList) {
+			generalPurposeFlags |= flag.getValue();
+		}
 		builder.setGeneralPurposeFlags(generalPurposeFlags);
 		assertEquals(generalPurposeFlags, builder.getGeneralPurposeFlags());
 		int compressionMethodValue = 6334324;
@@ -84,6 +94,10 @@ public class ZipCentralDirectoryFileEntryTest {
 		ZipCentralDirectoryFileEntry fileEntry = builder.build();
 		assertEquals(versionMade, fileEntry.getVersionMade());
 		assertEquals(versionNeeded, fileEntry.getVersionNeeded());
+		assertEquals(ZipVersion.UNKNOWN, fileEntry.getZipVersionNeeded());
+		List<GeneralPurposeFlag> resultList = new ArrayList<>(fileEntry.getGeneralPurposeFlagsAsEnums());
+		Collections.sort(resultList);
+		assertEquals(generalPurposeFlagList, resultList);
 		assertEquals(generalPurposeFlags, fileEntry.getGeneralPurposeFlags());
 		assertEquals(compressionMethodValue, fileEntry.getCompressionMethod());
 		assertEquals(lastModifiedFileTime, fileEntry.getLastModifiedTime());
@@ -181,11 +195,11 @@ public class ZipCentralDirectoryFileEntryTest {
 		Builder builder = ZipCentralDirectoryFileEntry.builder();
 
 		Platform platform = Platform.UNIX;
-		builder.setPlatform(platform);
-		assertEquals(platform, builder.getPlatform());
+		builder.setPlatformMade(platform);
+		assertEquals(platform, builder.getPlatformMade());
 		ZipVersion version = ZipVersion.V4_5;
-		builder.setZipVersion(version);
-		assertEquals(version, builder.getZipVersion());
+		builder.setZipVersionMade(version);
+		assertEquals(version, builder.getZipVersionMade());
 
 		ZipCentralDirectoryFileEntry fileEntry = builder.build();
 		assertEquals(platform, fileEntry.getPlatformMade());
@@ -238,6 +252,14 @@ public class ZipCentralDirectoryFileEntryTest {
 		assertEquals(internalFileAttributes, fileEntry.getInternalFileAttributes());
 		assertEquals(externalFileAttributes, fileEntry.getExternalFileAttributes());
 		assertArrayEquals(commentBytes, fileEntry.getCommentBytes());
+	}
+
+	@Test
+	public void testNoFileName() {
+		Builder builder = ZipCentralDirectoryFileEntry.builder();
+		ZipCentralDirectoryFileEntry entry = builder.build();
+		assertNull(entry.getFileName());
+		assertNull(entry.getFileNameBytes());
 	}
 
 	@Test

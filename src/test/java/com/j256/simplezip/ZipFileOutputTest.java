@@ -20,16 +20,15 @@ import java.util.Arrays;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import org.junit.Test;
 
+import com.j256.simplezip.format.CompressionMethod;
+import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipCentralDirectoryEnd;
 import com.j256.simplezip.format.ZipCentralDirectoryEndInfo;
 import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
 import com.j256.simplezip.format.ZipCentralDirectoryFileInfo;
-import com.j256.simplezip.format.CompressionMethod;
-import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 import com.j256.simplezip.format.ZipFileHeader.Builder;
 

@@ -292,8 +292,8 @@ public class ZipCentralDirectoryFileEntry {
 	 * Builder for the {@link ZipCentralDirectoryFileEntry}.
 	 */
 	public static class Builder {
-		private int versionMade = ZipVersion.detectVersion().getValue();
-		private int versionNeeded = ZipVersion.V1_0.getValue();
+		private int versionMade;
+		private int versionNeeded;
 		private int generalPurposeFlags;
 		private int compressionMethod;
 		private int lastModifiedTime;
@@ -308,6 +308,13 @@ public class ZipCentralDirectoryFileEntry {
 		private byte[] fileNameBytes;
 		private byte[] extraFieldBytes;
 		private byte[] commentBytes;
+
+		public Builder() {
+			setZipVersionMade(ZipVersion.detectVersion());
+			setPlatformMade(Platform.detectPlatform());
+			this.versionNeeded = ZipVersion.V1_0.getValue();
+			setExternalFileAttributes(ExternalFileAttributesUtils.UNIX_READ_WRITE_PERMISSIONS);
+		}
 
 		/**
 		 * Create a builder from an existing directory-end
@@ -378,19 +385,19 @@ public class ZipCentralDirectoryFileEntry {
 			this.versionMade = versionMade;
 		}
 
-		public Platform getPlatform() {
+		public Platform getPlatformMade() {
 			return Platform.fromValue((versionMade >> 8) & 0xFF);
 		}
 
-		public void setPlatform(Platform platform) {
+		public void setPlatformMade(Platform platform) {
 			this.versionMade = ((this.versionMade & 0xFF) | (platform.getValue() << 8));
 		}
 
-		public ZipVersion getZipVersion() {
+		public ZipVersion getZipVersionMade() {
 			return ZipVersion.fromValue(versionMade & 0xFF);
 		}
 
-		public void setZipVersion(ZipVersion version) {
+		public void setZipVersionMade(ZipVersion version) {
 			this.versionMade = ((this.versionMade & 0xFF00) | version.getValue());
 		}
 

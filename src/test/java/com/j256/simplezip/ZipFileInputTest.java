@@ -49,6 +49,7 @@ public class ZipFileInputTest {
 
 		InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
 		ZipFileInput input = new ZipFileInput(inputStream);
+		assertEquals(0, input.getNumBytesRead());
 
 		assertNull(input.getCurrentFileName());
 		ZipFileHeader header = input.readFileHeader();
@@ -93,6 +94,7 @@ public class ZipFileInputTest {
 		System.out.println("end: num-records " + end.getNumRecordsTotal() + ", size " + end.getDirectorySize());
 
 		input.close();
+		assertNotEquals(0, input.getNumBytesRead());
 	}
 
 	@Test(expected = FileNotFoundException.class)

@@ -535,59 +535,23 @@ A Zip file is made up of the following pieces of information.
 @node Examples, License, Maven, Top
 @chapter Example Code
 
-@cindex examples of code
-@cindex code examples
 Here is some example code to help you get going with SimpleZip.  I often find that code is the best documentation of how
 to get something working.  Please feel free to suggest additional example packages for inclusion here.  Source code submissions
 are welcome as long as you don't get piqued if we don't chose your's.
 
-@cindex simple input example
-Simple input example:
+@cindex examples of code
+@cindex code examples
 
-@example
-ZipFileInput zipInput = new ZipFileInput(input);
-// readFileHeader() will return null when no more files to read
-ZipFileHeader header = zipInput.readFileHeader();
-byte[] buffer = new byte[4096];
-// read into buffers or via InputStream until it returns -1
-long numRead = zipInput.readFileDataPart(buffer);
-...
-// can also call readFileData(File) to write out a file from input
-// NOTE: descriptor can be null if none in the zip
-DataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
-// read in the optional central-directory file-headers, null when no more
-CentralDirectoryFileHeader dirHeader = zipInput.readDirectoryFileHeader();
-// read in the optional central-directory end data
-CentralDirectoryEnd end = zipInput.readDirectoryEnd();
-zipInput.close();
-@end example
+@itemize @bullet
 
-@cindex simple output example
-Simple output example:
+@cindex simple zip output example
+@anchor{simple zip output example}
+@item SimpleZipOutput.java -- 
 
-@example
-ZipFileOutput zipOutput = new ZipFileOutput(output);
-ZipFileHeader header = ZipFileHeader.builder()
-	.withFileName("hello.txt")
-	.withGeneralPurposeFlags(GeneralPurposeFlag.DEFLATING_MAXIMUM)
-	.withLastModifiedDateTime(LocalDateTime.now())
-	.build();
-// write a file-header to the zip-file
-zipOutput.writeFileHeader(header);
-// add optional central-directory info to the file such as text flag
-// this will be written to disk at the end of the zip
-zipOutput.addDirectoryFileInfo(
-	CentralDirectoryFileInfo.builder().withTextFile(true).build());
-// write file data from file, buffer, or InputStream
-zipOutput.writeFileDataPart(fileBytes);
-...
-// must be called after all file parts written
-zipOutput.finishFileData();
-// can write more file-headers and data here
-...
-// this writes the recorded central-directory data and closes tbe zip
-zipOutput.close();
-@end example
+This example writes out a zip file with a file, a directory, and a file inside of that directory.
+See the @uref{http://256stuff.com/sources/simplezip/docs/example-simple, source code}.
+
+@end itemize
 
 @c ----------------------------------------------------------------
 @node License, Index of Concepts, Examples, Top

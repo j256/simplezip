@@ -252,6 +252,10 @@ public class ZipFileHeader {
 		private byte[] fileNameBytes;
 		private byte[] extraFieldBytes;
 
+		public Builder() {
+			setLastModifiedDateTime(LocalDateTime.now());
+		}
+
 		public ZipFileHeader build() {
 			return new ZipFileHeader(versionNeeded, generalPurposeFlags, compressionMethod, lastModifiedTime,
 					lastModifiedDate, crc32, compressedSize, uncompressedSize, fileNameBytes, extraFieldBytes);

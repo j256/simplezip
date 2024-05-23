@@ -115,6 +115,7 @@ public class ZipCentralDirectoryFileInfo {
 			// detect and set the platform and version automatically
 			setMadePlatform(Platform.detectPlatform());
 			setMadeZipVersion(ZipVersion.detectVersion());
+			this.versionNeeded = ZipVersion.V1_0.getValue();
 		}
 
 		/**
@@ -266,6 +267,14 @@ public class ZipCentralDirectoryFileInfo {
 
 		public Builder withExternalFileAttributes(int externalFileAttributes) {
 			this.externalFileAttributes = externalFileAttributes;
+			return this;
+		}
+
+		/**
+		 * Add the attributes parameter to the existing externalFileAttributes.
+		 */
+		public Builder addExternalFileAttributes(int attributes) {
+			this.externalFileAttributes |= attributes;
 			return this;
 		}
 

@@ -1,6 +1,9 @@
 1.1: ?/?/2024
 	* Fixed some of the logic to allow us to control all bytes in the output Zip.
+	* Fixed some of the logic which determined if a data-descriptor was necessary.
 	* Added ZipCentralDirectoryEndInfo to be able to control the end structure.
+	* Added ZipFileCopy example program which writes identical Zip files.
+	* Added some default values to couple of the structures that can be overridden.
 
 1.0: 5/22/2024
 	* Fixed a problem with early stream-closing.  Surprised I didn't catch this earlier.
