@@ -1,7 +1,7 @@
 package com.j256.simplezip.format;
 
 /**
- * Encoded as "version needed by" in the files.
+ * Encoded as "version needed" and "version made" in the files.
  * 
  * @author graywatson
  */
