@@ -4,3 +4,6 @@
 	- then go back and annotate the entries already recorded in the stream
 - need a validation process to check all data and report back if file-header or other crc's or sanity checks is off
 - add a position-able input-stream and be able to read in the central directory entries before we read the file entries
+- be able to add additional encoder/decoders
+- maybe a writeDirectoryEntry() call to ZipFileOutput
+- do we need the ability to adjust the size+crc in the header after they've been cached/buffered?

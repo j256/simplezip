@@ -42,6 +42,9 @@ public enum CompressionMethod {
 		this.value = value;
 	}
 
+	/**
+	 * Convert the value into the compression-method.
+	 */
 	public static CompressionMethod fromValue(int value) {
 		for (CompressionMethod method : values()) {
 			if (method.value == value) {
