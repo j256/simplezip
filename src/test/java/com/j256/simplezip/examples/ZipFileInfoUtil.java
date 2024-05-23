@@ -37,7 +37,7 @@ public class ZipFileInfoUtil {
 				continue;
 			}
 
-			// open up our zip file as a File
+			// open up our Zip file
 			try (ZipFileInput zipInput = new ZipFileInput(file);) {
 				System.out.println("Information about " + file + ":");
 				displayFileEntries(zipInput);
@@ -48,10 +48,11 @@ public class ZipFileInfoUtil {
 	}
 
 	/**
-	 * Display each of the headers with its information. It does not process any of the file data.
+	 * Display each of the file headers with its details. It does not process any of the file data.
 	 */
 	private void displayFileEntries(ZipFileInput zipInput) throws IOException {
 		while (true) {
+			// read the next file file-header, null when done
 			ZipFileHeader fileHeader = zipInput.readFileHeader();
 			if (fileHeader == null) {
 				break;
@@ -71,6 +72,7 @@ public class ZipFileInfoUtil {
 			System.out.println(INDENT + INDENT + "extra-bytes: " + fileHeader.getExtraFieldBytes().length);
 
 			zipInput.skipFileData();
+			// spit out the optional data-descriptor
 			ZipDataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
 			if (dataDescriptor != null) {
 				System.out.println(INDENT + INDENT + "data-descriptor:");
@@ -86,6 +88,7 @@ public class ZipFileInfoUtil {
 	 */
 	private void displayCentralDirectoryFileEntries(ZipFileInput zipInput) throws IOException {
 		while (true) {
+			// read the next file-entry, null when done
 			ZipCentralDirectoryFileEntry dirEntry = zipInput.readDirectoryFileEntry();
 			if (dirEntry == null) {
 				break;
@@ -117,6 +120,9 @@ public class ZipFileInfoUtil {
 		}
 	}
 
+	/**
+	 * Read in the Zip end structure.
+	 */
 	private void displayCentralDirectoryEnd(ZipFileInput zipInput) throws IOException {
 		ZipCentralDirectoryEnd dirEnd = zipInput.readDirectoryEnd();
 		System.out.println(INDENT + "directory-end:");
@@ -129,6 +135,9 @@ public class ZipFileInfoUtil {
 		System.out.println(INDENT + INDENT + "comment: " + dirEnd.getComment());
 	}
 
+	/**
+	 * Print sizes and the compression reduction.
+	 */
 	private void printSizes(String indent, int compressed, int uncompressed) {
 		float reduction = 0;
 		if (uncompressed != 0) {

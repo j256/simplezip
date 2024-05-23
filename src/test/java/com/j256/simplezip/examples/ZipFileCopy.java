@@ -37,15 +37,22 @@ public class ZipFileCopy {
 			return;
 		}
 
-		// open up our zip file as a File
+		// open up our Zip data from the input file
 		ZipFileInput zipInput = new ZipFileInput(inFile);
+		// write out our output Zip file
 		File outFile = new File(inFile.getPath() + ".out");
 		ZipFileOutput zipOutput = new ZipFileOutput(outFile);
+		// copy all of the file entries from the input to the output
 		copyFileEntries(zipInput, zipOutput);
+		// assign the directory entries
 		assignDirectoryFileInfo(zipInput, zipOutput);
+		// read the entire Zip input file so we can show how many bytes were read
 		zipInput.readToEndOfZip();
+		// close the input
 		zipInput.close();
+		// close the output which writes the central-directory and zip end
 		zipOutput.close();
+
 		System.out.println("Read " + zipInput.getNumBytesRead() + " bytes from " + inFile);
 		System.out.println("Wrote " + zipOutput.getNumBytesWritten() + " bytes to " + outFile);
 	}
@@ -55,13 +62,15 @@ public class ZipFileCopy {
 	 */
 	private void copyFileEntries(ZipFileInput zipInput, ZipFileOutput zipOutput) throws IOException {
 		while (true) {
+			// read in the next header
 			ZipFileHeader fileHeader = zipInput.readFileHeader();
 			if (fileHeader == null) {
 				break;
 			}
 
+			// write out the header
 			zipOutput.writeFileHeader(fileHeader);
-			// copy raw bytes from the input to the output
+			// copy raw bytes from the input zip stream to the output zip stream, no encoding necessary
 			try (InputStream fileDataInput = zipInput.openFileDataInputStream(true);
 					OutputStream fileDataOUtput = zipOutput.openFileDataOutputStream(true);) {
 				IoUtils.copyStream(fileDataInput, fileDataOUtput);
@@ -71,11 +80,13 @@ public class ZipFileCopy {
 
 	private void assignDirectoryFileInfo(ZipFileInput zipInput, ZipFileOutput zipOutput) throws IOException {
 		while (true) {
+			// read in the central-directory entries from in the input
 			ZipCentralDirectoryFileEntry dirHeader = zipInput.readDirectoryFileEntry();
 			if (dirHeader == null) {
 				break;
 			}
 
+			// copy a couple of fields from the input central-directory and them to the output
 			ZipCentralDirectoryFileInfo fileInfo =
 					ZipCentralDirectoryFileInfo.Builder.fromCentralDirectoryFileEntry(dirHeader).build();
 			zipOutput.addDirectoryFileInfo(dirHeader.getFileName(), fileInfo);
