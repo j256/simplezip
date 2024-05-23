@@ -33,7 +33,7 @@ The following code runs through all of the Zip-file parts.  `input` could be a f
 	ZipDataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
 	// repeat reading file headers and data until readFileHeader() returns null
 	// read in the optional central-directory file-headers, null when no more
-	ZipCentralDirectoryFileEntry dirHeader = zipInput.readDirectoryFileEntry();
+	ZipCentralDirectoryFileEntry dirEntry = zipInput.readDirectoryFileEntry();
 	// read in the optional central-directory end data
 	ZipCentralDirectoryEnd end = zipInput.readDirectoryEnd();
 	zipInput.close();
@@ -47,7 +47,6 @@ or `OutputStream`.
 	ZipFileHeader header = ZipFileHeader.builder()
 		.withFileName("hello.txt")
 		.withGeneralPurposeFlags(GeneralPurposeFlag.DEFLATING_MAXIMUM)
-		.withLastModifiedDateTime(LocalDateTime.now())
 		.build();
 	// write a file-header to the zip-file
 	zipOutput.writeFileHeader(header);
