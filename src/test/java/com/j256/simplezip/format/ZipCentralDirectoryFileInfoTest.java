@@ -170,36 +170,32 @@ public class ZipCentralDirectoryFileInfoTest {
 		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
 
 		Platform platform = Platform.UNIX;
-		builder.setMadePlatform(platform);
-		assertEquals(platform, builder.getMadePlatform());
+		builder.setPlatformMade(platform);
+		assertEquals(platform, builder.getPlatformMade());
 		platform = Platform.MACINTOSH;
-		builder.withMadePlatform(platform);
-		assertEquals(platform, builder.getMadePlatform());
-		ZipVersion version = ZipVersion.V4_5;
-		builder.setMadeZipVersion(version);
-		version = ZipVersion.V2_0;
-		builder.withMadeZipVersion(version);
-		assertEquals(version, builder.getMadeZipVersion());
+		builder.withPlatformMade(platform);
+		assertEquals(platform, builder.getPlatformMade());
+		builder.setVersionMadeMajorMinor(4, 5);
+		builder.withVersionMadeMajorMinor(2, 0);
+		assertEquals(20, builder.getVersionMadeMajorMinor());
 
 		ZipCentralDirectoryFileInfo fileInfo = builder.build();
-		assertEquals(platform, fileInfo.getMadePlatform());
-		assertEquals(version, fileInfo.getMadeZipVersion());
+		assertEquals(platform, fileInfo.getPlatformMade());
+		assertEquals(20, fileInfo.getVersionMadeMajorMinor());
 	}
 
 	@Test
 	public void testNeededVersion() {
 		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
 
-		ZipVersion version = ZipVersion.V4_6;
-		builder.setNeededZipVersion(version);
-		version = ZipVersion.V2_0;
-		builder.withNeededZipVersion(version);
-		assertEquals(version, builder.getNeededZipVersion());
-		assertEquals(version.getValue(), builder.getVersionNeeded());
+		builder.setVersionNeededMajorMinor(4, 5);
+		int major = 2;
+		int minor = 0;
+		builder.withVersionNeededMajorMinor(major, minor);
+		assertEquals((major * 10 + minor), builder.getVersionNeeded());
 
 		ZipCentralDirectoryFileInfo fileInfo = builder.build();
-		assertEquals(version, fileInfo.getNeededZipVersion());
-		assertEquals(version.getValue(), fileInfo.getVersionNeeded());
+		assertEquals((major * 10 + minor), fileInfo.getVersionNeeded());
 		assertEquals("2.0", fileInfo.getVersionNeededString());
 	}
 

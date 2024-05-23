@@ -149,10 +149,19 @@ public class ZipCentralDirectoryFileEntry {
 	}
 
 	/**
-	 * Extract the needed version from the version-made information.
+	 * Extract the version portion from the version-made information.
 	 */
-	public ZipVersion getZipVersionMade() {
-		return ZipVersion.fromValue(versionMade & 0xFF);
+	public int getVersionMadeMajorMinor() {
+		return (versionMade & 0xFF);
+	}
+
+	/**
+	 * Get the version portion of versionMade as a #.# string.
+	 */
+	public String getVersionMadeMajorMinorString() {
+		int high = (versionMade & 0xFF) / 10;
+		int low = (versionMade & 0xFF) % 10;
+		return high + "." + low;
 	}
 
 	public int getVersionNeeded() {
@@ -160,10 +169,12 @@ public class ZipCentralDirectoryFileEntry {
 	}
 
 	/**
-	 * Get the version needed value as an enum;
+	 * Get the version needed value as a #.# string.
 	 */
-	public ZipVersion getZipVersionNeeded() {
-		return ZipVersion.fromValue(versionNeeded);
+	public String getVersionNeededMajorMinorString() {
+		int high = (versionNeeded & 0xFF) / 10;
+		int low = (versionNeeded & 0xFF) % 10;
+		return high + "." + low;
 	}
 
 	public int getGeneralPurposeFlags() {
@@ -310,9 +321,10 @@ public class ZipCentralDirectoryFileEntry {
 		private byte[] commentBytes;
 
 		public Builder() {
-			setZipVersionMade(ZipVersion.detectVersion());
+			// XXX: should we calculate this based on features used?
+			setVersionMadeMajorMinor(2, 0);
 			setPlatformMade(Platform.detectPlatform());
-			this.versionNeeded = ZipVersion.V1_0.getValue();
+			setVersionMadeMajorMinor(1, 0);
 			setExternalFileAttributes(ExternalFileAttributesUtils.UNIX_READ_WRITE_PERMISSIONS);
 		}
 
@@ -393,12 +405,15 @@ public class ZipCentralDirectoryFileEntry {
 			this.versionMade = ((this.versionMade & 0xFF) | (platform.getValue() << 8));
 		}
 
-		public ZipVersion getZipVersionMade() {
-			return ZipVersion.fromValue(versionMade & 0xFF);
+		/**
+		 * Extract the version portion of the version-made field.
+		 */
+		public int getVersionMadeMajorMinor() {
+			return (versionMade & 0xFF);
 		}
 
-		public void setZipVersionMade(ZipVersion version) {
-			this.versionMade = ((this.versionMade & 0xFF00) | version.getValue());
+		public void setVersionMadeMajorMinor(int major, int minor) {
+			this.versionMade = ((this.versionMade & 0xFF00) | (major * 10 + minor));
 		}
 
 		public int getVersionNeeded() {
@@ -407,6 +422,10 @@ public class ZipCentralDirectoryFileEntry {
 
 		public void setVersionNeeded(int versionNeeded) {
 			this.versionNeeded = versionNeeded;
+		}
+
+		public void setVersionNeededMajorMinor(int major, int minor) {
+			this.versionNeeded = (major * 10 + minor);
 		}
 
 		public int getGeneralPurposeFlags() {

@@ -116,10 +116,19 @@ public class ZipFileHeader {
 	}
 
 	/**
-	 * Get the version needed as a processed enum.
+	 * Extract the version portion from the version-made information.
 	 */
-	public ZipVersion getZipVersionNeeded() {
-		return ZipVersion.fromValue(versionNeeded);
+	public int getVersionNeededMajorMinor() {
+		return (versionNeeded & 0xFF);
+	}
+
+	/**
+	 * Return the version needed in the from "#.#".
+	 */
+	public String getVersionNeededMajorMinorString() {
+		int high = (versionNeeded & 0xFF) / 10;
+		int low = (versionNeeded & 0xFF) % 10;
+		return high + "." + low;
 	}
 
 	public int getGeneralPurposeFlags() {
@@ -305,6 +314,15 @@ public class ZipFileHeader {
 
 		public Builder withVersionNeeded(int versionNeeded) {
 			this.versionNeeded = versionNeeded;
+			return this;
+		}
+
+		public void setVersionNeededMajorMinor(int major, int minor) {
+			this.versionNeeded = (major * 10 + minor);
+		}
+
+		public Builder withVersionNeededMajorMinor(int major, int minor) {
+			setVersionNeededMajorMinor(major, minor);
 			return this;
 		}
 

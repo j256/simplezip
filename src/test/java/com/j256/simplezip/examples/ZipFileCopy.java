@@ -71,8 +71,8 @@ public class ZipFileCopy {
 			// write out the header
 			zipOutput.writeFileHeader(fileHeader);
 			// copy raw bytes from the input zip stream to the output zip stream, no encoding necessary
-			try (InputStream fileDataInput = zipInput.openFileDataInputStream(true);
-					OutputStream fileDataOUtput = zipOutput.openFileDataOutputStream(true);) {
+			try (InputStream fileDataInput = zipInput.openFileDataInputStream(false);
+					OutputStream fileDataOUtput = zipOutput.openFileDataOutputStream(false);) {
 				IoUtils.copyStream(fileDataInput, fileDataOUtput);
 			}
 		}
