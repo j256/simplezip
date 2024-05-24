@@ -7,39 +7,44 @@ package com.j256.simplezip.format;
  */
 public enum Platform {
 
-	MSDOS_AND_OS2(0),
-	AMIGA(1),
-	OPENVMS(2),
-	UNIX(3),
-	VM_CMS(4),
-	ATARI_ST(5),
-	OS2_HPFS(6),
-	MACINTOSH(7),
-	Z_SYSTEM(8),
-	CPM(9),
-	WINDOWS(10),
-	MVS(11),
-	VSE(12),
-	ACORD(13),
-	VFAT(14),
-	ALT_MVS(15),
-	BEOS(16),
-	TANDEM(17),
-	OS400(18),
-	OSX(19),
-	OTHER(-1),
+	MSDOS_AND_OS2(0, "ms-dos"),
+	AMIGA(1, "amiga"),
+	OPENVMS(2, "openvms"),
+	UNIX(3, "unix"),
+	VM_CMS(4, "vm-cms"),
+	ATARI_ST(5, "atari"),
+	OS2_HPFS(6, "os2"),
+	MACINTOSH(7, "macintosh"),
+	Z_SYSTEM(8, "z-system"),
+	CPM(9, "cpm"),
+	WINDOWS(10, "windows"),
+	MVS(11, "mvs"),
+	VSE(12, "vse"),
+	ACORD(13, "acord"),
+	VFAT(14, "vfat"),
+	ALT_MVS(15, "mvs alt"),
+	BEOS(16, "beqs"),
+	TANDEM(17, "tandem"),
+	OS400(18, "os400"),
+	OSX(19, "osx"),
+	OTHER(-1, "other"),
 	// end
 	;
 
-	// XXX: prolly need string versions
 	private final int value;
+	private final String label;
 
-	private Platform(int value) {
+	private Platform(int value, String label) {
 		this.value = value;
+		this.label = label;
 	}
 
 	public int getValue() {
 		return value;
+	}
+
+	public String getLabel() {
+		return label;
 	}
 
 	/**
