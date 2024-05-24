@@ -12,6 +12,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -37,6 +39,33 @@ public class ZipFileHeaderTest {
 
 		Builder builder = ZipFileHeader.builder();
 		builder.setLastModifiedDateTime(input);
+		int date = builder.getLastModifiedDate();
+		int time = builder.getLastModifiedTime();
+		// coverage
+		builder.withLastModifiedDateTime(input);
+		ZipFileHeader header = builder.build();
+
+		LocalDateTime output = header.getLastModifiedDateTime();
+		System.out.println("last-mod date is: " + header.getLastModifiedDate());
+		System.out.println("last-mod time is: " + header.getLastModifiedTime());
+		assertEquals(input, output);
+		assertEquals(date, header.getLastModifiedDate());
+		assertEquals(time, header.getLastModifiedTime());
+	}
+
+	@Test
+	public void testDateTimeMillis() {
+		LocalDateTime input;
+		do {
+			input = LocalDateTime.now();
+			input = input.truncatedTo(ChronoUnit.SECONDS);
+		} while (input.getSecond() % 2 != 0);
+
+		ZonedDateTime zdt = input.atZone(ZoneId.systemDefault());
+		long millis = zdt.toInstant().toEpochMilli();
+
+		Builder builder = ZipFileHeader.builder();
+		builder.withLastModifiedDateTime(millis);
 		int date = builder.getLastModifiedDate();
 		int time = builder.getLastModifiedTime();
 		// coverage
@@ -101,6 +130,8 @@ public class ZipFileHeaderTest {
 		assertEquals(compressionMethodEnum, header.getCompressionMethodAsEnum());
 		assertEquals(compressionMethodEnum.getValue(), header.getCompressionMethod());
 		assertEquals(versionNeeded, header.getVersionNeeded());
+		assertEquals((versionNeeded & 0xFF), header.getVersionNeededMajorMinor());
+		assertEquals("24.0", header.getVersionNeededMajorMinorString());
 		assertEquals(generalPurposeFlags, header.getGeneralPurposeFlags());
 		assertEquals(lastModifiedFileTime, header.getLastModifiedTime());
 		assertEquals(lastModifiedFileDate, header.getLastModifiedDate());
@@ -147,6 +178,10 @@ public class ZipFileHeaderTest {
 	public void testBuildWith() {
 		ZipFileHeader.Builder builder = ZipFileHeader.builder();
 
+		builder.setVersionNeededMajorMinor(1, 7);
+		assertEquals(17, builder.getVersionNeeded());
+		builder.withVersionNeededMajorMinor(2, 3);
+		assertEquals(23, builder.getVersionNeeded());
 		int versionNeeded = 5251312;
 		builder.withVersionNeeded(versionNeeded);
 		assertEquals(versionNeeded, builder.getVersionNeeded());

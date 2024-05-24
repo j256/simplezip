@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,11 +26,11 @@ import java.util.zip.ZipOutputStream;
 
 import org.junit.Test;
 
+import com.j256.simplezip.format.CompressionMethod;
+import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipCentralDirectoryEnd;
 import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
-import com.j256.simplezip.format.CompressionMethod;
 import com.j256.simplezip.format.ZipDataDescriptor;
-import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipFileHeader;
 import com.j256.simplezip.format.ZipFileHeader.Builder;
 
@@ -49,6 +50,7 @@ public class ZipFileInputTest {
 
 		InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
 		ZipFileInput input = new ZipFileInput(inputStream);
+		assertFalse(input.assignDirectoryFileEntryPermissions());
 		assertEquals(0, input.getNumBytesRead());
 
 		assertNull(input.getCurrentFileName());
@@ -424,23 +426,25 @@ public class ZipFileInputTest {
 		File file1 = new File(fileName1);
 		file1.getParentFile().mkdirs();
 		file1.deleteOnExit();
-		input.readFileData(file1);
+		input.readFileData(file1.getPath());
 		byte[] output = readFileToBytes(file1);
 		assertArrayEquals(bytes, output);
+		try {
+			input.assignDirectoryFileEntryPermissions();
+			fail("should have thrown");
+		} catch (IllegalStateException ise) {
+			// ignore
+		}
 
 		assertNotNull(input.readFileHeader());
-		File file2 = new File(fileName2);
-		file2.getParentFile().mkdirs();
-		file2.deleteOnExit();
-		input.readFileData(file2.getPath());
-		output = readFileToBytes(file2);
-		assertArrayEquals(bytes, output);
+		byte[] buffer = new byte[1024];
+		int num = input.readFileDataPart(buffer);
+		assertArrayEquals(bytes, Arrays.copyOf(buffer, num));
 
 		assertNull(input.readFileHeader());
-		assertTrue(input.readDirectoryFileEntriesAndAssignPermissions());
+		assertFalse(input.readDirectoryFileEntriesAndAssignPermissions());
 
 		file1.delete();
-		file2.delete();
 
 		input.close();
 	}

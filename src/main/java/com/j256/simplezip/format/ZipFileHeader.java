@@ -2,7 +2,9 @@ package com.j256.simplezip.format;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Set;
 import java.util.zip.CRC32;
@@ -175,8 +177,10 @@ public class ZipFileHeader {
 	 * Return last modified time as a string in 24-hour HH:MM:SS format.
 	 */
 	public String getLastModifiedTimeString() {
-		String result = String.format("%d:%02d:%02d", (lastModifiedTime >> 11), ((lastModifiedTime >> 5) & 0x3F),
-				((lastModifiedTime & 0x1F) * 2));
+		int hour = (lastModifiedTime >> 11);
+		int minute = ((lastModifiedTime >> 5) & 0x3F);
+		int second = ((lastModifiedTime & 0x1F) * 2);
+		String result = String.format("%d:%02d:%02d", hour, minute, second);
 		return result;
 	}
 
@@ -188,8 +192,10 @@ public class ZipFileHeader {
 	 * Return last modified date as a string in YYYY.mm.dd format.
 	 */
 	public String getLastModifiedDateString() {
-		String result = String.format("%d.%02d.%02d", (((lastModifiedDate >> 9) & 0x7F) + 1980),
-				((lastModifiedDate >> 5) & 0x0F), (lastModifiedDate & 0x1F));
+		int year = ((lastModifiedDate >> 9) & 0x7F) + 1980;
+		int month = ((lastModifiedDate >> 5) & 0x0F);
+		int day = (lastModifiedDate & 0x1F);
+		String result = String.format("%d.%02d.%02d", year, month, day);
 		return result;
 	}
 
@@ -197,9 +203,13 @@ public class ZipFileHeader {
 	 * Return last modified date and time as a {@link LocalDateTime}.
 	 */
 	public LocalDateTime getLastModifiedDateTime() {
-		LocalDateTime localDateTime = LocalDateTime.of((((lastModifiedDate >> 9) & 0x7F) + 1980),
-				((lastModifiedDate >> 5) & 0x0F), (lastModifiedDate & 0x1F), (lastModifiedTime >> 11),
-				((lastModifiedTime >> 5) & 0x3F), ((lastModifiedTime & 0x1F) * 2));
+		int year = ((lastModifiedDate >> 9) & 0x7F) + 1980;
+		int month = ((lastModifiedDate >> 5) & 0x0F);
+		int day = (lastModifiedDate & 0x1F);
+		int hour = (lastModifiedTime >> 11);
+		int minute = ((lastModifiedTime >> 5) & 0x3F);
+		int second = ((lastModifiedTime & 0x1F) * 2);
+		LocalDateTime localDateTime = LocalDateTime.of(year, month, day, hour, minute, second);
 		return localDateTime;
 	}
 
@@ -436,27 +446,45 @@ public class ZipFileHeader {
 			return this;
 		}
 
+		/**
+		 * Last modified time in the MS-DOS time format.
+		 */
 		public int getLastModifiedTime() {
 			return lastModifiedTime;
 		}
 
+		/**
+		 * Last modified time in the MS-DOS time format.
+		 */
 		public void setLastModifiedTime(int lastModifiedTime) {
 			this.lastModifiedTime = lastModifiedTime;
 		}
 
+		/**
+		 * Last modified time in the MS-DOS time format.
+		 */
 		public Builder withLastModifiedTime(int lastModifiedTime) {
 			this.lastModifiedTime = lastModifiedTime;
 			return this;
 		}
 
+		/**
+		 * Last modified date in the MS-DOS date format.
+		 */
 		public int getLastModifiedDate() {
 			return lastModifiedDate;
 		}
 
+		/**
+		 * Last modified date in the MS-DOS date format.
+		 */
 		public void setLastModifiedDate(int lastModifiedDate) {
 			this.lastModifiedDate = lastModifiedDate;
 		}
 
+		/**
+		 * Last modified date in the MS-DOS date format.
+		 */
 		public Builder withLastModifiedDate(int lastModifiedDate) {
 			this.lastModifiedDate = lastModifiedDate;
 			return this;
@@ -467,10 +495,14 @@ public class ZipFileHeader {
 		 * resolution so some normalization will occur.
 		 */
 		public void setLastModifiedDateTime(LocalDateTime lastModifiedDateTime) {
-			this.lastModifiedDate = (((lastModifiedDateTime.getYear() - 1980) << 9)
-					| (lastModifiedDateTime.getMonthValue() << 5) | (lastModifiedDateTime.getDayOfMonth()));
-			this.lastModifiedTime = ((lastModifiedDateTime.getHour() << 11) | (lastModifiedDateTime.getMinute() << 5)
-					| (lastModifiedDateTime.getSecond() / 2));
+			int yearPart = ((lastModifiedDateTime.getYear() - 1980) << 9);
+			int monthPart = (lastModifiedDateTime.getMonthValue() << 5);
+			int dayPart = lastModifiedDateTime.getDayOfMonth();
+			this.lastModifiedDate = (yearPart | monthPart | dayPart);
+			int hourPart = (lastModifiedDateTime.getHour() << 11);
+			int minutePart = (lastModifiedDateTime.getMinute() << 5);
+			int secondPart = (lastModifiedDateTime.getSecond() / 2);
+			this.lastModifiedTime = (hourPart | minutePart | secondPart);
 		}
 
 		/**
@@ -479,6 +511,25 @@ public class ZipFileHeader {
 		 */
 		public Builder withLastModifiedDateTime(LocalDateTime lastModifiedDateTime) {
 			setLastModifiedDateTime(lastModifiedDateTime);
+			return this;
+		}
+
+		/**
+		 * Set the lastModFileDate and lastModFileTime as an epoch milliseconds. Warning, the time has a 2 second
+		 * resolution so some normalization will occur.
+		 */
+		public void setLastModifiedDateTime(long dateTimeMillis) {
+			LocalDateTime localDateTime =
+					Instant.ofEpochMilli(dateTimeMillis).atZone(ZoneId.systemDefault()).toLocalDateTime();
+			setLastModifiedDateTime(localDateTime);
+		}
+
+		/**
+		 * Set the lastModFileDate and lastModFileTime as an epoch milliseconds. Warning, the time has a 2 second
+		 * resolution so some normalization will occur.
+		 */
+		public Builder withLastModifiedDateTime(long dateTimeMillis) {
+			setLastModifiedDateTime(dateTimeMillis);
 			return this;
 		}
 

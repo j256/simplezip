@@ -256,6 +256,9 @@ public class ZipFileInput implements Closeable {
 		if (outputFileMap == null) {
 			return false;
 		}
+		if (currentDirHeader == null) {
+			throw new IllegalStateException("Need to call readNextHeader() before you can assign file permissions");
+		}
 		File file = outputFileMap.get(currentDirHeader.getFileName());
 		if (file == null) {
 			return false;

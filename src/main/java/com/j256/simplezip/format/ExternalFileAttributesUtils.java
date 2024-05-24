@@ -56,10 +56,11 @@ public class ExternalFileAttributesUtils {
 		} else {
 			permissions |= UNIX_REGULAR_FILE;
 		}
+		if (useJavaAttributes) {
+			permissions |= extractJavaFileAttributes(file);
+			return permissions;
+		}
 		try {
-			if (useJavaAttributes) {
-				throw new UnsupportedOperationException("simulated for testing");
-			}
 			// try to read in the posix permissions
 			Path path = FileSystems.getDefault().getPath(file.getPath());
 			Set<PosixFilePermission> perms = Files.getPosixFilePermissions(path);
@@ -74,7 +75,18 @@ public class ExternalFileAttributesUtils {
 	 * Set the permissions on an output file.
 	 */
 	public static void assignToFile(File file, int permissions) {
+		assignToFile(file, permissions, false);
+	}
+
+	/**
+	 * Set the permissions on an output file. This is exposed mostly for testing purposes.
+	 */
+	public static void assignToFile(File file, int permissions, boolean useJavaAttributes) {
 		if (!file.exists()) {
+			return;
+		}
+		if (useJavaAttributes) {
+			assignJavaFileAttributes(file, permissions);
 			return;
 		}
 		try {
@@ -102,6 +114,9 @@ public class ExternalFileAttributesUtils {
 		return assignUnixAttributes(attributes, (unixFileAttributes << 16));
 	}
 
+	/**
+	 * Assign the unix portion of the external file attributes.
+	 */
 	public static int assignUnixAttributes(int attributes, int unixFileAttributes) {
 		attributes = ((attributes & MS_DOS_EXTERNAL_ATTRIBUTES_MASK) | unixFileAttributes);
 		return attributes;

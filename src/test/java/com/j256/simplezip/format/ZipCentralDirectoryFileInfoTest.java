@@ -55,6 +55,7 @@ public class ZipCentralDirectoryFileInfoTest {
 		ZipCentralDirectoryFileInfo fileInfo = builder.build();
 		assertEquals(versionMade, fileInfo.getVersionMade());
 		assertEquals(versionNeeded, fileInfo.getVersionNeeded());
+		assertEquals((versionNeeded & 0xFF), fileInfo.getVersionNeededMajorMinor());
 		assertEquals(diskNumberStart, fileInfo.getDiskNumberStart());
 		assertEquals(internalFileAttributes, fileInfo.getInternalFileAttributes());
 		assertEquals(externalFileAttributes, fileInfo.getExternalFileAttributes());
@@ -90,6 +91,8 @@ public class ZipCentralDirectoryFileInfoTest {
 		assertEquals(internalFileAttributes, builder.getInternalFileAttributes());
 		int externalFileAttributes = 56357634;
 		builder.withExternalFileAttributes(externalFileAttributes);
+		builder.addExternalFileAttributes(1);
+		externalFileAttributes |= 1;
 		assertEquals(externalFileAttributes, builder.getExternalFileAttributes());
 		assertNull(builder.getComment());
 		String comment = "fewjpfjewp";
@@ -182,6 +185,7 @@ public class ZipCentralDirectoryFileInfoTest {
 		ZipCentralDirectoryFileInfo fileInfo = builder.build();
 		assertEquals(platform, fileInfo.getPlatformMade());
 		assertEquals(20, fileInfo.getVersionMadeMajorMinor());
+		assertEquals("2.0", fileInfo.getVersionMadeMajorMinorString());
 	}
 
 	@Test
@@ -196,7 +200,7 @@ public class ZipCentralDirectoryFileInfoTest {
 
 		ZipCentralDirectoryFileInfo fileInfo = builder.build();
 		assertEquals((major * 10 + minor), fileInfo.getVersionNeeded());
-		assertEquals("2.0", fileInfo.getVersionNeededString());
+		assertEquals("2.0", fileInfo.getVersionNeededMajorMinorString());
 	}
 
 	@Test

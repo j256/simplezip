@@ -55,7 +55,7 @@ public class ZipCentralDirectoryFileInfo {
 	/**
 	 * Get the version made value as a #.# string.
 	 */
-	public String getVersionMadeString() {
+	public String getVersionMadeMajorMinorString() {
 		int high = (versionMade & 0xFF) / 10;
 		int low = (versionMade & 0xFF) % 10;
 		return high + "." + low;
@@ -75,7 +75,7 @@ public class ZipCentralDirectoryFileInfo {
 	/**
 	 * Get the version needed value as a #.# string.
 	 */
-	public String getVersionNeededString() {
+	public String getVersionNeededMajorMinorString() {
 		int high = (versionNeeded & 0xFF) / 10;
 		int low = (versionNeeded & 0xFF) % 10;
 		return high + "." + low;
