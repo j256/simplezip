@@ -1,5 +1,6 @@
 package com.j256.simplezip.format;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.Instant;
@@ -299,6 +300,17 @@ public class ZipFileHeader {
 		}
 
 		/**
+		 * Initialize a builder with the last-modified date/time and file-name from a disk file. It uses the
+		 * {@link File#getPath()} as the file-name.
+		 */
+		public static Builder fromFrom(File file) {
+			Builder builder = new Builder();
+			builder.setLastModifiedDateTime(file.lastModified());
+			builder.fileNameBytes = file.getPath().getBytes();
+			return builder;
+		}
+
+		/**
 		 * Clear all fields in the builder. This does set a couple of default fields.
 		 */
 		public void reset() {
@@ -530,6 +542,23 @@ public class ZipFileHeader {
 		 */
 		public Builder withLastModifiedDateTime(long dateTimeMillis) {
 			setLastModifiedDateTime(dateTimeMillis);
+			return this;
+		}
+
+		/**
+		 * Set the lastModFileDate and lastModFileTime from epoch milliseconds last-modified value from the File.
+		 * Warning, the time has a 2 second resolution so some normalization will occur.
+		 */
+		public void setLastModifiedDateTime(File file) {
+			setLastModifiedDateTime(file.lastModified());
+		}
+
+		/**
+		 * Set the lastModFileDate and lastModFileTime from epoch milliseconds last-modified value from the File.
+		 * Warning, the time has a 2 second resolution so some normalization will occur.
+		 */
+		public Builder withLastModifiedDateTime(File file) {
+			setLastModifiedDateTime(file);
 			return this;
 		}
 

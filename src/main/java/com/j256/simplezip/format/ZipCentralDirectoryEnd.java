@@ -55,7 +55,6 @@ public class ZipCentralDirectoryEnd {
 		if (signature != EXPECTED_SIGNATURE) {
 			return null;
 		}
-		// XXX: need to throw if not directory-end or validation issue
 		builder.diskNumber = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.diskNumber");
 		builder.diskNumberStart = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.diskNumberStart");
 		builder.numRecordsOnDisk = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.numRecordsOnDisk");

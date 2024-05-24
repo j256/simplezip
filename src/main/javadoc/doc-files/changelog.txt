@@ -1,6 +1,8 @@
 1.2: 5/??/2024
-	* Removed the ZipVersion which seemed artificial and replaced with major/minor numbers.
+	* Removed the ZipVersion which seemed artificial.  Replaced with major/minor numbers.
 	* Some method renaming about the version-needed and version-made getters and setters.
+	* Renamed the ZipFileOutput.enableBufferedOutput() method to enableFileBuffering().
+	* Added some methods to extra the ZipFileHeader and the ZipCentralDirectoryFileInfo fields from a File.
 
 1.1: 5/23/2024
 	* Fixed some of the logic to allow us to control all bytes in the output Zip.

@@ -129,9 +129,9 @@ For more extensive instructions, @pxref{Using}.
 @cindex how to download the jars
 @cindex downloading the jars
 @cindex where to get new jars
-To get started with SimpleZip, you will need to download the jar file.  The @uref{http://256stuff.com/sources/simplezip/releases/, SimpleZip
-release page} is the default repository but the jars are also available from the @uref{http://repo1.maven.org/maven2/com/j256/simplezip/,
-central maven repository}.
+To get started with SimpleZip, you will need to download the jar file.  The
+@uref{http://256stuff.com/sources/simplezip/releases/, SimpleZip release page} is the default repository but the jars
+are also available from the @uref{http://repo1.maven.org/maven2/com/j256/simplezip/, central maven repository}.
 
 The code works with Java 8 or later.
 
@@ -197,6 +197,9 @@ The header contains the following information for each file entry:
 @item extra field metadata bytes
 @end itemize
 
+The SimpleZip class representing the file-headser is
+@uref{https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipFileHeader.html, ZipFileHeader.java}.
+
 If the crc32, compressed size, or uncompressed size fields are 0 then a data-descriptor will be written after the
 file-data.  @xref{Data Descriptor}.
 
@@ -215,7 +218,7 @@ After reading the header you can then read in the file data.  You can have the @
 bytes from the Zip file out to a file-path string, @code{File}, or to an @code{OutputStream}.
 
 @example
-// read file data and write to the file specified by output-path, typically from header
+// read data and write to file output-path, typically from header
 zipInput.readFileData(fileHeader.getFileName());
 // or to a file directly
 zipInput.readFileData(new File(fileHeader.getFileName()));
@@ -224,8 +227,8 @@ ByteArrayOutputStream baos = new ByteArrayOutputStream();
 zipInput.readFileData(baos);
 @end example
 
-You can also have @code{ZipFileInput} read file data as a series of buffers.  You should read until it calls returns
-EOF (-1).
+You can also have @code{ZipFileInput} read file data as a series of buffers.  You should read until the read method
+returns EOF (-1).
 
 @example
 byte[] buffer = new byte[4096];
@@ -241,7 +244,7 @@ By default you will be reading the decoded (i.e. decompressed) bytes.  You can a
 conversion using similar read methods with "raw" in the name.
 
 @example
-// read _raw_ file data and write to the file specified by output-path
+// read _raw_ file data and write to file output-path
 zipInput.readRawFileData(fileHeader.getFileName());
 @end example
 
@@ -250,24 +253,35 @@ either in encoded or raw mode.  Calls to @code{read()} on the @code{InputStream}
 on the @code{ZipFileInput}.
 
 @example
-// reading from the input stream calls through to the zipInput.readFileDataPart()
+// reading from input stream calls thru to zipInput.readFileDataPart()
 // or zipInput.readRawFileData() methods
-InputStream inputStream = zipInput.openFileDataInputStream(false /* not raw */);
+InputStream inputStream =
+    zipInput.openFileDataInputStream(false /* not raw */);
 @end example
 
 @anchor{Data Descriptor}
 @cindex data descriptor
 
 Once all of the data has been read for a particular file, there may be a @code{ZipDataDescriptor} entry written after
-the file data.  This is necessary in case the Zip file does not have the size or checksum/crc information at the start
-of the Zip file entry.
+the file data.  This entry is read automatically by the @code{ZipFileInput}.  This descriptor is necessary in case the
+Zip file does not have the size or checksum/crc information at the start of the Zip file entry.  @xref{File Buffering}.
 
 @example
-// return the data-descriptor after the file-data was read or null if none
-ZipDataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
+// return data-descriptor after file-data was read or null if none
+ZipDataDescriptor dataDesc = zipInput.getCurrentDataDescriptor();
 @end example
 
-Once all of the data has been read for a particular file, you can then read the next header.  @xref{Read File Headers}. 
+The descriptor holds the following information and is represented in SimpleZip by the class
+@uref{https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipDataDescriptor.html, ZipDataDescriptor.java}.
+
+@itemize @bullet
+@item crc32 checksum
+@item compressed size
+@item uncompressed size
+@end itemize
+
+Once all of the data has been read for a particular file and the optional descriptor has been read, you can then read
+the next header.  @xref{Read File Headers}. 
 
 @c ----------------------------------------------------------------
 @node Read Directory Entries, Writing, Read File Headers, Reading
@@ -275,17 +289,19 @@ Once all of the data has been read for a particular file, you can then read the 
 
 @cindex central-directory entries, reading
 
-After all of the file headers and data, there are a series of central-directory entries written at the end of the Zip
-file which record extra information about each of the files and also provide the locations of the file-headers and
-data inside of the Zip file.  You can read these entries if you would like.
+After all of the file headers and data in the Zip data, there are a series of central-directory entries written at the
+end of the Zip file which record extra information about each of the files and also provide the locations of the
+file-headers and data inside of the Zip file.  You can read these entries if you would like.
 
 @example
-// return the next central-directory entry or null if at the end
-ZipCentralDirectoryFileEntry directoryEntry = zipInput.readDirectoryFileEntry();
+// return next central-directory entry or null if none
+ZipCentralDirectoryFileEntry directoryEntry =
+    zipInput.readDirectoryFileEntry();
 @end example
 
-The central-directory file entries hold the following information for each file entry -- some of which are duplicates
-of the fields from the file-header.
+The central-directory file entries hold the following information for each file in the Zip.  Some of the fields are
+duplicates of the fields in the file-header.  The entries are represented by the class
+@uref{https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipCentralDirectoryFileEntry.html, ZipCentralDirectoryFileEntry.java}.
 
 @cindex external file attributes
 @cindex internal file attributes
@@ -311,11 +327,11 @@ of the fields from the file-header.
 @item comment bytes
 @end itemize
 
-If you have been writing out files using the @code{zipInput.readFileData(File)} method, you can modify the permissions
-on the file from the file-entry's using something like the following.
+If you have been reading file data directly out to disk using the @code{zipInput.readFileData(File)} method, you can
+modify the permissions on the file from the file-entry's using something like the following.
 
 @example
-// assign the file permissions according to the just read dir entry that matches
+// assign file permissions according to previous dir entry
 zipInput.assignDirectoryFileEntryPermissions();
 @end example
 
@@ -341,6 +357,9 @@ The end entry holds the following information.
 @item directory offset
 @item comment bytes
 @end itemize
+
+The SimpleZip class representing a central-directory end is
+@uref{https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipCentralDirectoryEnd.html, ZipCentralDirectoryEnd.java}.
 
 @c ----------------------------------------------------------------
 @node Writing, ZipFileOutput, Read Directory Entries, Using
@@ -369,24 +388,32 @@ file-path string, or stream it out via an @code{OutputStream}.
 // write to a file-path
 ZipFileOutput zipOutput = new ZipFileOutput("/tmp/file.zip");
 // write to a file
-ZipFileOutput zipOutput = new ZipFileOutput(new File("/tmp/file.zip"));
+ZipFileOutput zipOutput =
+    new ZipFileOutput(new File("/tmp/file.zip"));
 // write to an OutputStream
 ZipFileOutput zipOutput = new ZipFileOutput(outputStream);
 @end example
 
-@cindex buffered of file data
+@cindex file data, buffering
+@cindex buffered file data
+@cindex avoiding data descriptor
+@cindex data descriptor, avoiding
+@cindex no data descriptor
 
-The Zip file starts with a file-header which contains compressed-size and checksum information that may not be known
-ahead of time.  These fields can be left as 0 in which case @code{ZipFileOutput} will write out a
-@code{ZipDataDescriptor} after the file data.
+@anchor{File Buffering}
+
+The Zip file starts with a file-header which contains (among other things) the compressed-size and checksum information
+that may not be known ahead of time.  For files that are being deflated, these fields can be left as 0 in which case
+@code{ZipFileOutput} will write out a @code{ZipDataDescriptor} after the file data.
 
 However, you can also turn on the buffering the file-data so we can calculate the compressed-size and crc checksum
-information @emph{beforehand} writing out a file-header with the size and checksum information filled in, removing
-the need of a @code{ZipDataDescriptor}.
+information @emph{beforehand} writing out a file-header with the size and checksum information filled in, which
+removes the need for a @code{ZipDataDescriptor}.
 
 @example
 // turn on buffering
-zipOutput.enableBufferedOutput(1024 * 1024 /* maxSizeBuffered */, 100 * 1024 /* maxSizeInMemory */);
+zipOutput.enableFileBuffering(1024 * 1024 /* maxSizeBuffered */,
+    100 * 1024 /* maxSizeInMemory */);
 @end example
 
 See the Javadocs for this method for more information.
@@ -460,9 +487,10 @@ either in encoded or raw mode.  Calls to @code{write()} on the @code{OutputStrea
 on the @code{ZipFileOutput}.
 
 @example
-// writing from the output stream calls through to the zipOutput.writeFileDataPart()
+// writing to output stream calls thru to zipOutput.writeFileDataPart()
 // or zipOutput.writeRawFileData() methods
-OutputStream outputStream = zipOutput.openFileDataOutputStream(false /* not raw */);
+OutputStream outputStream =
+    zipOutput.openFileDataOutputStream(false /* not raw */);
 @end example
 
 @cindex data descriptor
@@ -507,9 +535,9 @@ To use SimpleZip with maven, include the following dependency in your @file{pom.
 
 @example
 <dependency>
-	<groupId>com.j256.simplezip</groupId>
-	<artifactId>simplezip</artifactId>
-	<version>@value{simplezip_version}</version>
+    <groupId>com.j256.simplezip</groupId>
+    <artifactId>simplezip</artifactId>
+    <version>@value{simplezip_version}</version>
 </dependency>
 @end example 
 
@@ -522,13 +550,42 @@ A Zip file is made up of the following pieces of information.
 @enumerate 1
 @item file information (0 or multiple)
 @enumerate a
-@item file header (file-name, flags, maybe size and checksum, ...)
+@item file header, see @uref{https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipFileHeader.html, ZipFileHeader.java}
+@itemize
+@item file-name
+@item flags
+@item compressed size
+@item uncompressed size
+@item checksum
+@item ...
+@end itemize
+
 @item file data (encoded bytes)
-@item optional data-descriptor (optional size and checksum if not known beforehand)
+@item optional data-descriptor, see @uref{https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipDataDescriptor.html, ZipDataDescriptor.java}
+@itemize
+@item compressed size
+@item uncompressed size
+@item checksum
+@end itemize
 @end enumerate
 
-@item central-directory file entries (0 or multiple) (file-name, flags, offset, ...)
-@item central-directory end (summary information)
+@item central-directory file entries (0 or multiple), see @uref{https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipCentralDirectoryFileEntry.html, ZipCentralDirectoryFileEntry.java}
+@itemize
+@item file-name
+@item file offset
+@item internal and external attributes
+@item file comment
+@item ...
+@end itemize
+
+@item central-directory end (summary information), see @uref{https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipCentralDirectoryEnd.html, ZipCentralDirectoryEnd.java}
+@itemize
+@item number records
+@item central-directory offset
+@item comment
+@item ...
+@end itemize
+
 @end enumerate
 
 @c ----------------------------------------------------------------

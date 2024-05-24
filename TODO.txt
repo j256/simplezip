@@ -7,3 +7,4 @@
 - be able to add additional encoder/decoders
 - maybe a writeDirectoryEntry() call to ZipFileOutput
 - do we need the ability to adjust the size+crc in the header after they've been cached/buffered?
+- extract name, permissions, modification time, input file

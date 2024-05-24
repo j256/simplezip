@@ -145,6 +145,15 @@ public class ZipCentralDirectoryFileInfo {
 		}
 
 		/**
+		 * Create a builder from a file which sets the externalFileAttributes.
+		 */
+		public static Builder fromFile(File file) {
+			Builder builder = new Builder();
+			builder.externalFileAttributes = ExternalFileAttributesUtils.fromFile(file);
+			return builder;
+		}
+
+		/**
 		 * Builder an instance of the central-directory file-entry.
 		 */
 		public ZipCentralDirectoryFileInfo build() {
