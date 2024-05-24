@@ -81,7 +81,7 @@ public class ZipFileOutput implements Closeable {
 	 *            Maximum number of bytes that will be stored by in memory. If there is any space above this number but
 	 *            below the maxSizeBuffered then it will be written to a temporary file.
 	 */
-	public void enableBufferedOutput(int maxSizeBuffered, int maxSizeInMemory) {
+	public void enableFileBuffering(int maxSizeBuffered, int maxSizeInMemory) {
 		if (maxSizeBuffered < maxSizeInMemory) {
 			throw new IllegalArgumentException(
 					"maxSizeBuffered " + maxSizeBuffered + " should be >= maxSizeInMemory " + maxSizeInMemory);

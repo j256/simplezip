@@ -20,7 +20,7 @@ public class SimpleZipOutput {
 		File outFile = new File("sample.zip");
 		ZipFileOutput zipOutput = new ZipFileOutput(outFile);
 		// buffer the file data so we don't need to write data-descriptors
-		zipOutput.enableBufferedOutput(Integer.MAX_VALUE, 1024 * 1024);
+		zipOutput.enableFileBuffering(Integer.MAX_VALUE, 1024 * 1024);
 
 		// write our first file header
 		zipOutput.writeFileHeader(ZipFileHeader.builder().withFileName("hello.txt").build());

@@ -234,7 +234,7 @@ public class ZipFileInputTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
 		ZipFileOutput ouput = new ZipFileOutput(baos);
-		ouput.enableBufferedOutput(10240, 10240);
+		ouput.enableFileBuffering(10240, 10240);
 		String fileName = "hello";
 		Builder builder = ZipFileHeader.builder().withFileName(fileName).withCompressionMethod(CompressionMethod.NONE);
 		byte[] bytes = new byte[] { 1, 2, 3 };
@@ -264,7 +264,7 @@ public class ZipFileInputTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
 		ZipFileOutput ouput = new ZipFileOutput(baos);
-		ouput.enableBufferedOutput(10240, 10240);
+		ouput.enableFileBuffering(10240, 10240);
 		String fileName = "hello";
 		Builder builder = ZipFileHeader.builder().withFileName(fileName).withCompressionMethod(CompressionMethod.NONE);
 		byte[] bytes = new byte[] { 1, 2, 3 };
@@ -377,7 +377,7 @@ public class ZipFileInputTest {
 		ZipFileHeader fileHeader = ZipFileHeader.builder().withFileName(fileName).build();
 		byte[] bytes = new byte[] { 1, 2, 3 };
 		ZipFileOutput zipOutput = new ZipFileOutput(baos);
-		zipOutput.enableBufferedOutput(10240, 10240);
+		zipOutput.enableFileBuffering(10240, 10240);
 		zipOutput.writeFileHeader(fileHeader);
 		zipOutput.writeFileDataPart(bytes);
 		zipOutput.finishFileData();
@@ -409,7 +409,7 @@ public class ZipFileInputTest {
 		ZipFileHeader fileHeader = ZipFileHeader.builder().withFileName(fileName1).build();
 		byte[] bytes = new byte[] { 1, 2, 3 };
 		ZipFileOutput zipOutput = new ZipFileOutput(baos);
-		zipOutput.enableBufferedOutput(10240, 10240);
+		zipOutput.enableFileBuffering(10240, 10240);
 		zipOutput.writeFileHeader(fileHeader);
 		zipOutput.writeFileDataAll(bytes);
 		// write another file
@@ -478,7 +478,7 @@ public class ZipFileInputTest {
 		tmpFile.deleteOnExit();
 		String fileName = "hello";
 		ZipFileOutput zipOutput = new ZipFileOutput(tmpFile);
-		zipOutput.enableBufferedOutput(1024, 1024);
+		zipOutput.enableFileBuffering(1024, 1024);
 		ZipFileHeader entry = ZipFileHeader.builder().withFileName(fileName).build();
 		zipOutput.writeFileHeader(entry);
 		byte[] bytes = new byte[] { 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3 };

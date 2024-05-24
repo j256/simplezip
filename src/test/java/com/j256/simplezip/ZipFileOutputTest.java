@@ -319,7 +319,7 @@ public class ZipFileOutputTest {
 		}
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ZipFileOutput output = new ZipFileOutput(baos);
-		output.enableBufferedOutput(10240, 10240);
+		output.enableFileBuffering(10240, 10240);
 		Builder builder = ZipFileHeader.builder();
 		builder.setCompressionMethod(CompressionMethod.NONE);
 		builder.setFileName(file.getName() + "1");
@@ -361,7 +361,7 @@ public class ZipFileOutputTest {
 		}
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ZipFileOutput output = new ZipFileOutput(baos);
-		output.enableBufferedOutput(10240, 2);
+		output.enableFileBuffering(10240, 2);
 		Builder builder = ZipFileHeader.builder();
 		builder.setCompressionMethod(CompressionMethod.NONE);
 		builder.setFileName(file.getName() + "1");
@@ -487,7 +487,7 @@ public class ZipFileOutputTest {
 	public void testFileInAFile() throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ZipFileOutput output = new ZipFileOutput(baos);
-		output.enableBufferedOutput(1024 * 1024, 1024 * 1024);
+		output.enableFileBuffering(1024 * 1024, 1024 * 1024);
 		ZipFileHeader.Builder builder = ZipFileHeader.builder();
 		String outerFileName = "outer.bin";
 		builder.setFileName(outerFileName);
@@ -502,7 +502,7 @@ public class ZipFileOutputTest {
 
 		// write an inner zip file
 		ZipFileOutput innerOutput = new ZipFileOutput(output.openFileDataOutputStream(false));
-		innerOutput.enableBufferedOutput(1024 * 1024, 1024 * 1024);
+		innerOutput.enableFileBuffering(1024 * 1024, 1024 * 1024);
 		String innerFileName = "inner.bin";
 		builder.setFileName(innerFileName);
 		innerOutput.writeFileHeader(builder.build());
@@ -586,7 +586,7 @@ public class ZipFileOutputTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testBadEnable() throws IOException {
 		ZipFileOutput zipOutput = new ZipFileOutput(new ByteArrayOutputStream());
-		zipOutput.enableBufferedOutput(1, 2);
+		zipOutput.enableFileBuffering(1, 2);
 		zipOutput.close();
 	}
 
@@ -597,7 +597,7 @@ public class ZipFileOutputTest {
 
 		File tmpFile = new File("/tmp/x.zip");
 		ZipFileOutput output = new ZipFileOutput(tmpFile);
-		output.enableBufferedOutput(10240, 10240);
+		output.enableFileBuffering(10240, 10240);
 		ZipFileHeader.Builder builder = ZipFileHeader.builder();
 		builder.setLastModifiedDateTime(LocalDateTime.now());
 		builder.setFileName("hello");
