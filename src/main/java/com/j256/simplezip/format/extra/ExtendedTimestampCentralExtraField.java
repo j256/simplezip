@@ -1,10 +1,10 @@
 package com.j256.simplezip.format.extra;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.j256.simplezip.IoUtils;
-import com.j256.simplezip.RewindableInputStream;
 
 /**
  * Central directory extended timestamp information.
@@ -39,7 +39,7 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 	/**
 	 * Read in the rest of the Zip64ExtraField after the id is read.
 	 */
-	public static ExtendedTimestampCentralExtraField read(RewindableInputStream inputStream, int id, int size)
+	public static ExtendedTimestampCentralExtraField read(InputStream inputStream, int id, int size)
 			throws IOException {
 		Builder builder = new ExtendedTimestampCentralExtraField.Builder();
 		builder.flags = IoUtils.readByte(inputStream, "ExtendedTimestampCentralExtraField.flags");

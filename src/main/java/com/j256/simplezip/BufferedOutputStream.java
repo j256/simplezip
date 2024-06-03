@@ -13,8 +13,9 @@ import com.j256.simplezip.format.ZipFileHeader;
 import com.j256.simplezip.format.ZipFileHeader.Builder;
 
 /**
- * Class which helps the writer by absorbing the encoded file information so that we can annotate the
- * {@link ZipFileHeader} and not have to use the {@link ZipDataDescriptor}.
+ * Class which helps the writer by absorbing the encoded (compressed) stream information so that we can annotate the
+ * {@link ZipFileHeader} with the encoded size and checksums and not have to use the {@link ZipDataDescriptor} which is
+ * written after the data.
  * 
  * @author graywatson
  */
@@ -55,11 +56,13 @@ public class BufferedOutputStream extends OutputStream {
 	@Override
 	public void write(byte[] buffer, int offset, int length) throws IOException {
 		if (fileHeader == null) {
+			// we have already given up and written the header
 			delegate.write(buffer, offset, length);
 			return;
 		}
 		ensureMemoryBufferMaxSpace(length);
 		if (memoryOffset + length <= memoryBuffer.length) {
+			// store this in the memory buffer
 			System.arraycopy(buffer, offset, memoryBuffer, memoryOffset, length);
 			memoryOffset += length;
 			totalSize += length;
@@ -81,10 +84,10 @@ public class BufferedOutputStream extends OutputStream {
 		}
 		// write the rest to disk
 		if (tmpFile == null) {
-			tmpFile = File.createTempFile(getClass().getSimpleName(), ".ziptmp");
+			tmpFile = File.createTempFile(getClass().getSimpleName(), ".ztf");
 			tmpFile.deleteOnExit();
 		}
-		// NOTE: I'm not doinga buffered output stream here because we are dealing with buffers externally
+		// NOTE: no buffered output stream here because we are dealing with buffers externally
 		tmpFileOutputStream = new FileOutputStream(tmpFile);
 		tmpFileOutputStream.write(buffer, offset, length);
 		totalSize += length;
@@ -101,16 +104,16 @@ public class BufferedOutputStream extends OutputStream {
 			return null;
 		}
 
-		// need to add data to the file-header
+		// need to build a new file-header from the newly calculated information
 		Builder fullHeaderBuilder = ZipFileHeader.Builder.fromHeader(fileHeader);
 		fullHeaderBuilder.setCompressedSize((int) totalSize);
-		// XXX: need to handle zip64
 		fullHeaderBuilder.setCrc32(crc32);
+		// XXX: need to handle zip64
 		fullHeaderBuilder.setUncompressedSize((int) uncompressedSize);
 		ZipFileHeader writtenFileHeader = fullHeaderBuilder.build();
 		writtenFileHeader.write(delegate);
 
-		// first write the delegate
+		// first write the memory buffer to the delegate
 		delegate.write(memoryBuffer, 0, memoryBuffer.length);
 		writeAnyTmpFileToDelegate();
 
@@ -138,6 +141,10 @@ public class BufferedOutputStream extends OutputStream {
 	public void close() throws IOException {
 		delegate.close();
 		// tmpFileOutputStream should have been closed already
+		if (tmpFile != null) {
+			tmpFile.delete();
+			tmpFile = null;
+		}
 	}
 
 	/**
@@ -190,6 +197,7 @@ public class BufferedOutputStream extends OutputStream {
 			}
 		}
 		tmpFile.delete();
+		tmpFile = null;
 	}
 
 	private void ensureMemoryBufferMaxSpace(int length) {
@@ -205,6 +213,9 @@ public class BufferedOutputStream extends OutputStream {
 		}
 	}
 
+	/**
+	 * Output stream which counts the bytes written to it.
+	 */
 	private static class CountingOutputStream extends OutputStream {
 
 		private final OutputStream delegate;

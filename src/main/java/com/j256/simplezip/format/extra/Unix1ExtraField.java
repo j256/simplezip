@@ -1,10 +1,10 @@
 package com.j256.simplezip.format.extra;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.j256.simplezip.IoUtils;
-import com.j256.simplezip.RewindableInputStream;
 
 /**
  * Unit extra field #1. This has been superseded by the {@link ExtendedTimestampLocalExtraField} or newer versions of
@@ -41,7 +41,7 @@ public class Unix1ExtraField extends BaseExtraField {
 	/**
 	 * Read from the input-stream.
 	 */
-	public static Unix1ExtraField read(RewindableInputStream inputStream, int id, int size) throws IOException {
+	public static Unix1ExtraField read(InputStream inputStream, int id, int size) throws IOException {
 		Builder builder = new Unix1ExtraField.Builder();
 		builder.timeLastAccessed = IoUtils.readLong(inputStream, "Unix1ExtraField.timeLastAccessed");
 		builder.timeLastModified = IoUtils.readLong(inputStream, "Unix1ExtraField.timeLastModified");

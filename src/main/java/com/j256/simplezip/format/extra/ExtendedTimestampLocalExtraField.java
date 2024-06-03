@@ -1,10 +1,10 @@
 package com.j256.simplezip.format.extra;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.j256.simplezip.IoUtils;
-import com.j256.simplezip.RewindableInputStream;
 
 /**
  * Local file header extended timestamp information with last-modified, accessed, and created time stamps.
@@ -40,8 +40,7 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 	/**
 	 * Read in the rest of the Zip64ExtraField after the id is read.
 	 */
-	public static ExtendedTimestampLocalExtraField read(RewindableInputStream inputStream, int id, int size)
-			throws IOException {
+	public static ExtendedTimestampLocalExtraField read(InputStream inputStream, int id, int size) throws IOException {
 		Builder builder = new ExtendedTimestampLocalExtraField.Builder();
 		builder.flags = IoUtils.readByte(inputStream, "ExtendedTimestampLocalExtraField.flags");
 		builder.timeLastModified = IoUtils.readLong(inputStream, "ExtendedTimestampLocalExtraField.timeLastModified");

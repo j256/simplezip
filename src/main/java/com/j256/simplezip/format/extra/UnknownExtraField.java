@@ -1,10 +1,10 @@
 package com.j256.simplezip.format.extra;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.j256.simplezip.IoUtils;
-import com.j256.simplezip.RewindableInputStream;
 
 /**
  * Zip64 extra-field information.
@@ -30,7 +30,7 @@ public class UnknownExtraField extends BaseExtraField {
 	/**
 	 * Read in from the input-stream.
 	 */
-	public static UnknownExtraField read(RewindableInputStream inputStream, int id, int extraSize) throws IOException {
+	public static UnknownExtraField read(InputStream inputStream, int id, int extraSize) throws IOException {
 		Builder builder = new UnknownExtraField.Builder();
 		builder.id = id;
 		builder.bytes = IoUtils.readBytes(inputStream, extraSize, "UnknownExtraField.bytes");

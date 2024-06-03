@@ -1,5 +1,7 @@
 package com.j256.simplezip.format;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
@@ -7,6 +9,9 @@ import java.util.Set;
 
 import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
+import com.j256.simplezip.format.extra.BaseExtraField;
+import com.j256.simplezip.format.extra.ExtraFieldUtil;
+import com.j256.simplezip.format.extra.Zip64ExtraField;
 
 /**
  * File headers stored in the central directory.
@@ -29,8 +34,8 @@ public class ZipCentralDirectoryFileEntry {
 	private final int lastModifiedTime;
 	private final int lastModifiedDate;
 	private final long crc32;
-	private final int compressedSize;
-	private final int uncompressedSize;
+	private final long compressedSize;
+	private final long uncompressedSize;
 	private final int diskNumberStart;
 	private final int internalFileAttributes;
 	private final int externalFileAttributes;
@@ -38,11 +43,13 @@ public class ZipCentralDirectoryFileEntry {
 	private final byte[] fileNameBytes;
 	private final byte[] extraFieldBytes;
 	private final byte[] commentBytes;
+	private final Zip64ExtraField zip64ExtraField;
 
 	public ZipCentralDirectoryFileEntry(int versionMade, int versionNeeded, int generalPurposeFlags,
-			int compressionMethod, int lastModifiedTime, int lastModifiedDate, long crc32, int compressedSize,
-			int uncompressedSize, int diskNumberStart, int internalFileAttributes, int externalFileAttributes,
-			int relativeOffsetOfLocalHeader, byte[] fileNameBytes, byte[] extraFieldBytes, byte[] commentBytes) {
+			int compressionMethod, int lastModifiedTime, int lastModifiedDate, long crc32, long compressedSize,
+			long uncompressedSize, int diskNumberStart, int internalFileAttributes, int externalFileAttributes,
+			int relativeOffsetOfLocalHeader, byte[] fileNameBytes, byte[] extraFieldBytes, byte[] commentBytes,
+			Zip64ExtraField zip64ExtraField) {
 		this.versionMade = versionMade;
 		this.versionNeeded = versionNeeded;
 		this.generalPurposeFlags = generalPurposeFlags;
@@ -59,6 +66,7 @@ public class ZipCentralDirectoryFileEntry {
 		this.fileNameBytes = fileNameBytes;
 		this.extraFieldBytes = extraFieldBytes;
 		this.commentBytes = commentBytes;
+		this.zip64ExtraField = zip64ExtraField;
 	}
 
 	/**
@@ -233,12 +241,48 @@ public class ZipCentralDirectoryFileEntry {
 		return crc32;
 	}
 
-	public int getCompressedSize() {
+	/**
+	 * Get the 32-bit size of the compressed (encoded) bytes. This may return 0xFFFFFFFF to indicate that there is a
+	 * {@link Zip64ExtraField} in the {@link #getExtraFieldBytes()} that has the real compressed size. See
+	 * {@link #getZip64CompressedSize()}.
+	 */
+	public long getCompressedSize() {
 		return compressedSize;
 	}
 
-	public int getUncompressedSize() {
+	/**
+	 * Get the size of the compressed (unencoded) bytes as encoded in the {@link Zip64ExtraField} which should be in the
+	 * {@link #extraFieldBytes}. If there is no extra field then the value of the {@link #getCompressedSize()} is
+	 * returned.
+	 */
+	public long getZip64CompressedSize() {
+		if (zip64ExtraField == null) {
+			return compressedSize;
+		} else {
+			return zip64ExtraField.getCompressedSize();
+		}
+	}
+
+	/**
+	 * Get the 32-bit size of the uncompressed, original (unencoded) bytes. This may return 0xFFFFFFFF to indicate that
+	 * there is a {@link Zip64ExtraField} in the {@link #getExtraFieldBytes()} that has the real compressed size. See
+	 * {@link #getZip64UncompressedSize()}.
+	 */
+	public long getUncompressedSize() {
 		return uncompressedSize;
+	}
+
+	/**
+	 * Get the size of the uncompressed (unencoded) bytes as encoded in the {@link Zip64ExtraField} which should be in
+	 * the {@link #extraFieldBytes}. If there is no extra field then the value of the {@link #getUncompressedSize()} is
+	 * returned.
+	 */
+	public long getZip64UncompressedSize() {
+		if (zip64ExtraField == null) {
+			return uncompressedSize;
+		} else {
+			return zip64ExtraField.getUncompressedSize();
+		}
 	}
 
 	public int getDiskNumberStart() {
@@ -292,6 +336,13 @@ public class ZipCentralDirectoryFileEntry {
 		}
 	}
 
+	/**
+	 * Returns the Zip64 extra field in the extra-bytes or null if none.
+	 */
+	public Zip64ExtraField getZip64ExtraField() {
+		return zip64ExtraField;
+	}
+
 	@Override
 	public String toString() {
 		return "CentralDirectoryFileHeader [fileName=" + (fileNameBytes == null ? "null" : new String(fileNameBytes))
@@ -310,18 +361,21 @@ public class ZipCentralDirectoryFileEntry {
 		private int lastModifiedTime;
 		private int lastModifiedDate;
 		private long crc32;
-		private int compressedSize;
-		private int uncompressedSize;
+		private long compressedSize;
+		private long uncompressedSize;
 		private int diskNumberStart = DEFAULT_DISK_NUMBER;
 		private int internalFileAttributes;
 		private int externalFileAttributes;
 		private int relativeOffsetOfLocalHeader;
 		private byte[] fileNameBytes;
 		private byte[] extraFieldBytes;
+		private ByteArrayOutputStream extraFieldsOutputStream;
 		private byte[] commentBytes;
+		private Zip64ExtraField zip64ExtraField;
+		private boolean zip64ExtraFieldInBytes;
 
 		public Builder() {
-			// XXX: should we calculate this based on features used?
+			// XXX: should we calculate this based on features used somehow? Zip64 is v4.5 based for example.
 			setVersionMadeMajorMinor(2, 0);
 			setPlatformMade(Platform.detectPlatform());
 			setVersionMadeMajorMinor(1, 0);
@@ -365,6 +419,7 @@ public class ZipCentralDirectoryFileEntry {
 			this.uncompressedSize = header.getUncompressedSize();
 			this.fileNameBytes = header.getFileNameBytes();
 			this.extraFieldBytes = header.getExtraFieldBytes();
+			this.zip64ExtraField = header.getZip64ExtraField();
 		}
 
 		/**
@@ -383,10 +438,36 @@ public class ZipCentralDirectoryFileEntry {
 		 * Builder an instance of the central-directory file-header.
 		 */
 		public ZipCentralDirectoryFileEntry build() {
+			// build the extra bytes
+			byte[] extraBytes;
+			if (extraFieldsOutputStream == null && zip64ExtraField == null) {
+				extraBytes = extraFieldBytes;
+			} else {
+				if (extraFieldsOutputStream == null) {
+					extraFieldsOutputStream = new ByteArrayOutputStream();
+				}
+				// we may have extracted the zip64ExtraField from the extraFieldBytes
+				if (zip64ExtraField != null && !zip64ExtraFieldInBytes) {
+					try {
+						zip64ExtraField.write(extraFieldsOutputStream);
+					} catch (IOException e) {
+						// won't happen with ByteArrayOutputStream
+					}
+				}
+				// tack on the extra field bytes if both were set
+				if (extraFieldBytes != null) {
+					try {
+						extraFieldsOutputStream.write(extraFieldBytes);
+					} catch (IOException e) {
+						// won't happen with ByteArrayOutputStream
+					}
+				}
+				extraBytes = extraFieldsOutputStream.toByteArray();
+			}
 			return new ZipCentralDirectoryFileEntry(versionMade, versionNeeded, generalPurposeFlags, compressionMethod,
 					lastModifiedTime, lastModifiedDate, crc32, compressedSize, uncompressedSize, diskNumberStart,
 					internalFileAttributes, externalFileAttributes, relativeOffsetOfLocalHeader, fileNameBytes,
-					extraFieldBytes, commentBytes);
+					extraBytes, commentBytes, zip64ExtraField);
 		}
 
 		public int getVersionMade() {
@@ -507,19 +588,31 @@ public class ZipCentralDirectoryFileEntry {
 			this.crc32 = crc32;
 		}
 
-		public int getCompressedSize() {
+		/**
+		 * Set to the compressed (encoded) size of the bytes. If this value >= 0xFFFFFFFF then a Zip64 extra field will
+		 * be written into the extra bytes if not otherwise specified. You can also set this to 0xFFFFFFFF and add a
+		 * {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
+		 * {@link #setZip64ExtraField(Zip64ExtraField)}.
+		 */
+		public long getCompressedSize() {
 			return compressedSize;
 		}
 
-		public void setCompressedSize(int compressedSize) {
+		public void setCompressedSize(long compressedSize) {
 			this.compressedSize = compressedSize;
 		}
 
-		public int getUncompressedSize() {
+		public long getUncompressedSize() {
 			return uncompressedSize;
 		}
 
-		public void setUncompressedSize(int uncompressedSize) {
+		/**
+		 * Set to the uncompressed (unencoded) size of the bytes. If this value >= 0xFFFFFFFF then a Zip64 extra field
+		 * will be written into the extra bytes if not otherwise specified. You can also set this to 0xFFFFFFFF and add
+		 * a {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
+		 * {@link #setZip64ExtraField(Zip64ExtraField)}.
+		 */
+		public void setUncompressedSize(long uncompressedSize) {
 			this.uncompressedSize = uncompressedSize;
 		}
 
@@ -593,8 +686,32 @@ public class ZipCentralDirectoryFileEntry {
 			return extraFieldBytes;
 		}
 
+		/**
+		 * Set the extra-field-bytes.
+		 * 
+		 * NOTE: This will interrogate the array looking for a {@link Zip64ExtraField}.
+		 */
 		public void setExtraFieldBytes(byte[] extraFieldBytes) {
 			this.extraFieldBytes = extraFieldBytes;
+			if (zip64ExtraField == null) {
+				// process the extra bytes looking for an zip64 extra field
+				ByteArrayInputStream bais = new ByteArrayInputStream(extraFieldBytes);
+				try {
+					while (true) {
+						BaseExtraField extraField = ExtraFieldUtil.readExtraField(bais, true);
+						if (extraField == null) {
+							break;
+						}
+						if (extraField instanceof Zip64ExtraField) {
+							this.zip64ExtraField = (Zip64ExtraField) extraField;
+							this.zip64ExtraFieldInBytes = true;
+							break;
+						}
+					}
+				} catch (IOException e) {
+					// could happen with EOF which prolly means an invalid header but oh well
+				}
+			}
 		}
 
 		public byte[] getCommentBytes() {
@@ -619,6 +736,35 @@ public class ZipCentralDirectoryFileEntry {
 			} else {
 				commentBytes = comment.getBytes();
 			}
+		}
+
+		/**
+		 * Add an extra field to the header other than the {@link #setZip64ExtraField(Zip64ExtraField)}. You should most
+		 * likely either call {@link #setExtraFieldBytes(byte[])} or this method.
+		 */
+		public Builder addExtraField(BaseExtraField extraField) {
+			if (extraFieldsOutputStream == null) {
+				extraFieldsOutputStream = new ByteArrayOutputStream();
+			}
+			try {
+				extraField.write(extraFieldsOutputStream);
+			} catch (IOException e) {
+				// won't happen with byte array output stream
+			}
+			return this;
+		}
+
+		public Zip64ExtraField getZip64ExtraField() {
+			return zip64ExtraField;
+		}
+
+		public void setZip64ExtraField(Zip64ExtraField zip64ExtraField) {
+			this.zip64ExtraField = zip64ExtraField;
+		}
+
+		public Builder withZip64ExtraField(Zip64ExtraField zip64ExtraField) {
+			this.zip64ExtraField = zip64ExtraField;
+			return this;
 		}
 	}
 }
