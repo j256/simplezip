@@ -26,15 +26,19 @@ public class ExtraFieldUtil {
 	 */
 	public static <T extends BaseExtraField> T readExtraField(InputStream input, boolean fileHeader)
 			throws IOException {
-		/*
-		 * WHen reading a file-header we aren't sure if this is a file-header or the start of the central directory.
-		 */
-		int id;
 		try {
-			id = IoUtils.readShort(input, "BaseExtraField.id");
+			return doReadExtraField(input, fileHeader);
 		} catch (EOFException ee) {
 			return null;
 		}
+	}
+
+	private static <T extends BaseExtraField> T doReadExtraField(InputStream input, boolean fileHeader)
+			throws IOException {
+		/*
+		 * When reading a file-header we aren't sure if this is a file-header or the start of the central directory.
+		 */
+		int id = IoUtils.readShort(input, "BaseExtraField.id");
 		int size = IoUtils.readShort(input, "BaseExtraField.size");
 
 		switch (id) {

@@ -438,6 +438,16 @@ public class ZipCentralDirectoryFileEntry {
 		 * Builder an instance of the central-directory file-header.
 		 */
 		public ZipCentralDirectoryFileEntry build() {
+			// if we don't have a zip64 field set then check our values and maybe add one
+			if (zip64ExtraField == null) {
+				if (uncompressedSize > ZipFileHeader.MAX_4_BYTE_SIZE
+						|| compressedSize > ZipFileHeader.MAX_4_BYTE_SIZE) {
+					zip64ExtraField = new Zip64ExtraField(uncompressedSize, compressedSize, 0, 0);
+					uncompressedSize = ZipFileHeader.MAX_4_BYTE_SIZE;
+					compressedSize = ZipFileHeader.MAX_4_BYTE_SIZE;
+				}
+			}
+
 			// build the extra bytes
 			byte[] extraBytes;
 			if (extraFieldsOutputStream == null && zip64ExtraField == null) {
@@ -450,6 +460,7 @@ public class ZipCentralDirectoryFileEntry {
 				if (zip64ExtraField != null && !zip64ExtraFieldInBytes) {
 					try {
 						zip64ExtraField.write(extraFieldsOutputStream);
+						zip64ExtraFieldInBytes = true;
 					} catch (IOException e) {
 						// won't happen with ByteArrayOutputStream
 					}
@@ -703,8 +714,8 @@ public class ZipCentralDirectoryFileEntry {
 							break;
 						}
 						if (extraField instanceof Zip64ExtraField) {
-							this.zip64ExtraField = (Zip64ExtraField) extraField;
-							this.zip64ExtraFieldInBytes = true;
+							zip64ExtraField = (Zip64ExtraField) extraField;
+							zip64ExtraFieldInBytes = true;
 							break;
 						}
 					}
@@ -743,6 +754,14 @@ public class ZipCentralDirectoryFileEntry {
 		 * likely either call {@link #setExtraFieldBytes(byte[])} or this method.
 		 */
 		public Builder addExtraField(BaseExtraField extraField) {
+			// is this a zip64extra field? someone didn't read the javadocs.
+			if (extraField instanceof Zip64ExtraField) {
+				return withZip64ExtraField((Zip64ExtraField) extraField);
+			}
+			if (extraField.getId() == Zip64ExtraField.EXPECTED_ID) {
+				throw new IllegalArgumentException("You cannot add an extra field with id "
+						+ Zip64ExtraField.EXPECTED_ID + " and should be using setZip64ExtraField(...)");
+			}
 			if (extraFieldsOutputStream == null) {
 				extraFieldsOutputStream = new ByteArrayOutputStream();
 			}

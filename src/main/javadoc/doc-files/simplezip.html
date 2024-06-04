@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html401/loose.dtd">
 <html>
-<!-- Created on May 23, 2024 by texi2html 1.82
+<!-- Created on May 24, 2024 by texi2html 1.82
 texi2html was written by: 
             Lionel Cons <Lionel.Cons@cern.ch> (original author)
             Karl Berry  <karl@freefriends.org>
@@ -196,7 +196,9 @@ zipOutput.close();
 <a name="index-how-to-download-the-jars"></a>
 <a name="index-downloading-the-jars"></a>
 <a name="index-where-to-get-new-jars"></a>
-<p>To get started with SimpleZip, you will need to download the jar file.  The <a href="http://256stuff.com/sources/simplezip/releases/">SimpleZip release page</a> is the default repository but the jars are also available from the <a href="http://repo1.maven.org/maven2/com/j256/simplezip/">central maven repository</a>.
+<p>To get started with SimpleZip, you will need to download the jar file.  The
+<a href="http://256stuff.com/sources/simplezip/releases/">SimpleZip release page</a> is the default repository but the jars
+are also available from the <a href="http://repo1.maven.org/maven2/com/j256/simplezip/">central maven repository</a>.
 </p>
 <p>The code works with Java 8 or later.
 </p>
@@ -314,6 +316,9 @@ the file-name and other metadata.
 </li><li> extra field metadata bytes
 </li></ul>
 
+<p>The SimpleZip class representing the file-headser is
+<a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipFileHeader.html">ZipFileHeader.java</a>.
+</p>
 <p>If the crc32, compressed size, or uncompressed size fields are 0 then a data-descriptor will be written after the
 file-data.  See <a href="#Data-Descriptor">Data Descriptor</a>.
 </p>
@@ -348,7 +353,7 @@ file-data.  See <a href="#Data-Descriptor">Data Descriptor</a>.
 <p>After reading the header you can then read in the file data.  You can have the <code>ZipFileInput</code> write
 bytes from the Zip file out to a file-path string, <code>File</code>, or to an <code>OutputStream</code>.
 </p>
-<table><tr><td>&nbsp;</td><td><pre class="example">// read file data and write to the file specified by output-path, typically from header
+<table><tr><td>&nbsp;</td><td><pre class="example">// read data and write to file output-path, typically from header
 zipInput.readFileData(fileHeader.getFileName());
 // or to a file directly
 zipInput.readFileData(new File(fileHeader.getFileName()));
@@ -357,8 +362,8 @@ ByteArrayOutputStream baos = new ByteArrayOutputStream();
 zipInput.readFileData(baos);
 </pre></td></tr></table>
 
-<p>You can also have <code>ZipFileInput</code> read file data as a series of buffers.  You should read until it calls returns
-EOF (-1).
+<p>You can also have <code>ZipFileInput</code> read file data as a series of buffers.  You should read until the read method
+returns EOF (-1).
 </p>
 <table><tr><td>&nbsp;</td><td><pre class="example">byte[] buffer = new byte[4096];
 while (true) {
@@ -372,7 +377,7 @@ while (true) {
 <p>By default you will be reading the decoded (i.e. decompressed) bytes.  You can also read the <em>raw</em> bytes without
 conversion using similar read methods with &quot;raw&quot; in the name.
 </p>
-<table><tr><td>&nbsp;</td><td><pre class="example">// read _raw_ file data and write to the file specified by output-path
+<table><tr><td>&nbsp;</td><td><pre class="example">// read _raw_ file data and write to file output-path
 zipInput.readRawFileData(fileHeader.getFileName());
 </pre></td></tr></table>
 
@@ -380,23 +385,36 @@ zipInput.readRawFileData(fileHeader.getFileName());
 either in encoded or raw mode.  Calls to <code>read()</code> on the <code>InputStream</code> turn around and call the read methods
 on the <code>ZipFileInput</code>.
 </p>
-<table><tr><td>&nbsp;</td><td><pre class="example">// reading from the input stream calls through to the zipInput.readFileDataPart()
+<table><tr><td>&nbsp;</td><td><pre class="example">// reading from input stream calls thru to zipInput.readFileDataPart()
 // or zipInput.readRawFileData() methods
-InputStream inputStream = zipInput.openFileDataInputStream(false /* not raw */);
+InputStream inputStream =
+    zipInput.openFileDataInputStream(false /* not raw */);
 </pre></td></tr></table>
 
 <p><a name="Data-Descriptor"></a>
 <a name="index-data-descriptor"></a>
 </p>
 <p>Once all of the data has been read for a particular file, there may be a <code>ZipDataDescriptor</code> entry written after
-the file data.  This is necessary in case the Zip file does not have the size or checksum/crc information at the start
-of the Zip file entry.
+the file data.  This entry is read automatically by the <code>ZipFileInput</code>.  This descriptor is necessary in case the
+Zip file does not have the size or checksum/crc information at the start of the Zip file entry.  See <a href="#File-Buffering">File Buffering</a>.
 </p>
-<table><tr><td>&nbsp;</td><td><pre class="example">// return the data-descriptor after the file-data was read or null if none
-ZipDataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
+<table><tr><td>&nbsp;</td><td><pre class="example">// return data-descriptor after file-data was read or null if none
+ZipDataDescriptor dataDesc = zipInput.getCurrentDataDescriptor();
 </pre></td></tr></table>
 
-<p>Once all of the data has been read for a particular file, you can then read the next header.  See section <a href="#Read-File-Headers">Reading Zip File Header Entries</a>. 
+<p>The descriptor just holds the following information.
+</p>
+<ul>
+<li> crc32 checksum
+</li><li> compressed size
+</li><li> uncompressed size
+</li></ul>
+
+<p>The SimpleZip class representing the data-descriptor is
+<a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipDataDescriptor.html">ZipDataDescriptor.java</a>.
+</p>
+<p>Once all of the data has been read for a particular file and the optional descriptor has been read, you can then read
+the next header.  See section <a href="#Read-File-Headers">Reading Zip File Header Entries</a>. 
 </p>
 <hr size="6">
 <a name="Read-Directory-Entries"></a>
@@ -421,16 +439,17 @@ ZipDataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
 
 <a name="index-central_002ddirectory-entries_002c-reading"></a>
 
-<p>After all of the file headers and data, there are a series of central-directory entries written at the end of the Zip
-file which record extra information about each of the files and also provide the locations of the file-headers and
-data inside of the Zip file.  You can read these entries if you would like.
+<p>After all of the file headers and data in the Zip data, there are a series of central-directory entries written at the
+end of the Zip file which record extra information about each of the files and also provide the locations of the
+file-headers and data inside of the Zip file.  You can read these entries if you would like.
 </p>
-<table><tr><td>&nbsp;</td><td><pre class="example">// return the next central-directory entry or null if at the end
-ZipCentralDirectoryFileEntry directoryEntry = zipInput.readDirectoryFileEntry();
+<table><tr><td>&nbsp;</td><td><pre class="example">// return next central-directory entry or null if none
+ZipCentralDirectoryFileEntry directoryEntry =
+    zipInput.readDirectoryFileEntry();
 </pre></td></tr></table>
 
-<p>The central-directory file entries hold the following information for each file entry &ndash; some of which are duplicates
-of the fields from the file-header.
+<p>The central-directory file entries hold the following information for each file in the Zip.  Some of the fields are
+duplicates of the fields in the file-header.
 </p>
 <a name="index-external-file-attributes"></a>
 <a name="index-internal-file-attributes"></a>
@@ -456,10 +475,13 @@ of the fields from the file-header.
 </li><li> comment bytes
 </li></ul>
 
-<p>If you have been writing out files using the <code>zipInput.readFileData(File)</code> method, you can modify the permissions
-on the file from the file-entry&rsquo;s using something like the following.
+<p>The SimpleZip class representing a central-directory file-entry is
+<a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipCentralDirectoryFileEntry.html">ZipCentralDirectoryFileEntry.java</a>.
 </p>
-<table><tr><td>&nbsp;</td><td><pre class="example">// assign the file permissions according to the just read dir entry that matches
+<p>If you have been reading file data directly out to disk using the <code>zipInput.readFileData(File)</code> method, you can
+modify the permissions on the file from the file-entry&rsquo;s using something like the following.
+</p>
+<table><tr><td>&nbsp;</td><td><pre class="example">// assign file permissions according to previous dir entry
 zipInput.assignDirectoryFileEntryPermissions();
 </pre></td></tr></table>
 
@@ -485,6 +507,9 @@ CentralDirectoryEnd directoryEnd = zipInput.readDirectoryEnd();
 </li><li> comment bytes
 </li></ul>
 
+<p>The SimpleZip class representing a central-directory end is
+<a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipCentralDirectoryEnd.html">ZipCentralDirectoryEnd.java</a>.
+</p>
 <hr size="6">
 <a name="Writing"></a>
 <table cellpadding="1" cellspacing="1" border="0">
@@ -548,23 +573,31 @@ file-path string, or stream it out via an <code>OutputStream</code>.
 <table><tr><td>&nbsp;</td><td><pre class="example">// write to a file-path
 ZipFileOutput zipOutput = new ZipFileOutput(&quot;/tmp/file.zip&quot;);
 // write to a file
-ZipFileOutput zipOutput = new ZipFileOutput(new File(&quot;/tmp/file.zip&quot;));
+ZipFileOutput zipOutput =
+    new ZipFileOutput(new File(&quot;/tmp/file.zip&quot;));
 // write to an OutputStream
 ZipFileOutput zipOutput = new ZipFileOutput(outputStream);
 </pre></td></tr></table>
 
-<a name="index-buffered-of-file-data"></a>
+<a name="index-file-data_002c-buffering"></a>
+<a name="index-buffered-file-data"></a>
+<a name="index-avoiding-data-descriptor"></a>
+<a name="index-data-descriptor_002c-avoiding"></a>
+<a name="index-no-data-descriptor"></a>
 
-<p>The Zip file starts with a file-header which contains compressed-size and checksum information that may not be known
-ahead of time.  These fields can be left as 0 in which case <code>ZipFileOutput</code> will write out a
-<code>ZipDataDescriptor</code> after the file data.
+<p><a name="File-Buffering"></a>
+</p>
+<p>The Zip file starts with a file-header which contains (among other things) the compressed-size and checksum information
+that may not be known ahead of time.  For files that are being deflated, these fields can be left as 0 in which case
+<code>ZipFileOutput</code> will write out a <code>ZipDataDescriptor</code> after the file data.
 </p>
 <p>However, you can also turn on the buffering the file-data so we can calculate the compressed-size and crc checksum
-information <em>beforehand</em> writing out a file-header with the size and checksum information filled in, removing
-the need of a <code>ZipDataDescriptor</code>.
+information <em>beforehand</em> writing out a file-header with the size and checksum information filled in, which
+removes the need for a <code>ZipDataDescriptor</code>.
 </p>
 <table><tr><td>&nbsp;</td><td><pre class="example">// turn on buffering
-zipOutput.enableBufferedOutput(1024 * 1024 /* maxSizeBuffered */, 100 * 1024 /* maxSizeInMemory */);
+zipOutput.enableFileBuffering(1024 * 1024 /* maxSizeBuffered */,
+    100 * 1024 /* maxSizeInMemory */);
 </pre></td></tr></table>
 
 <p>See the Javadocs for this method for more information.
@@ -667,9 +700,10 @@ zipInput.writeRawFileData(&quot;file.txt&quot;);
 either in encoded or raw mode.  Calls to <code>write()</code> on the <code>OutputStream</code> turn around and call the write methods
 on the <code>ZipFileOutput</code>.
 </p>
-<table><tr><td>&nbsp;</td><td><pre class="example">// writing from the output stream calls through to the zipOutput.writeFileDataPart()
+<table><tr><td>&nbsp;</td><td><pre class="example">// writing to output stream calls thru to zipOutput.writeFileDataPart()
 // or zipOutput.writeRawFileData() methods
-OutputStream outputStream = zipOutput.openFileDataOutputStream(false /* not raw */);
+OutputStream outputStream =
+    zipOutput.openFileDataOutputStream(false /* not raw */);
 </pre></td></tr></table>
 
 <a name="index-data-descriptor-1"></a>
@@ -746,9 +780,9 @@ information.
 <p>To use SimpleZip with maven, include the following dependency in your &lsquo;<tt>pom.xml</tt>&rsquo; file:
 </p>
 <table><tr><td>&nbsp;</td><td><pre class="example">&lt;dependency&gt;
-	&lt;groupId&gt;com.j256.simplezip&lt;/groupId&gt;
-	&lt;artifactId&gt;simplezip&lt;/artifactId&gt;
-	&lt;version&gt;1.1&lt;/version&gt;
+    &lt;groupId&gt;com.j256.simplezip&lt;/groupId&gt;
+    &lt;artifactId&gt;simplezip&lt;/artifactId&gt;
+    &lt;version&gt;1.1&lt;/version&gt;
 &lt;/dependency&gt;
 </pre></td></tr></table>
 
@@ -779,13 +813,42 @@ information.
 <ol>
 <li> file information (0 or multiple)
 <ol>
-<li> file header (file-name, flags, maybe size and checksum, ...)
+<li> file header, see <a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipFileHeader.html">ZipFileHeader.java</a>
+<ul>
+<li> file-name
+</li><li> flags
+</li><li> compressed size
+</li><li> uncompressed size
+</li><li> checksum
+</li><li> ...
+</li></ul>
+
 </li><li> file data (encoded bytes)
-</li><li> optional data-descriptor (optional size and checksum if not known beforehand)
+</li><li> optional data-descriptor, see <a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipDataDescriptor.html">ZipDataDescriptor.java</a>
+<ul>
+<li> compressed size
+</li><li> uncompressed size
+</li><li> checksum
+</li></ul>
 </li></ol>
 
-</li><li> central-directory file entries (0 or multiple) (file-name, flags, offset, ...)
-</li><li> central-directory end (summary information)
+</li><li> central-directory file entries (0 or multiple), see <a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipCentralDirectoryFileEntry.html">ZipCentralDirectoryFileEntry.java</a>
+<ul>
+<li> file-name
+</li><li> file offset
+</li><li> internal and external attributes
+</li><li> file comment
+</li><li> ...
+</li></ul>
+
+</li><li> central-directory end (summary information), see <a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipCentralDirectoryEnd.html">ZipCentralDirectoryEnd.java</a>
+<ul>
+<li> number records
+</li><li> central-directory offset
+</li><li> comment
+</li><li> ...
+</li></ul>
+
 </li></ol>
 
 <hr size="6">
@@ -924,6 +987,8 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
  &nbsp; 
 <a href="#Index-of-Concepts-1_cp_letter-M" class="summary-letter"><b>M</b></a>
  &nbsp; 
+<a href="#Index-of-Concepts-1_cp_letter-N" class="summary-letter"><b>N</b></a>
+ &nbsp; 
 <a href="#Index-of-Concepts-1_cp_letter-O" class="summary-letter"><b>O</b></a>
  &nbsp; 
 <a href="#Index-of-Concepts-1_cp_letter-P" class="summary-letter"><b>P</b></a>
@@ -944,9 +1009,10 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-A">A</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-author">author</a></td><td valign="top"><a href="#Top">SimpleZip</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-avoiding-data-descriptor">avoiding data descriptor</a></td><td valign="top"><a href="#ZipFileOutput">2.3.1 Constructing a ZipFileOutput</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-B">B</a></th><td></td><td></td></tr>
-<tr><td></td><td valign="top"><a href="#index-buffered-of-file-data">buffered of file data</a></td><td valign="top"><a href="#ZipFileOutput">2.3.1 Constructing a ZipFileOutput</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-buffered-file-data">buffered file data</a></td><td valign="top"><a href="#ZipFileOutput">2.3.1 Constructing a ZipFileOutput</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-C">C</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-central_002ddirectory-end_002c-reading">central-directory end, reading</a></td><td valign="top"><a href="#Read-Directory-Entries">2.2.4 Reading Zip Central-Directory Entries</a></td></tr>
@@ -959,6 +1025,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <tr><th><a name="Index-of-Concepts-1_cp_letter-D">D</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-data-descriptor">data descriptor</a></td><td valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data from Buffer, File, or Stream</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-data-descriptor-1">data descriptor</a></td><td valign="top"><a href="#Write-File-Data">2.3.3 Writing File Data to Buffer, File, or Stream</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-data-descriptor_002c-avoiding">data descriptor, avoiding</a></td><td valign="top"><a href="#ZipFileOutput">2.3.1 Constructing a ZipFileOutput</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-downloading-the-jars">downloading the jars</a></td><td valign="top"><a href="#Downloading">2.1 Downloading Jar</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-E">E</a></th><td></td><td></td></tr>
@@ -970,6 +1037,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <tr><th><a name="Index-of-Concepts-1_cp_letter-F">F</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-file-attributes_002c-external">file attributes, external</a></td><td valign="top"><a href="#Read-Directory-Entries">2.2.4 Reading Zip Central-Directory Entries</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-file-attributes_002c-internal">file attributes, internal</a></td><td valign="top"><a href="#Read-Directory-Entries">2.2.4 Reading Zip Central-Directory Entries</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-file-data_002c-buffering">file data, buffering</a></td><td valign="top"><a href="#ZipFileOutput">2.3.1 Constructing a ZipFileOutput</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-file-header">file header</a></td><td valign="top"><a href="#Read-File-Headers">2.2.2 Reading Zip File Header Entries</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-G">G</a></th><td></td><td></td></tr>
@@ -989,6 +1057,9 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-M">M</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-Maven_002c-use-with">Maven, use with</a></td><td valign="top"><a href="#Maven">2.4 Using With Maven</a></td></tr>
+<tr><td colspan="3"> <hr></td></tr>
+<tr><th><a name="Index-of-Concepts-1_cp_letter-N">N</a></th><td></td><td></td></tr>
+<tr><td></td><td valign="top"><a href="#index-no-data-descriptor">no data descriptor</a></td><td valign="top"><a href="#ZipFileOutput">2.3.1 Constructing a ZipFileOutput</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-O">O</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-open-source-license">open source license</a></td><td valign="top"><a href="#License">5. Open Source License</a></td></tr>
@@ -1055,6 +1126,8 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
  &nbsp; 
 <a href="#Index-of-Concepts-1_cp_letter-M" class="summary-letter"><b>M</b></a>
  &nbsp; 
+<a href="#Index-of-Concepts-1_cp_letter-N" class="summary-letter"><b>N</b></a>
+ &nbsp; 
 <a href="#Index-of-Concepts-1_cp_letter-O" class="summary-letter"><b>O</b></a>
  &nbsp; 
 <a href="#Index-of-Concepts-1_cp_letter-P" class="summary-letter"><b>P</b></a>
@@ -1120,7 +1193,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 </tr></table>
 <h1>About This Document</h1>
 <p>
-  This document was generated by <em>Gray Watson</em> on <em>May 23, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
+  This document was generated by <em>Gray Watson</em> on <em>May 24, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
 </p>
 <p>
   The buttons in the navigation panels have the following meaning:
@@ -1222,7 +1295,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <hr size="1">
 <p>
  <font size="-1">
-  This document was generated by <em>Gray Watson</em> on <em>May 23, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
+  This document was generated by <em>Gray Watson</em> on <em>May 24, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
  </font>
  <br>
 

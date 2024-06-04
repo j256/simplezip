@@ -15,8 +15,8 @@ public class UnknownExtraField extends BaseExtraField {
 
 	private final byte[] bytes;
 
-	public UnknownExtraField(int id, int extraSize, byte[] bytes) {
-		super(id, extraSize);
+	public UnknownExtraField(int id, byte[] bytes) {
+		super(id, (bytes == null ? 0 : bytes.length));
 		this.bytes = bytes;
 	}
 
@@ -58,13 +58,7 @@ public class UnknownExtraField extends BaseExtraField {
 		private byte[] bytes;
 
 		public UnknownExtraField build() {
-			int extraSize;
-			if (bytes == null) {
-				extraSize = 0;
-			} else {
-				extraSize = bytes.length;
-			}
-			return new UnknownExtraField(id, extraSize, bytes);
+			return new UnknownExtraField(id, bytes);
 		}
 
 		public int getId() {
@@ -75,12 +69,22 @@ public class UnknownExtraField extends BaseExtraField {
 			this.id = id;
 		}
 
+		public Builder withId(int id) {
+			this.id = id;
+			return this;
+		}
+
 		public byte[] getBytes() {
 			return bytes;
 		}
 
 		public void setBytes(byte[] bytes) {
 			this.bytes = bytes;
+		}
+
+		public Builder withBytes(byte[] bytes) {
+			this.bytes = bytes;
+			return this;
 		}
 	}
 }

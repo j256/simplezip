@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -26,6 +27,8 @@ import org.junit.Test;
 
 import com.j256.simplezip.RewindableInputStream;
 import com.j256.simplezip.format.ZipFileHeader.Builder;
+import com.j256.simplezip.format.extra.UnknownExtraField;
+import com.j256.simplezip.format.extra.Zip64ExtraField;
 
 public class ZipFileHeaderTest {
 
@@ -137,7 +140,9 @@ public class ZipFileHeaderTest {
 		assertEquals(lastModifiedFileDate, header.getLastModifiedDate());
 		assertEquals(crc32, header.getCrc32());
 		assertEquals(compressedSize, header.getCompressedSize());
+		assertEquals(compressedSize, header.getZip64CompressedSize());
 		assertEquals(uncompressedSize, header.getUncompressedSize());
+		assertEquals(uncompressedSize, header.getZip64UncompressedSize());
 		assertArrayEquals(fileNameBytes, header.getFileNameBytes());
 		assertArrayEquals(extraBytes, header.getExtraFieldBytes());
 
@@ -172,6 +177,17 @@ public class ZipFileHeaderTest {
 		assertEquals(0, copy.getUncompressedSize());
 		assertArrayEquals(null, copy.getFileNameBytes());
 		assertArrayEquals(null, copy.getExtraFieldBytes());
+	}
+
+	@Test
+	public void testInvalidExtraField() {
+		ZipFileHeader.Builder builder = ZipFileHeader.builder();
+		byte[] extraBytes = new byte[] { 7, 8, 1, 2, 1, 5 };
+		builder.setExtraFieldBytes(extraBytes);
+		assertEquals(extraBytes, builder.getExtraFieldBytes());
+
+		ZipFileHeader header = builder.build();
+		assertArrayEquals(extraBytes, header.getExtraFieldBytes());
 	}
 
 	@Test
@@ -378,5 +394,118 @@ public class ZipFileHeaderTest {
 		assertEquals(0, header.getCompressedSize());
 		assertEquals(0, header.getUncompressedSize());
 		assertTrue(header.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR));
+	}
+
+	@Test
+	public void testLargeSizes() {
+		ZipFileHeader.Builder builder = ZipFileHeader.builder();
+		builder.setCompressedSize(ZipFileHeader.MAX_4_BYTE_SIZE);
+		assertNull(builder.build().getZip64ExtraField());
+		builder.setCompressedSize(ZipFileHeader.MAX_4_BYTE_SIZE + 1);
+		assertNotNull(builder.build().getZip64ExtraField());
+
+		builder.setCompressedSize(ZipFileHeader.MAX_4_BYTE_SIZE);
+		builder.setUncompressedSize(ZipFileHeader.MAX_4_BYTE_SIZE + 1);
+		assertNotNull(builder.build().getZip64ExtraField());
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testAddExtraFieldZip64Id() {
+		ZipFileHeader.Builder builder = ZipFileHeader.builder();
+		UnknownExtraField extraField = new UnknownExtraField(Zip64ExtraField.EXPECTED_ID, new byte[0]);
+		builder.addExtraField(extraField);
+	}
+
+	@Test
+	public void testAddExtraField() throws IOException {
+		ZipFileHeader.Builder builder = ZipFileHeader.builder();
+		UnknownExtraField extraField1 = new UnknownExtraField(213213, new byte[0]);
+		builder.addExtraField(extraField1);
+		ZipFileHeader header = builder.build();
+		assertArrayEquals(extraField1.getExtraFieldBytes(), header.getExtraFieldBytes());
+		assertEquals(extraField1.getExtraSize(), extraField1.getBytes().length);
+		UnknownExtraField extraField2 = new UnknownExtraField(334534, new byte[] { 3, 4, 1, 2 });
+		builder.addExtraField(extraField2);
+		header = builder.build();
+		assertArrayEquals(appendBytes(extraField1.getExtraFieldBytes(), extraField2.getExtraFieldBytes()),
+				header.getExtraFieldBytes());
+		assertEquals(extraField1.getExtraSize(), extraField1.getBytes().length);
+		assertEquals(extraField2.getExtraSize(), extraField2.getBytes().length);
+	}
+
+	@Test
+	public void testAddZip64Extra() throws IOException {
+		long uncompressedSize = 12312321321312312L;
+		long compressedSize = 5675676555445345L;
+		long offset = 7334545345435345435L;
+		int diskNumber = 12;
+		Zip64ExtraField zip1 = new Zip64ExtraField(uncompressedSize, compressedSize, offset, diskNumber);
+		assertEquals(uncompressedSize, zip1.getUncompressedSize());
+		assertEquals(compressedSize, zip1.getCompressedSize());
+		assertEquals(offset, zip1.getOffset());
+		assertEquals(diskNumber, zip1.getDiskNumber());
+
+		ZipFileHeader.Builder builder = ZipFileHeader.builder();
+		builder.setZip64ExtraField(zip1);
+		// coverage
+		builder.addExtraField(zip1);
+		assertSame(zip1, builder.getZip64ExtraField());
+
+		ZipFileHeader header = builder.build();
+		assertEquals(uncompressedSize, header.getZip64UncompressedSize());
+		assertEquals(compressedSize, header.getZip64CompressedSize());
+		assertArrayEquals(header.getExtraFieldBytes(), zip1.getExtraFieldBytes());
+
+		// coverage
+		UnknownExtraField field = new UnknownExtraField(1313213, new byte[] { 3, 4, 1, 2 });
+		builder.setExtraFieldBytes(field.getExtraFieldBytes());
+
+		header = builder.build();
+		assertArrayEquals(appendBytes(zip1.getExtraFieldBytes(), field.getExtraFieldBytes()),
+				header.getExtraFieldBytes());
+	}
+
+	@Test
+	public void testAddZip64ExtraAsBytes() {
+		long uncompressedSize = 12321321312312L;
+		long compressedSize = 567565445345L;
+		long offset = 73345435345435L;
+		int diskNumber = 13242;
+		Zip64ExtraField zip = new Zip64ExtraField(uncompressedSize, compressedSize, offset, diskNumber);
+
+		ZipFileHeader.Builder builder = ZipFileHeader.builder();
+		builder.setExtraFieldBytes(zip.getExtraFieldBytes());
+		// coverage
+		builder.addExtraField(zip);
+		assertSame(zip, builder.getZip64ExtraField());
+
+		ZipFileHeader header = builder.build();
+		assertEquals(uncompressedSize, header.getZip64UncompressedSize());
+		assertEquals(compressedSize, header.getZip64CompressedSize());
+	}
+
+	@Test
+	public void testAddUnknownExtraAsBytes() throws IOException {
+		UnknownExtraField field = new UnknownExtraField(1313213, new byte[] { 3, 4, 1, 2 });
+
+		ZipFileHeader.Builder builder = ZipFileHeader.builder();
+		builder.setExtraFieldBytes(field.getExtraFieldBytes());
+		// coverage
+		builder.addExtraField(field);
+		assertNull(builder.getZip64ExtraField());
+		assertArrayEquals(field.getExtraFieldBytes(), builder.getExtraFieldBytes());
+
+		ZipFileHeader header = builder.build();
+		assertNull(header.getZip64ExtraField());
+		assertArrayEquals(appendBytes(field.getExtraFieldBytes(), field.getExtraFieldBytes()),
+				header.getExtraFieldBytes());
+	}
+
+	private byte[] appendBytes(byte[]... byteArrays) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		for (byte[] byteArray : byteArrays) {
+			baos.write(byteArray);
+		}
+		return baos.toByteArray();
 	}
 }
