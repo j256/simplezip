@@ -148,6 +148,13 @@ public class BufferedOutputStream extends OutputStream {
 	}
 
 	/**
+	 * Exposed for testing purposes.
+	 */
+	public File getTmpFile() {
+		return tmpFile;
+	}
+
+	/**
 	 * Encoded bytes either buffered or written of the latest file written by {@link #finishFileData(long, long)}..
 	 */
 	public long getEncodedSize() {
