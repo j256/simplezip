@@ -1,10 +1,10 @@
 package com.j256.simplezip.format.extra;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.j256.simplezip.IoUtils;
-import com.j256.simplezip.RewindableInputStream;
 
 /**
  * Zip64 extra-field information.
@@ -15,8 +15,8 @@ public class UnknownExtraField extends BaseExtraField {
 
 	private final byte[] bytes;
 
-	public UnknownExtraField(int id, int extraSize, byte[] bytes) {
-		super(id, extraSize);
+	public UnknownExtraField(int id, byte[] bytes) {
+		super(id, (bytes == null ? 0 : bytes.length));
 		this.bytes = bytes;
 	}
 
@@ -30,7 +30,7 @@ public class UnknownExtraField extends BaseExtraField {
 	/**
 	 * Read in from the input-stream.
 	 */
-	public static UnknownExtraField read(RewindableInputStream inputStream, int id, int extraSize) throws IOException {
+	public static UnknownExtraField read(InputStream inputStream, int id, int extraSize) throws IOException {
 		Builder builder = new UnknownExtraField.Builder();
 		builder.id = id;
 		builder.bytes = IoUtils.readBytes(inputStream, extraSize, "UnknownExtraField.bytes");
@@ -58,13 +58,7 @@ public class UnknownExtraField extends BaseExtraField {
 		private byte[] bytes;
 
 		public UnknownExtraField build() {
-			int extraSize;
-			if (bytes == null) {
-				extraSize = 0;
-			} else {
-				extraSize = bytes.length;
-			}
-			return new UnknownExtraField(id, extraSize, bytes);
+			return new UnknownExtraField(id, bytes);
 		}
 
 		public int getId() {
@@ -75,12 +69,22 @@ public class UnknownExtraField extends BaseExtraField {
 			this.id = id;
 		}
 
+		public Builder withId(int id) {
+			this.id = id;
+			return this;
+		}
+
 		public byte[] getBytes() {
 			return bytes;
 		}
 
 		public void setBytes(byte[] bytes) {
 			this.bytes = bytes;
+		}
+
+		public Builder withBytes(byte[] bytes) {
+			this.bytes = bytes;
+			return this;
 		}
 	}
 }

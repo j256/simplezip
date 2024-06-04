@@ -1,5 +1,7 @@
 package com.j256.simplezip.format;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,6 +15,10 @@ import java.util.zip.Deflater;
 
 import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
+import com.j256.simplezip.ZipFileOutput;
+import com.j256.simplezip.format.extra.BaseExtraField;
+import com.j256.simplezip.format.extra.ExtraFieldUtil;
+import com.j256.simplezip.format.extra.Zip64ExtraField;
 
 /**
  * Header of Zip file entries.
@@ -22,6 +28,7 @@ import com.j256.simplezip.RewindableInputStream;
 public class ZipFileHeader {
 
 	private static int EXPECTED_SIGNATURE = 0x4034b50;
+	public static long MAX_4_BYTE_SIZE = 0xFFFFFFFEL;
 
 	private final int versionNeeded;
 	private final int generalPurposeFlags;
@@ -29,14 +36,15 @@ public class ZipFileHeader {
 	private final int lastModifiedTime;
 	private final int lastModifiedDate;
 	private final long crc32;
-	private final int compressedSize;
-	private final int uncompressedSize;
+	private final long compressedSize;
+	private final long uncompressedSize;
 	private final byte[] fileNameBytes;
 	private final byte[] extraFieldBytes;
+	private final Zip64ExtraField zip64ExtraField;
 
 	public ZipFileHeader(int versionNeeded, int generalPurposeFlags, int compressionMethod, int lastModifiedTime,
-			int lastModifiedDate, long crc32, int compressedSize, int uncompressedSize, byte[] fileName,
-			byte[] extraFieldBytes) {
+			int lastModifiedDate, long crc32, long compressedSize, long uncompressedSize, byte[] fileName,
+			byte[] extraFieldBytes, Zip64ExtraField zip64ExtraField) {
 		this.versionNeeded = versionNeeded;
 		this.generalPurposeFlags = generalPurposeFlags;
 		this.compressionMethod = compressionMethod;
@@ -47,6 +55,7 @@ public class ZipFileHeader {
 		this.uncompressedSize = uncompressedSize;
 		this.fileNameBytes = fileName;
 		this.extraFieldBytes = extraFieldBytes;
+		this.zip64ExtraField = zip64ExtraField;
 	}
 
 	/**
@@ -218,12 +227,47 @@ public class ZipFileHeader {
 		return crc32;
 	}
 
-	public int getCompressedSize() {
+	/**
+	 * {@link Zip64ExtraField} in the {@link #getExtraFieldBytes()} that has the real compressed size. See
+	 * {@link #getZip64CompressedSize()}.
+	 */
+	public long getCompressedSize() {
 		return compressedSize;
 	}
 
-	public int getUncompressedSize() {
+	/**
+	 * Get the size of the compressed (encoded) bytes as encoded in the {@link Zip64ExtraField} which should be in the
+	 * {@link #extraFieldBytes}. If there is no extra field then the value of the {@link #getCompressedSize()} is
+	 * returned.
+	 */
+	public long getZip64CompressedSize() {
+		if (zip64ExtraField == null) {
+			return compressedSize;
+		} else {
+			return zip64ExtraField.getCompressedSize();
+		}
+	}
+
+	/**
+	 * Get the 32-bit size of the uncompressed, original (unencoded) bytes. This may return 0xFFFFFFFF to indicate that
+	 * there is a {@link Zip64ExtraField} in the {@link #getExtraFieldBytes()} that has the real compressed size. See
+	 * {@link #getZip64UncompressedSize()}.
+	 */
+	public long getUncompressedSize() {
 		return uncompressedSize;
+	}
+
+	/**
+	 * Get the size of the uncompressed (unencoded) bytes as encoded in the {@link Zip64ExtraField} which should be in
+	 * the {@link #extraFieldBytes}. If there is no extra field then the value of the {@link #getUncompressedSize()} is
+	 * returned.
+	 */
+	public long getZip64UncompressedSize() {
+		if (zip64ExtraField == null) {
+			return uncompressedSize;
+		} else {
+			return zip64ExtraField.getUncompressedSize();
+		}
 	}
 
 	public byte[] getFileNameBytes() {
@@ -240,6 +284,13 @@ public class ZipFileHeader {
 
 	public byte[] getExtraFieldBytes() {
 		return extraFieldBytes;
+	}
+
+	/**
+	 * Returns the Zip64 extra field in the extra-bytes or null if none.
+	 */
+	public Zip64ExtraField getZip64ExtraField() {
+		return zip64ExtraField;
 	}
 
 	/**
@@ -267,18 +318,60 @@ public class ZipFileHeader {
 		private int lastModifiedTime;
 		private int lastModifiedDate;
 		private long crc32;
-		private int compressedSize;
-		private int uncompressedSize;
+		private long compressedSize;
+		private long uncompressedSize;
 		private byte[] fileNameBytes;
 		private byte[] extraFieldBytes;
+		private ByteArrayOutputStream extraFieldsOutputStream;
+		private Zip64ExtraField zip64ExtraField;
+		private boolean zip64ExtraFieldInBytes;
 
 		public Builder() {
 			setLastModifiedDateTime(LocalDateTime.now());
 		}
 
 		public ZipFileHeader build() {
+
+			// if we don't have a zip64 field set then check our values and maybe add one
+			if (zip64ExtraField == null) {
+				if (uncompressedSize > MAX_4_BYTE_SIZE || compressedSize > MAX_4_BYTE_SIZE) {
+					zip64ExtraField = new Zip64ExtraField(uncompressedSize, compressedSize, 0, 0);
+					uncompressedSize = MAX_4_BYTE_SIZE;
+					compressedSize = MAX_4_BYTE_SIZE;
+				}
+			}
+
+			// build the extra bytes
+			byte[] extraBytes;
+			if (extraFieldsOutputStream == null && zip64ExtraField == null) {
+				extraBytes = extraFieldBytes;
+			} else {
+				if (extraFieldsOutputStream == null) {
+					extraFieldsOutputStream = new ByteArrayOutputStream();
+				}
+				// we may have extracted the zip64ExtraField from the extraFieldBytes
+				if (zip64ExtraField != null && !zip64ExtraFieldInBytes) {
+					try {
+						zip64ExtraField.write(extraFieldsOutputStream);
+						// now it is inside of the bytes
+						zip64ExtraFieldInBytes = true;
+					} catch (IOException e) {
+						// won't happen with ByteArrayOutputStream
+					}
+				}
+				// tack on the extra field bytes if both were set
+				if (extraFieldBytes != null) {
+					try {
+						extraFieldsOutputStream.write(extraFieldBytes);
+					} catch (IOException e) {
+						// won't happen with ByteArrayOutputStream
+					}
+				}
+				extraBytes = extraFieldsOutputStream.toByteArray();
+			}
 			return new ZipFileHeader(versionNeeded, generalPurposeFlags, compressionMethod, lastModifiedTime,
-					lastModifiedDate, crc32, compressedSize, uncompressedSize, fileNameBytes, extraFieldBytes);
+					lastModifiedDate, crc32, compressedSize, uncompressedSize, fileNameBytes, extraBytes,
+					zip64ExtraField);
 		}
 
 		/**
@@ -566,6 +659,11 @@ public class ZipFileHeader {
 			return crc32;
 		}
 
+		/**
+		 * Set to the crc checksum of the uncompressed bytes. This can be left as 0 if you want a
+		 * {@link ZipDataDescriptor} written after the file data or if you have buffered enabled via
+		 * {@link ZipFileOutput#enableFileBuffering(int, int)}.
+		 */
 		public void setCrc32(long crc32) {
 			this.crc32 = crc32;
 		}
@@ -579,28 +677,49 @@ public class ZipFileHeader {
 			this.crc32 = crc32.getValue();
 		}
 
-		public int getCompressedSize() {
+		public long getCompressedSize() {
 			return compressedSize;
 		}
 
-		public void setCompressedSize(int compressedSize) {
+		/**
+		 * Set to the compressed (encoded) size of the bytes. This can be left as 0 if you want a
+		 * {@link ZipDataDescriptor} written after the file data or if you have buffered enabled via
+		 * {@link ZipFileOutput#enableFileBuffering(int, int)}. If this value >= 0xFFFFFFFF then a Zip64 extra field
+		 * will be written into the extra bytes if not otherwise specified. You can also set this to 0xFFFFFFFF and add
+		 * a {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
+		 * {@link #setZip64ExtraField(Zip64ExtraField)}.
+		 */
+		public void setCompressedSize(long compressedSize) {
 			this.compressedSize = compressedSize;
 		}
 
-		public Builder withCompressedSize(int compressedSize) {
+		/**
+		 * Set to the compressed (encoded) size of the bytes. See {@link #setCompressedSize(long)} for more details.
+		 */
+		public Builder withCompressedSize(long compressedSize) {
 			this.compressedSize = compressedSize;
 			return this;
 		}
 
-		public int getUncompressedSize() {
+		public long getUncompressedSize() {
 			return uncompressedSize;
 		}
 
-		public void setUncompressedSize(int uncompressedSize) {
+		/**
+		 * Set to the uncompressed (unencoded) size of the bytes. If this value >= 0xFFFFFFFF then a Zip64 extra field
+		 * will be written into the extra bytes if not otherwise specified. You can also set this to 0xFFFFFFFF and add
+		 * a {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
+		 * {@link #setZip64ExtraField(Zip64ExtraField)}.
+		 */
+		public void setUncompressedSize(long uncompressedSize) {
 			this.uncompressedSize = uncompressedSize;
 		}
 
-		public Builder withUncompressedSize(int uncompressedSize) {
+		/**
+		 * Set to the uncompressed (unencoded) size of the bytes. See {@link #setUncompressedSize(long)} for more
+		 * details.
+		 */
+		public Builder withUncompressedSize(long uncompressedSize) {
 			this.uncompressedSize = uncompressedSize;
 			return this;
 		}
@@ -639,12 +758,78 @@ public class ZipFileHeader {
 			return extraFieldBytes;
 		}
 
+		/**
+		 * Set the extra-field-bytes.
+		 * 
+		 * NOTE: This will interrogate the array looking for a {@link Zip64ExtraField}.
+		 */
 		public void setExtraFieldBytes(byte[] extraFieldBytes) {
 			this.extraFieldBytes = extraFieldBytes;
+			if (zip64ExtraField == null) {
+				// process the extra bytes looking for an zip64 extra field
+				ByteArrayInputStream bais = new ByteArrayInputStream(extraFieldBytes);
+				try {
+					while (true) {
+						BaseExtraField extraField = ExtraFieldUtil.readExtraField(bais, true);
+						if (extraField == null) {
+							break;
+						}
+						if (extraField instanceof Zip64ExtraField) {
+							zip64ExtraField = (Zip64ExtraField) extraField;
+							zip64ExtraFieldInBytes = true;
+							break;
+						}
+					}
+				} catch (IOException e) {
+					// could happen with EOF which prolly means an invalid header but oh well
+				}
+			}
 		}
 
+		/**
+		 * Set the extra-field-bytes.
+		 * 
+		 * NOTE: This will interrogate the array looking for a {@link Zip64ExtraField}.
+		 */
 		public Builder withExtraFieldBytes(byte[] extraFieldBytes) {
-			this.extraFieldBytes = extraFieldBytes;
+			setExtraFieldBytes(extraFieldBytes);
+			return this;
+		}
+
+		/**
+		 * Add an extra field to the header other than the {@link #setZip64ExtraField(Zip64ExtraField)}. You should most
+		 * likely either call {@link #setExtraFieldBytes(byte[])} or this method.
+		 */
+		public Builder addExtraField(BaseExtraField extraField) {
+			// is this a zip64extra field? someone didn't read the javadocs.
+			if (extraField instanceof Zip64ExtraField) {
+				return withZip64ExtraField((Zip64ExtraField) extraField);
+			}
+			if (extraField.getId() == Zip64ExtraField.EXPECTED_ID) {
+				throw new IllegalArgumentException("You cannot add an extra field with id "
+						+ Zip64ExtraField.EXPECTED_ID + " and should be using setZip64ExtraField(...)");
+			}
+			if (extraFieldsOutputStream == null) {
+				extraFieldsOutputStream = new ByteArrayOutputStream();
+			}
+			try {
+				extraField.write(extraFieldsOutputStream);
+			} catch (IOException e) {
+				// won't happen with byte array output stream
+			}
+			return this;
+		}
+
+		public Zip64ExtraField getZip64ExtraField() {
+			return zip64ExtraField;
+		}
+
+		public void setZip64ExtraField(Zip64ExtraField zip64ExtraField) {
+			this.zip64ExtraField = zip64ExtraField;
+		}
+
+		public Builder withZip64ExtraField(Zip64ExtraField zip64ExtraField) {
+			this.zip64ExtraField = zip64ExtraField;
 			return this;
 		}
 	}

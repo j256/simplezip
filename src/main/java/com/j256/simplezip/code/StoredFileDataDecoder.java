@@ -10,19 +10,25 @@ import java.io.InputStream;
  */
 public class StoredFileDataDecoder implements FileDataDecoder {
 
-	private final int dataSize;
+	private final long dataSize;
 
 	private InputStream inputStream;
-	private int inputOffset;
+	private long inputOffset;
 
-	public StoredFileDataDecoder(InputStream inputStream, int dataSize) {
+	public StoredFileDataDecoder(InputStream inputStream, long dataSize) {
 		this.dataSize = dataSize;
 		this.inputStream = inputStream;
 	}
 
 	@Override
 	public int decode(byte[] outputBuffer, int offset, int length) throws IOException {
-		int maxLength = Math.min(dataSize - inputOffset, length);
+		int maxLength;
+		// we do this instead of Math.min() because one is long but never > than MAXINT
+		if ((dataSize - inputOffset) < length) {
+			maxLength = (int) (dataSize - inputOffset);
+		} else {
+			maxLength = length;
+		}
 		if (maxLength <= 0) {
 			// hit the end of the data
 			return -1;

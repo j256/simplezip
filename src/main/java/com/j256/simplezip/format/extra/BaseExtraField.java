@@ -1,5 +1,6 @@
 package com.j256.simplezip.format.extra;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -35,6 +36,19 @@ public abstract class BaseExtraField {
 
 	public int getExtraSize() {
 		return extraSize;
+	}
+
+	/**
+	 * Get the bytes for this field including the id and size.
+	 */
+	public byte[] getExtraFieldBytes() {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(2 + 2 + extraSize);
+		try {
+			write(baos);
+		} catch (IOException e) {
+			// not going to happen with ByteArrayOutputStream
+		}
+		return baos.toByteArray();
 	}
 
 	/**

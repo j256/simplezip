@@ -1,9 +1,12 @@
 package com.j256.simplezip.format.extra;
 
+import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 
 import com.j256.simplezip.IoUtils;
-import com.j256.simplezip.RewindableInputStream;
+import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
+import com.j256.simplezip.format.ZipFileHeader;
 
 /**
  * Utility for reading in the extra fields.
@@ -14,11 +17,26 @@ public class ExtraFieldUtil {
 
 	/**
 	 * Read in an extra field returning either for a local file or the central directory.
+	 * 
+	 * @param fileHeader
+	 *            Set to true if we are processing extra-bytes from the {@link ZipFileHeader} or false if from
+	 *            {@link ZipCentralDirectoryFileEntry}.
+	 * 
+	 * @return Extra field or null if none.
 	 */
-	public static <T extends BaseExtraField> T readExtraField(RewindableInputStream input, boolean fileHeader)
+	public static <T extends BaseExtraField> T readExtraField(InputStream input, boolean fileHeader)
+			throws IOException {
+		try {
+			return doReadExtraField(input, fileHeader);
+		} catch (EOFException ee) {
+			return null;
+		}
+	}
+
+	private static <T extends BaseExtraField> T doReadExtraField(InputStream input, boolean fileHeader)
 			throws IOException {
 		/*
-		 * WHen reading a file-header we aren't sure if this is a file-header or the start of the central directory.
+		 * When reading a file-header we aren't sure if this is a file-header or the start of the central directory.
 		 */
 		int id = IoUtils.readShort(input, "BaseExtraField.id");
 		int size = IoUtils.readShort(input, "BaseExtraField.size");

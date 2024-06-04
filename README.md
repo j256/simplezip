@@ -78,7 +78,7 @@ Maven packages are published via [![Maven Central](https://maven-badges.herokuap
 
 # Dependencies
 
-Simplezip has no direct dependencies.
+SimpleZip has no runtime dependencies.
 
 # ChangeLog Release Notes
 

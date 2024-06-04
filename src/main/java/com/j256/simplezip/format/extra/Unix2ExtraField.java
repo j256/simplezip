@@ -1,10 +1,10 @@
 package com.j256.simplezip.format.extra;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.j256.simplezip.IoUtils;
-import com.j256.simplezip.RewindableInputStream;
 
 /**
  * Unit extra field #2.
@@ -35,7 +35,7 @@ public class Unix2ExtraField extends BaseExtraField {
 	/**
 	 * Read from the input-stream.
 	 */
-	public static Unix2ExtraField read(RewindableInputStream inputStream, int id, int size) throws IOException {
+	public static Unix2ExtraField read(InputStream inputStream, int id, int size) throws IOException {
 		Builder builder = new Unix2ExtraField.Builder();
 		builder.userId = IoUtils.readShort(inputStream, "Unix2ExtraField.userId");
 		builder.groupId = IoUtils.readShort(inputStream, "Unix2ExtraField.groupId");

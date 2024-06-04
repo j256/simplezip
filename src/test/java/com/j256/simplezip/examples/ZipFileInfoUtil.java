@@ -138,7 +138,7 @@ public class ZipFileInfoUtil {
 	/**
 	 * Print sizes and the compression reduction.
 	 */
-	private void printSizes(String indent, int compressed, int uncompressed) {
+	private void printSizes(String indent, long compressed, long uncompressed) {
 		float reduction = 0;
 		if (uncompressed != 0) {
 			reduction = Math.round(1000.0F * (1.0F - ((float) compressed / ((float) uncompressed)))) / 10.0F;
