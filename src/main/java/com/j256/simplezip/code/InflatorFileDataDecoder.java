@@ -19,11 +19,11 @@ public class InflatorFileDataDecoder implements FileDataDecoder {
 	private RewindableInputStream delegate;
 	/**
 	 * We need to not read too much ahead because otherwise we run the risk of reading off the end of an inner zip file
-	 * and not be able to rewind back enough. So we need to use a temporary buffer which is readed the deflated bytes
+	 * and not be able to rewind back enough. So we need to use a temporary buffer which is reading the deflated bytes
 	 * that is a maximum of a CentralDirectoryFileHeader and a CentralDirectoryEnd.
 	 */
 	private final byte[] tmpBuffer =
-			new byte[ZipCentralDirectoryFileEntry.MINIMUM_READ_SIZE + ZipCentralDirectoryEnd.MINIMUM_READ_SIZE];
+			new byte[ZipCentralDirectoryFileEntry.MINIMUM_READ_SIZE + ZipCentralDirectoryEnd.MINIMUM_ZIP32_READ_SIZE];
 
 	public InflatorFileDataDecoder(RewindableInputStream inputStream) throws IOException {
 		this.delegate = inputStream;
