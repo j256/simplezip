@@ -10,7 +10,8 @@
 	* Added some support for Zip64 extra fields.
 	* Added Zip64 central-directory end support and Zip64 end-locator object support.
 	* Added iterators for the ZipFileHeader and ZipCentralDirectoryFileEntry sections.
-	* Renamed the ZipFileInput.readFileData(File) methods to be readFileDataToFile(). 
+	* Renamed the ZipFileInput.readFileData(File) methods to be readFileDataToFile().
+	* Added support for file-header and directory-file-entry iterators.
 
 1.1: 5/23/2024
 	* Fixed some of the logic to allow us to control all bytes in the output Zip.
