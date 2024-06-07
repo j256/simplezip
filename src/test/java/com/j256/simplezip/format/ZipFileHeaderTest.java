@@ -26,6 +26,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.junit.Test;
 
+import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.RewindableInputStream;
 import com.j256.simplezip.format.ZipFileHeader.Builder;
 import com.j256.simplezip.format.extra.UnknownExtraField;
@@ -418,13 +419,13 @@ public class ZipFileHeaderTest {
 	@Test
 	public void testLargeSizes() {
 		ZipFileHeader.Builder builder = ZipFileHeader.builder();
-		builder.setCompressedSize(ZipFileHeader.MAX_4_BYTE_SIZE);
+		builder.setCompressedSize(IoUtils.MAX_UNSIGNED_INT_VALUE - 1);
 		assertNull(builder.build().getZip64ExtraField());
-		builder.setCompressedSize(ZipFileHeader.MAX_4_BYTE_SIZE + 1);
+		builder.setCompressedSize(IoUtils.MAX_UNSIGNED_INT_VALUE);
 		assertNotNull(builder.build().getZip64ExtraField());
 
-		builder.setCompressedSize(ZipFileHeader.MAX_4_BYTE_SIZE);
-		builder.setUncompressedSize(ZipFileHeader.MAX_4_BYTE_SIZE + 1);
+		builder.setCompressedSize(IoUtils.MAX_UNSIGNED_INT_VALUE - 1);
+		builder.setUncompressedSize(IoUtils.MAX_UNSIGNED_INT_VALUE);
 		assertNotNull(builder.build().getZip64ExtraField());
 	}
 

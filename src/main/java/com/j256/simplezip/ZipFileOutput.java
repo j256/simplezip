@@ -18,6 +18,7 @@ import com.j256.simplezip.code.FileDataEncoder;
 import com.j256.simplezip.code.StoredFileDataEncoder;
 import com.j256.simplezip.format.CompressionMethod;
 import com.j256.simplezip.format.GeneralPurposeFlag;
+import com.j256.simplezip.format.Zip64CentralDirectoryEnd;
 import com.j256.simplezip.format.Zip64CentralDirectoryEndLocator;
 import com.j256.simplezip.format.ZipCentralDirectoryEnd;
 import com.j256.simplezip.format.ZipCentralDirectoryEndInfo;
@@ -46,7 +47,7 @@ public class ZipFileOutput implements Closeable {
 	private ZipFileDataOutputStream fileDataOutputStream;
 	private boolean fileFinished = true;
 	private boolean zipFinished;
-	private int fileCount;
+	private long fileCount;
 
 	/**
 	 * Start writing a Zip-file to a file-path. You must call {@link #close()} to close the stream when you are done.
@@ -399,7 +400,8 @@ public class ZipFileOutput implements Closeable {
 		} else {
 			dirEndBuilder = ZipCentralDirectoryEnd.Builder.fromEndInfo(endInfo);
 		}
-		dirEndBuilder.setDirectoryOffset(bufferedOutputStream.getWriteCount());
+		long dirOffset = bufferedOutputStream.getWriteCount();
+		dirEndBuilder.setDirectoryOffset(dirOffset);
 
 		// write out our recorded central-directory file-headers
 		for (ZipCentralDirectoryFileEntry.Builder dirEntryBuilder : dirFileEntryBuilders) {
@@ -407,28 +409,29 @@ public class ZipFileOutput implements Closeable {
 			dirEntry.write(bufferedOutputStream);
 		}
 
-		// now write our directory end
-		dirEndBuilder.setNumRecordsOnDisk(fileCount);
-		dirEndBuilder.setNumRecordsTotal(fileCount);
-		long startOffset = dirEndBuilder.getDirectoryOffset();
-		// XXX: should be long? and need to handle zip64
-		int size = (int) (bufferedOutputStream.getWriteCount() - startOffset);
-		dirEndBuilder.setDirectorySize(size);
-		ZipCentralDirectoryEnd end = dirEndBuilder.build();
-		long endOffset = bufferedOutputStream.getWriteCount();
-		end.write(bufferedOutputStream);
-
-		// now write our zip64 locator if the end is in zip64 mode
-		if (end.isZip64()) {
-			Zip64CentralDirectoryEndLocator.Builder dirEndLocatorBuilder;
-			if (endInfo == null) {
-				dirEndLocatorBuilder = Zip64CentralDirectoryEndLocator.builder();
-			} else {
-				dirEndLocatorBuilder = Zip64CentralDirectoryEndLocator.Builder.fromEndInfo(endInfo);
-			}
-			dirEndLocatorBuilder.setEndOffset(endOffset);
-			dirEndLocatorBuilder.build().write(bufferedOutputStream);
+		// build our directory end but don't write it yet
+		if (fileCount >= IoUtils.MAX_UNSIGNED_SHORT_VALUE) {
+			dirEndBuilder.setNumRecordsOnDisk(IoUtils.MAX_UNSIGNED_SHORT_VALUE);
+			dirEndBuilder.setNumRecordsTotal(IoUtils.MAX_UNSIGNED_SHORT_VALUE);
+		} else {
+			dirEndBuilder.setNumRecordsOnDisk((int) fileCount);
+			dirEndBuilder.setNumRecordsTotal((int) fileCount);
 		}
+		long dirSize = (bufferedOutputStream.getWriteCount() - dirOffset);
+		dirEndBuilder.setDirectorySize(dirSize);
+		dirEndBuilder.setDirectoryOffset(dirOffset);
+
+		// if the end block has zip64 values (0xFFFF or 0xFFFFFFFF) or the end-info was set to zip64
+		if (dirEndBuilder.hasZip64Values() || (endInfo != null && endInfo.isNeedsZip64())) {
+			finishZip64(endInfo, dirOffset, dirSize);
+			// we need to recalculate the directory size now that the zip64 stuff has been written
+			dirSize = (bufferedOutputStream.getWriteCount() - dirOffset);
+			dirEndBuilder.setDirectorySize(dirSize);
+		}
+
+		// finally we write the standard end marker
+		ZipCentralDirectoryEnd end = dirEndBuilder.build();
+		end.write(bufferedOutputStream);
 
 		zipFinished = true;
 		return bufferedOutputStream.getWriteCount();
@@ -458,6 +461,33 @@ public class ZipFileOutput implements Closeable {
 			finishZip(null);
 		}
 		bufferedOutputStream.close();
+	}
+
+	/**
+	 * Write the Zip64 end structures which are right before the end block.
+	 */
+	private void finishZip64(ZipCentralDirectoryEndInfo endInfo, long dirOffset, long dirSize) throws IOException {
+		Zip64CentralDirectoryEnd.Builder zip64EndBuilder;
+		if (endInfo == null) {
+			zip64EndBuilder = Zip64CentralDirectoryEnd.builder();
+		} else {
+			zip64EndBuilder = Zip64CentralDirectoryEnd.Builder.fromEndInfo(endInfo);
+		}
+		zip64EndBuilder.setNumRecordsOnDisk(fileCount);
+		zip64EndBuilder.setNumRecordsTotal(fileCount);
+		zip64EndBuilder.setDirectorySize(dirSize);
+		zip64EndBuilder.setDirectoryOffset(dirOffset);
+		long zip64EndOffset = bufferedOutputStream.getWriteCount();
+		zip64EndBuilder.build().write(bufferedOutputStream);
+
+		Zip64CentralDirectoryEndLocator.Builder dirEndLocatorBuilder;
+		if (endInfo == null) {
+			dirEndLocatorBuilder = Zip64CentralDirectoryEndLocator.builder();
+		} else {
+			dirEndLocatorBuilder = Zip64CentralDirectoryEndLocator.Builder.fromEndInfo(endInfo);
+		}
+		dirEndLocatorBuilder.setEndOffset(zip64EndOffset);
+		dirEndLocatorBuilder.build().write(bufferedOutputStream);
 	}
 
 	private void doWriteFileDataPart(byte[] buffer, int offset, int length, int compressionMethod) throws IOException {

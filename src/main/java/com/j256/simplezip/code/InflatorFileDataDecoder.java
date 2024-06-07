@@ -23,7 +23,7 @@ public class InflatorFileDataDecoder implements FileDataDecoder {
 	 * that is a maximum of a CentralDirectoryFileHeader and a CentralDirectoryEnd.
 	 */
 	private final byte[] tmpBuffer =
-			new byte[ZipCentralDirectoryFileEntry.MINIMUM_READ_SIZE + ZipCentralDirectoryEnd.MINIMUM_ZIP32_READ_SIZE];
+			new byte[ZipCentralDirectoryFileEntry.MINIMUM_READ_SIZE + ZipCentralDirectoryEnd.MINIMUM_READ_SIZE];
 
 	public InflatorFileDataDecoder(RewindableInputStream inputStream) throws IOException {
 		this.delegate = inputStream;

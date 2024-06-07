@@ -18,6 +18,8 @@ import com.j256.simplezip.code.StoredFileDataDecoder;
 import com.j256.simplezip.format.CompressionMethod;
 import com.j256.simplezip.format.ExternalFileAttributesUtils;
 import com.j256.simplezip.format.GeneralPurposeFlag;
+import com.j256.simplezip.format.Zip64CentralDirectoryEnd;
+import com.j256.simplezip.format.Zip64CentralDirectoryEndLocator;
 import com.j256.simplezip.format.ZipCentralDirectoryEnd;
 import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
 import com.j256.simplezip.format.ZipDataDescriptor;
@@ -302,6 +304,25 @@ public class ZipFileInput implements Closeable {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Read the central-directory end which is after all of the central-directory file-headers at the very end of the
+	 * Zip file.
+	 * 
+	 * @return The zip64 end or null if there is none.
+	 */
+	public Zip64CentralDirectoryEnd readZip64DirectoryEnd() throws IOException {
+		return Zip64CentralDirectoryEnd.read(inputStream);
+	}
+
+	/**
+	 * Read the central-directory end locator which is after the zip64 end structure.
+	 * 
+	 * @return The zip64 locator or null if there is none.
+	 */
+	public Zip64CentralDirectoryEndLocator readZip64DirectoryEndLocator() throws IOException {
+		return Zip64CentralDirectoryEndLocator.read(inputStream);
 	}
 
 	/**
