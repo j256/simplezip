@@ -22,7 +22,6 @@ public class ZipCentralDirectoryEnd {
 	public static final int ZIP64_FIXED_FIELDS_SIZE = 2 + 2 + 4 + 4 + 8 + 8 + 8 + 8;
 
 	private final boolean zip64;
-	private final long dirEndSize;
 	private final int versionMade;
 	private final int versionNeeded;
 	private final int diskNumber;
@@ -34,11 +33,10 @@ public class ZipCentralDirectoryEnd {
 	private final byte[] commentBytes;
 	private final byte[] extensibleData;
 
-	public ZipCentralDirectoryEnd(boolean zip64, long dirEndSize, int versionMade, int versionNeeded, int diskNumber,
+	public ZipCentralDirectoryEnd(boolean zip64, int versionMade, int versionNeeded, int diskNumber,
 			int diskNumberStart, long numRecordsOnDisk, long numRecordsTotal, long directorySize, long directoryOffset,
 			byte[] commentBytes, byte[] extensibleData) {
 		this.zip64 = zip64;
-		this.dirEndSize = dirEndSize;
 		this.versionMade = versionMade;
 		this.versionNeeded = versionNeeded;
 		this.diskNumber = diskNumber;
@@ -106,7 +104,11 @@ public class ZipCentralDirectoryEnd {
 	public void write(OutputStream outputStream) throws IOException {
 		if (zip64) {
 			IoUtils.writeInt(outputStream, EXPECTED_ZIP64_SIGNATURE);
-			IoUtils.writeLong(outputStream, dirEndSize);
+			long size = ZIP64_FIXED_FIELDS_SIZE;
+			if (extensibleData != null) {
+				size += extensibleData.length;
+			}
+			IoUtils.writeLong(outputStream, size);
 			IoUtils.writeShort(outputStream, versionMade);
 			IoUtils.writeShort(outputStream, versionNeeded);
 			IoUtils.writeInt(outputStream, diskNumber);
@@ -139,10 +141,6 @@ public class ZipCentralDirectoryEnd {
 	 */
 	public boolean isZip64() {
 		return zip64;
-	}
-
-	public long getDirEndSize() {
-		return dirEndSize;
 	}
 
 	/**
@@ -245,14 +243,7 @@ public class ZipCentralDirectoryEnd {
 					|| directoryOffset > IoUtils.MAX_UNSIGNED_INT_VALUE) {
 				zip64 = true;
 			}
-			long size = 0;
-			if (zip64) {
-				size += ZIP64_FIXED_FIELDS_SIZE;
-				if (extensibleData != null) {
-					size += extensibleData.length;
-				}
-			}
-			return new ZipCentralDirectoryEnd(zip64, size, versionMade, versionNeeded, diskNumber, diskNumberStart,
+			return new ZipCentralDirectoryEnd(zip64, versionMade, versionNeeded, diskNumber, diskNumberStart,
 					numRecordsOnDisk, numRecordsTotal, directorySize, directoryOffset, commentBytes, extensibleData);
 		}
 

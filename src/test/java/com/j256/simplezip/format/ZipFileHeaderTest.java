@@ -94,6 +94,11 @@ public class ZipFileHeaderTest {
 		builder.withLastModifiedDateTime(tmpFile);
 		assertEquals(date, builder.getLastModifiedDate());
 		assertEquals(time, builder.getLastModifiedTime());
+
+		builder = Builder.fromFile(tmpFile);
+		assertEquals(date, builder.getLastModifiedDate());
+		assertEquals(time, builder.getLastModifiedTime());
+		assertEquals(tmpFile.getPath(), builder.getFileName());
 		tmpFile.delete();
 	}
 

@@ -11,6 +11,8 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.j256.simplezip.format.ZipCentralDirectoryFileInfo.Builder;
+
 public class ZipCentralDirectoryFileInfoTest {
 
 	@Test
@@ -297,5 +299,14 @@ public class ZipCentralDirectoryFileInfoTest {
 		mode = 0755;
 		builder.withUnixExternalFileAttributes(mode);
 		assertEquals((mode << 16), builder.getExternalFileAttributes());
+	}
+
+	@Test
+	public void testFromFile() throws IOException {
+		File tmpFile = File.createTempFile(getClass().getSimpleName(), ".t");
+		tmpFile.deleteOnExit();
+		Builder builder = ZipCentralDirectoryFileInfo.Builder.fromFile(tmpFile);
+		assertEquals(ExternalFileAttributesUtils.fromFile(tmpFile), builder.getExternalFileAttributes());
+		tmpFile.delete();
 	}
 }
