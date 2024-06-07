@@ -426,7 +426,7 @@ public class ZipFileInputTest {
 		File file1 = new File(fileName1);
 		file1.getParentFile().mkdirs();
 		file1.deleteOnExit();
-		input.readFileData(file1.getPath());
+		input.readFileDataToFile(file1.getPath());
 		byte[] output = readFileToBytes(file1);
 		assertArrayEquals(bytes, output);
 		try {
