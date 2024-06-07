@@ -396,7 +396,7 @@ public class ZipFileHeader {
 		 * Initialize a builder with the last-modified date/time and file-name from a disk file. It uses the
 		 * {@link File#getPath()} as the file-name.
 		 */
-		public static Builder fromFrom(File file) {
+		public static Builder fromFile(File file) {
 			Builder builder = new Builder();
 			builder.setLastModifiedDateTime(file.lastModified());
 			builder.fileNameBytes = file.getPath().getBytes();

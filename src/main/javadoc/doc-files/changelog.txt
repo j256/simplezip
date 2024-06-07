@@ -1,10 +1,16 @@
-1.2: 5/??/2024
+2.0: 5/??/2024
 	* Removed the ZipVersion which seemed artificial.  Replaced with major/minor numbers.
-	* Some method renaming about the version-needed and version-made getters and setters.
+	* Renamed some methods around the version-needed and version-made getters and setters.
 	* Renamed the ZipFileOutput.enableBufferedOutput() method to enableFileBuffering().
-	* Added some methods to extract the ZipFileHeader and the ZipCentralDirectoryFileInfo fields from a File.
-	* Added some support for Zip64 extra fields.  Not quite full Zip64 support yet.
 	* Changed some of the sizes returned to be longs to better handle 32-bit numbers.
+	* Changed (and added) some fields in the ZipCentralFileEntry to support Zip64 widths.
+	* Added some more fields to the ZipCentralDirectoryEndInfo class to support Zip64.
+	* Added some fields to the ZipCentralFileEntry to support Zip64 widths. 
+	* Added some methods to extract the ZipFileHeader and the ZipCentralDirectoryFileInfo fields from a File.
+	* Added some support for Zip64 extra fields.
+	* Added Zip64 central-directory end support and Zip64 end-locator object support.
+	* Added iterators for the ZipFileHeader and ZipCentralDirectoryFileEntry sections.
+	* Renamed the ZipFileInput.readFileData(File) methods to be readFileDataToFile(). 
 
 1.1: 5/23/2024
 	* Fixed some of the logic to allow us to control all bytes in the output Zip.

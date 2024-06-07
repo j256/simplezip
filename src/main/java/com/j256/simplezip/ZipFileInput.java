@@ -14,12 +14,12 @@ import java.util.Map;
 import com.j256.simplezip.code.FileDataDecoder;
 import com.j256.simplezip.code.InflatorFileDataDecoder;
 import com.j256.simplezip.code.StoredFileDataDecoder;
-import com.j256.simplezip.format.ZipCentralDirectoryEnd;
-import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
 import com.j256.simplezip.format.CompressionMethod;
-import com.j256.simplezip.format.ZipDataDescriptor;
 import com.j256.simplezip.format.ExternalFileAttributesUtils;
 import com.j256.simplezip.format.GeneralPurposeFlag;
+import com.j256.simplezip.format.ZipCentralDirectoryEnd;
+import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
+import com.j256.simplezip.format.ZipDataDescriptor;
 import com.j256.simplezip.format.ZipFileHeader;
 
 /**
@@ -39,7 +39,7 @@ public class ZipFileInput implements Closeable {
 	private ZipDataDescriptor currentDataDescriptor;
 	private boolean currentFileEofReached = true;
 	private ZipFileDataInputStream fileDataInputStream;
-	private boolean readTillEof = true;
+	private boolean readTillEof;
 	private Map<String, File> outputFileMap;
 
 	/**
@@ -48,7 +48,6 @@ public class ZipFileInput implements Closeable {
 	 */
 	public ZipFileInput(String path) throws FileNotFoundException {
 		this(new File(path));
-		this.readTillEof = false;
 	}
 
 	/**
@@ -56,7 +55,6 @@ public class ZipFileInput implements Closeable {
 	 */
 	public ZipFileInput(File file) throws FileNotFoundException {
 		this(new FileInputStream(file));
-		this.readTillEof = false;
 	}
 
 	/**
@@ -64,6 +62,7 @@ public class ZipFileInput implements Closeable {
 	 */
 	public ZipFileInput(InputStream inputStream) {
 		this.inputStream = new RewindableInputStream(inputStream, IoUtils.STANDARD_BUFFER_SIZE);
+		readTillEof = true;
 	}
 
 	/**
@@ -106,8 +105,8 @@ public class ZipFileInput implements Closeable {
 	 *            Where to write the data read from the zip stream.
 	 * @return THe number of bytes written into the output-stream.
 	 */
-	public long readFileData(String outputPath) throws IOException {
-		return readFileData(new File(outputPath));
+	public long readFileDataToFile(String outputPath) throws IOException {
+		return readFileDataToFile(new File(outputPath));
 	}
 
 	/**
@@ -119,7 +118,7 @@ public class ZipFileInput implements Closeable {
 	 *            Where to write the data read from the zip stream.
 	 * @return THe number of bytes written into the output-stream.
 	 */
-	public long readFileData(File outputFile) throws IOException {
+	public long readFileDataToFile(File outputFile) throws IOException {
 		long numBytes = readFileData(new FileOutputStream(outputFile));
 		if (outputFileMap == null) {
 			outputFileMap = new HashMap<>();
@@ -246,7 +245,7 @@ public class ZipFileInput implements Closeable {
 
 	/**
 	 * Assigns the file permissions from the current dir-entry to the File that was previously read by
-	 * {@link #readFileData(File)}. A previous call to {@link #readDirectoryFileEntry()} must have been made with a
+	 * {@link #readFileDataToFile(File)}. A previous call to {@link #readDirectoryFileEntry()} must have been made with a
 	 * file-name that matches the file-header written with the File previously. This assigns the permissions based on a
 	 * call to {@link ExternalFileAttributesUtils#assignToFile(File, int)}.
 	 * 
@@ -270,7 +269,7 @@ public class ZipFileInput implements Closeable {
 
 	/**
 	 * Reads in all of the file-entries from the Zip central-directory and assigns the permissions on the files that
-	 * were previously read by {@link #readFileData(File)} and that matches the file-header written with the File.
+	 * were previously read by {@link #readFileDataToFile(File)} and that matches the file-header written with the File.
 	 * 
 	 * @return True if successful or false if any of the files were not found.
 	 */
@@ -298,9 +297,10 @@ public class ZipFileInput implements Closeable {
 
 	/**
 	 * In some circumstances we need to read to the EOF marker in case we are in an inner Zip file. The outer decoder
-	 * might need to hit the EOF so it can appropriately rewind in case it was reading ahead. This method will be called
-	 * by {@link #close()} if {@link #setReadTillEof(boolean)} is set to true which is on by default if the
-	 * {@link #ZipFileInput(File)} constructor is used.
+	 * might need to hit the EOF so it can appropriately rewind in case it was reading ahead which happens when we are
+	 * decoding file data or looking for data block magic numbers. This method will be called by {@link #close()} if
+	 * {@link #setReadTillEof(boolean)} is set to true which is on by default if the {@link #ZipFileInput(InputStream)}
+	 * constructor is used.
 	 */
 	public void readToEndOfZip() throws IOException {
 		while (true) {
@@ -308,14 +308,15 @@ public class ZipFileInput implements Closeable {
 			if (num < 0) {
 				break;
 			}
+			// we do nothing with the read information
 		}
 	}
 
 	/**
 	 * Close the underlying input-stream.
 	 * 
-	 * NOTE: this will read to the end of the Zip-file if it was constructed using {@link #ZipFileInput(InputStream)} in
-	 * case we have a zip inside of a zip stream. See {@link #setReadTillEof(boolean)}.
+	 * NOTE: this will read to the end of the Zip-file if the read-till-eof flag is set to true. See
+	 * {@link #setReadTillEof(boolean)}.
 	 */
 	@Override
 	public void close() throws IOException {
@@ -326,7 +327,7 @@ public class ZipFileInput implements Closeable {
 	}
 
 	/**
-	 * Return the file-name from the most recent header read.
+	 * Return the file-name from the most recent header read or null if none.
 	 */
 	public String getCurrentFileName() {
 		if (currentFileHeader == null) {

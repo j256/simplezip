@@ -12,6 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -57,7 +58,7 @@ public class ZipFileHeaderTest {
 	}
 
 	@Test
-	public void testDateTimeMillis() {
+	public void testDateTimeMillis() throws IOException {
 		LocalDateTime input;
 		do {
 			input = LocalDateTime.now();
@@ -81,6 +82,24 @@ public class ZipFileHeaderTest {
 		assertEquals(input, output);
 		assertEquals(date, header.getLastModifiedDate());
 		assertEquals(time, header.getLastModifiedTime());
+
+		File tmpFile = File.createTempFile(getClass().getSimpleName(), ".t");
+		tmpFile.deleteOnExit();
+		tmpFile.setLastModified(millis);
+		date = builder.getLastModifiedDate();
+		time = builder.getLastModifiedTime();
+		builder.setLastModifiedDateTime(tmpFile);
+		assertEquals(date, builder.getLastModifiedDate());
+		assertEquals(time, builder.getLastModifiedTime());
+		builder.withLastModifiedDateTime(tmpFile);
+		assertEquals(date, builder.getLastModifiedDate());
+		assertEquals(time, builder.getLastModifiedTime());
+
+		builder = Builder.fromFile(tmpFile);
+		assertEquals(date, builder.getLastModifiedDate());
+		assertEquals(time, builder.getLastModifiedTime());
+		assertEquals(tmpFile.getPath(), builder.getFileName());
+		tmpFile.delete();
 	}
 
 	@Test
