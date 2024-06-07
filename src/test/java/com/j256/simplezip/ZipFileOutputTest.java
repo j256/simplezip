@@ -628,4 +628,33 @@ public class ZipFileOutputTest {
 		assertEquals(comment, dirHeader.getComment());
 		input.close();
 	}
+
+	@Test
+	public void testZip64End() throws IOException {
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ZipFileOutput output = new ZipFileOutput(baos);
+		output.writeFileHeader(ZipFileHeader.builder().withFileName("foo.txt").build());
+		output.writeFileDataAll(new byte[0]);
+		ZipCentralDirectoryFileInfo.Builder builder = ZipCentralDirectoryFileInfo.builder();
+		builder.setVersionMade(2);
+		output.addDirectoryFileInfo(builder.build());
+		int versionMade = 1221;
+		output.finishZip(ZipCentralDirectoryEndInfo.builder().withVersionMade(versionMade).build());
+		output.close();
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+		// now try to read it back in with the jdk stuff
+		ZipFileInput input = new ZipFileInput(bais);
+		assertNotNull(input.readFileHeader());
+		input.readFileData(new ByteArrayOutputStream());
+		assertNull(input.readFileHeader());
+		ZipCentralDirectoryFileEntry entry = input.readDirectoryFileEntry();
+		assertNotNull(entry);
+		assertNull(input.readDirectoryFileEntry());
+		ZipCentralDirectoryEnd end = input.readDirectoryEnd();
+		assertTrue(end.isZip64());
+		assertEquals(versionMade, end.getVersionMade());
+		input.close();
+	}
 }

@@ -13,6 +13,8 @@ import java.io.OutputStream;
 public class IoUtils {
 
 	public static int STANDARD_BUFFER_SIZE = 4096;
+	public static int MAX_UNSIGNED_SHORT_VALUE = 65535;
+	public static long MAX_UNSIGNED_INT_VALUE = 4294967295L;
 	private static final byte[] NO_BYTES = new byte[0];
 
 	/**

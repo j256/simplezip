@@ -18,6 +18,7 @@ import com.j256.simplezip.code.FileDataEncoder;
 import com.j256.simplezip.code.StoredFileDataEncoder;
 import com.j256.simplezip.format.CompressionMethod;
 import com.j256.simplezip.format.GeneralPurposeFlag;
+import com.j256.simplezip.format.Zip64CentralDirectoryEndLocator;
 import com.j256.simplezip.format.ZipCentralDirectoryEnd;
 import com.j256.simplezip.format.ZipCentralDirectoryEndInfo;
 import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
@@ -375,9 +376,10 @@ public class ZipFileOutput implements Closeable {
 
 	/**
 	 * Finish writing the Zip-file with a comment. This will write out the central-directory file-headers at the end of
-	 * the Zip-file followed by the directory-end information. The central-directory file-headers have been accumulated
-	 * from the {@link #writeFileHeader(ZipFileHeader)} and {@link #addDirectoryFileInfo(ZipCentralDirectoryFileInfo)}
-	 * methods.
+	 * the Zip-file that have been accumulated from the {@link #writeFileHeader(ZipFileHeader)} and
+	 * {@link #addDirectoryFileInfo(ZipCentralDirectoryFileInfo)} methods. After the file-headers the directory-end
+	 * information will be written either in Zip32 or Zip64 mode and lastly, if the end-info is in Zip64 mode, the Zip64
+	 * locator.
 	 *
 	 * @return Returns the number of bytes written to the stream so far.
 	 */
@@ -395,7 +397,7 @@ public class ZipFileOutput implements Closeable {
 		if (endInfo == null) {
 			dirEndBuilder = ZipCentralDirectoryEnd.builder();
 		} else {
-			dirEndBuilder = ZipCentralDirectoryEnd.Builder.fromEnd(endInfo);
+			dirEndBuilder = ZipCentralDirectoryEnd.Builder.fromEndInfo(endInfo);
 		}
 		dirEndBuilder.setDirectoryOffset(bufferedOutputStream.getWriteCount());
 
@@ -412,7 +414,22 @@ public class ZipFileOutput implements Closeable {
 		// XXX: should be long? and need to handle zip64
 		int size = (int) (bufferedOutputStream.getWriteCount() - startOffset);
 		dirEndBuilder.setDirectorySize(size);
-		dirEndBuilder.build().write(bufferedOutputStream);
+		ZipCentralDirectoryEnd end = dirEndBuilder.build();
+		long endOffset = bufferedOutputStream.getWriteCount();
+		end.write(bufferedOutputStream);
+
+		// now write our zip64 locator if the end is in zip64 mode
+		if (end.isZip64()) {
+			Zip64CentralDirectoryEndLocator.Builder dirEndLocatorBuilder;
+			if (endInfo == null) {
+				dirEndLocatorBuilder = Zip64CentralDirectoryEndLocator.builder();
+			} else {
+				dirEndLocatorBuilder = Zip64CentralDirectoryEndLocator.Builder.fromEndInfo(endInfo);
+			}
+			dirEndLocatorBuilder.setEndOffset(endOffset);
+			dirEndLocatorBuilder.build().write(bufferedOutputStream);
+		}
+
 		zipFinished = true;
 		return bufferedOutputStream.getWriteCount();
 	}
