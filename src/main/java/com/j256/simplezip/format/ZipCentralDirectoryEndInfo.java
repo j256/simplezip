@@ -1,5 +1,7 @@
 package com.j256.simplezip.format;
 
+import com.j256.simplezip.IoUtils;
+
 /**
  * Additional information that can be written at the very end of the zip file in a {@link ZipCentralDirectoryEnd}
  * structure.
@@ -8,7 +10,7 @@ package com.j256.simplezip.format;
  */
 public class ZipCentralDirectoryEndInfo {
 
-	private final boolean zip64;
+	private final boolean needsZip64;
 	private final int versionMade;
 	private final int versionNeeded;
 	private final int diskNumber;
@@ -17,9 +19,9 @@ public class ZipCentralDirectoryEndInfo {
 	private final byte[] extensibleData;
 	private final int numberDisks;
 
-	public ZipCentralDirectoryEndInfo(boolean zip64, int versionMade, int versionNeeded, int diskNumber,
+	public ZipCentralDirectoryEndInfo(boolean needsZip64, int versionMade, int versionNeeded, int diskNumber,
 			int diskNumberStart, byte[] commentBytes, byte[] extensibleData, int numberDisks) {
-		this.zip64 = zip64;
+		this.needsZip64 = needsZip64;
 		this.versionMade = versionMade;
 		this.versionNeeded = versionNeeded;
 		this.diskNumber = diskNumber;
@@ -39,8 +41,8 @@ public class ZipCentralDirectoryEndInfo {
 	/**
 	 * Whether we should write a zip64 end with a end-locator or just the noraml end block.
 	 */
-	public boolean isZip64() {
-		return zip64;
+	public boolean isNeedsZip64() {
+		return needsZip64;
 	}
 
 	/**
@@ -108,19 +110,28 @@ public class ZipCentralDirectoryEndInfo {
 		private int diskNumberStart = ZipCentralDirectoryFileEntry.DEFAULT_DISK_NUMBER;
 		private byte[] commentBytes;
 		private byte[] extensibleData;
-		private int numberDisks = 1;
+		private int numberDisks;
 
 		/**
-		 * Create a builder from an existing central-directory file-entry.
+		 * Create a builder from a central-directory end.
 		 */
 		public static Builder fromCentralDirectoryEnd(ZipCentralDirectoryEnd end) {
 			Builder builder = new Builder();
-			builder.zip64 = end.isZip64();
+			builder.diskNumber = end.getDiskNumber();
+			builder.diskNumberStart = end.getDiskNumberStart();
+			builder.commentBytes = end.getCommentBytes();
+			return builder;
+		}
+
+		/**
+		 * Create a builder from a Zip64 central-directory end.
+		 */
+		public static Builder fromCentralDirectoryEnd(Zip64CentralDirectoryEnd end) {
+			Builder builder = new Builder();
 			builder.versionMade = end.getVersionMade();
 			builder.versionNeeded = end.getVersionNeeded();
 			builder.diskNumber = end.getDiskNumber();
 			builder.diskNumberStart = end.getDiskNumberStart();
-			builder.commentBytes = end.getCommentBytes();
 			builder.extensibleData = end.getExtensibleData();
 			return builder;
 		}
@@ -129,8 +140,24 @@ public class ZipCentralDirectoryEndInfo {
 		 * Builder an instance of the central-directory file-header.
 		 */
 		public ZipCentralDirectoryEndInfo build() {
-			return new ZipCentralDirectoryEndInfo(zip64, versionMade, versionNeeded, diskNumber, diskNumberStart,
+			boolean needsZip64 = zip64;
+			if (!needsZip64 && hasZip64Values()) {
+				needsZip64 = true;
+			}
+			return new ZipCentralDirectoryEndInfo(needsZip64, versionMade, versionNeeded, diskNumber, diskNumberStart,
 					commentBytes, extensibleData, numberDisks);
+		}
+
+		/**
+		 * Return whether or not the values stored in this directory end require that we add a
+		 * {@link Zip64CentralDirectoryEnd} and {@link Zip64CentralDirectoryEndLocator} before the end.
+		 */
+		public boolean hasZip64Values() {
+			return (versionMade != 0 //
+					|| versionNeeded != 0 //
+					|| diskNumber >= IoUtils.MAX_UNSIGNED_SHORT_VALUE //
+					|| diskNumberStart >= IoUtils.MAX_UNSIGNED_SHORT_VALUE //
+					|| numberDisks != 0);
 		}
 
 		/**
@@ -141,14 +168,15 @@ public class ZipCentralDirectoryEndInfo {
 		}
 
 		/**
-		 * Whether or not we should write a zip64 end block.
+		 * Whether or not we should write a zip64 end and locator blocks. This might be forced to be true if any of the
+		 * values set on this are Zip64 only or if the sizes exceed what the standard end can represent.
 		 */
 		public void setZip64(boolean zip64) {
 			this.zip64 = zip64;
 		}
 
 		/**
-		 * Whether or not we should write a zip64 end block.
+		 * See the {@link #setZip64(boolean)} for more information.
 		 */
 		public Builder withZip64(boolean zip64) {
 			this.zip64 = zip64;

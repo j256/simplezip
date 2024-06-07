@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.format.ZipCentralDirectoryFileEntry.Builder;
 import com.j256.simplezip.format.extra.UnknownExtraField;
 import com.j256.simplezip.format.extra.Zip64ExtraField;
@@ -346,13 +347,13 @@ public class ZipCentralDirectoryFileEntryTest {
 	@Test
 	public void testLargeSizes() {
 		ZipCentralDirectoryFileEntry.Builder builder = ZipCentralDirectoryFileEntry.builder();
-		builder.setCompressedSize(ZipFileHeader.MAX_4_BYTE_SIZE);
+		builder.setCompressedSize(IoUtils.MAX_UNSIGNED_INT_VALUE - 1);
 		assertNull(builder.build().getZip64ExtraField());
-		builder.setCompressedSize(ZipFileHeader.MAX_4_BYTE_SIZE + 1);
+		builder.setCompressedSize(IoUtils.MAX_UNSIGNED_INT_VALUE);
 		assertNotNull(builder.build().getZip64ExtraField());
 
-		builder.setCompressedSize(ZipFileHeader.MAX_4_BYTE_SIZE);
-		builder.setUncompressedSize(ZipFileHeader.MAX_4_BYTE_SIZE + 1);
+		builder.setCompressedSize(IoUtils.MAX_UNSIGNED_INT_VALUE - 1);
+		builder.setUncompressedSize(IoUtils.MAX_UNSIGNED_INT_VALUE);
 		assertNotNull(builder.build().getZip64ExtraField());
 	}
 

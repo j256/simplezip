@@ -40,10 +40,12 @@ public class Zip64CentralDirectoryEndLocator {
 	 * Read one from the input-stream.
 	 */
 	public static Zip64CentralDirectoryEndLocator read(RewindableInputStream inputStream) throws IOException {
-		int signature = IoUtils.readInt(inputStream, "CentralDirectoryEnd.signature");
+		int signature = IoUtils.readInt(inputStream, "Zip64CentralDirectoryEndLocator.signature");
 		if (signature != EXPECTED_SIGNATURE) {
+			inputStream.rewind(4);
 			return null;
 		}
+
 		Builder builder = new Zip64CentralDirectoryEndLocator.Builder();
 		builder.diskNumber = IoUtils.readInt(inputStream, "Zip64CentralDirectoryEndLocator.diskNumber");
 		builder.diskNumberStart = IoUtils.readInt(inputStream, "Zip64CentralDirectoryEndLocator.diskNumberStart");

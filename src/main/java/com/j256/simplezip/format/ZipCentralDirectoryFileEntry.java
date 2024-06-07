@@ -81,38 +81,38 @@ public class ZipCentralDirectoryFileEntry {
 	 */
 	public static ZipCentralDirectoryFileEntry read(RewindableInputStream inputStream) throws IOException {
 
-		int signature = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.signature");
-
+		int signature = IoUtils.readInt(inputStream, "ZipCentralDirectoryFileEntry.signature");
 		if (signature != EXPECTED_SIGNATURE) {
 			inputStream.rewind(4);
 			return null;
 		}
 
 		Builder builder = new ZipCentralDirectoryFileEntry.Builder();
-		builder.versionMade = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.versionMade");
-		builder.versionNeeded = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.versionNeeded");
-		builder.generalPurposeFlags = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.generalPurposeFlags");
-		builder.compressionMethod = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.compressionMethod");
-		builder.lastModifiedTime = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.lastModifiedTime");
-		builder.lastModifiedDate = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.lastModifiedDate");
-		builder.crc32 = IoUtils.readIntAsLong(inputStream, "CentralDirectoryFileHeader.crc32");
-		builder.compressedSize = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.compressedSize");
-		builder.uncompressedSize = IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.uncompressedSize");
-		int fileNameLength = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.fileNameLength");
-		int extraFieldLength = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.extraFieldLength");
-		int commentLength = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.commentLength");
-		builder.diskNumberStart = IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.diskNumberStart");
+		builder.versionMade = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.versionMade");
+		builder.versionNeeded = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.versionNeeded");
+		builder.generalPurposeFlags =
+				IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.generalPurposeFlags");
+		builder.compressionMethod = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.compressionMethod");
+		builder.lastModifiedTime = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.lastModifiedTime");
+		builder.lastModifiedDate = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.lastModifiedDate");
+		builder.crc32 = IoUtils.readIntAsLong(inputStream, "ZipCentralDirectoryFileEntry.crc32");
+		builder.compressedSize = IoUtils.readInt(inputStream, "ZipCentralDirectoryFileEntry.compressedSize");
+		builder.uncompressedSize = IoUtils.readInt(inputStream, "ZipCentralDirectoryFileEntry.uncompressedSize");
+		int fileNameLength = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.fileNameLength");
+		int extraFieldLength = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.extraFieldLength");
+		int commentLength = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.commentLength");
+		builder.diskNumberStart = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.diskNumberStart");
 		builder.internalFileAttributes =
-				IoUtils.readShort(inputStream, "CentralDirectoryFileHeader.internalFileAttributes");
+				IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.internalFileAttributes");
 		builder.externalFileAttributes =
-				IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.externalFileAttributes");
+				IoUtils.readInt(inputStream, "ZipCentralDirectoryFileEntry.externalFileAttributes");
 		builder.relativeOffsetOfLocalHeader =
-				IoUtils.readInt(inputStream, "CentralDirectoryFileHeader.relativeOffsetOfLocalHeader");
+				IoUtils.readInt(inputStream, "ZipCentralDirectoryFileEntry.relativeOffsetOfLocalHeader");
 
-		builder.fileNameBytes = IoUtils.readBytes(inputStream, fileNameLength, "CentralDirectoryFileHeader.fileName");
+		builder.fileNameBytes = IoUtils.readBytes(inputStream, fileNameLength, "ZipCentralDirectoryFileEntry.fileName");
 		builder.extraFieldBytes =
-				IoUtils.readBytes(inputStream, extraFieldLength, "CentralDirectoryFileHeader.extraField");
-		builder.commentBytes = IoUtils.readBytes(inputStream, commentLength, "CentralDirectoryFileHeader.comment");
+				IoUtils.readBytes(inputStream, extraFieldLength, "ZipCentralDirectoryFileEntry.extraField");
+		builder.commentBytes = IoUtils.readBytes(inputStream, commentLength, "ZipCentralDirectoryFileEntry.comment");
 
 		return builder.build();
 	}
@@ -440,11 +440,11 @@ public class ZipCentralDirectoryFileEntry {
 		public ZipCentralDirectoryFileEntry build() {
 			// if we don't have a zip64 field set then check our values and maybe add one
 			if (zip64ExtraField == null) {
-				if (uncompressedSize > ZipFileHeader.MAX_4_BYTE_SIZE
-						|| compressedSize > ZipFileHeader.MAX_4_BYTE_SIZE) {
+				if (uncompressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE
+						|| compressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE) {
 					zip64ExtraField = new Zip64ExtraField(uncompressedSize, compressedSize, 0, 0);
-					uncompressedSize = ZipFileHeader.MAX_4_BYTE_SIZE;
-					compressedSize = ZipFileHeader.MAX_4_BYTE_SIZE;
+					uncompressedSize = IoUtils.MAX_UNSIGNED_INT_VALUE;
+					compressedSize = IoUtils.MAX_UNSIGNED_INT_VALUE;
 				}
 			}
 

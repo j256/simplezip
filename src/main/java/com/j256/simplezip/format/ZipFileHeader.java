@@ -28,7 +28,6 @@ import com.j256.simplezip.format.extra.Zip64ExtraField;
 public class ZipFileHeader {
 
 	private static int EXPECTED_SIGNATURE = 0x4034b50;
-	public static long MAX_4_BYTE_SIZE = 0xFFFFFFFEL;
 
 	private final int versionNeeded;
 	private final int generalPurposeFlags;
@@ -69,27 +68,28 @@ public class ZipFileHeader {
 	 * Read from the input stream.
 	 */
 	public static ZipFileHeader read(RewindableInputStream inputStream) throws IOException {
-		Builder builder = new ZipFileHeader.Builder();
 		/*
-		 * WHen reading a file-header we aren't sure if this is a file-header or the start of the central directory.
+		 * When reading a file-header we aren't sure if this is a file-header or the start of the central directory.
 		 */
-		int first = IoUtils.readInt(inputStream, "LocalFileHeader.signature");
+		int first = IoUtils.readInt(inputStream, "ZipFileHeader.signature");
 		if (first != EXPECTED_SIGNATURE) {
 			inputStream.rewind(4);
 			return null;
 		}
-		builder.versionNeeded = IoUtils.readShort(inputStream, "LocalFileHeader.versionNeeded");
-		builder.generalPurposeFlags = IoUtils.readShort(inputStream, "LocalFileHeader.generalPurposeFlags");
-		builder.compressionMethod = IoUtils.readShort(inputStream, "LocalFileHeader.compressionMethod");
-		builder.lastModifiedTime = IoUtils.readShort(inputStream, "LocalFileHeader.lastModifiedTime");
-		builder.lastModifiedDate = IoUtils.readShort(inputStream, "LocalFileHeader.lastModifiedDate");
-		builder.crc32 = IoUtils.readIntAsLong(inputStream, "LocalFileHeader.crc32");
-		builder.compressedSize = IoUtils.readInt(inputStream, "LocalFileHeader.compressedSize");
-		builder.uncompressedSize = IoUtils.readInt(inputStream, "LocalFileHeader.uncompressedSize");
-		int fileNameLength = IoUtils.readShort(inputStream, "LocalFileHeader.fileNameLength");
-		int extraLength = IoUtils.readShort(inputStream, "LocalFileHeader.extraLength");
-		builder.fileNameBytes = IoUtils.readBytes(inputStream, fileNameLength, "LocalFileHeader.fileName");
-		builder.extraFieldBytes = IoUtils.readBytes(inputStream, extraLength, "LocalFileHeader.extra");
+
+		Builder builder = new ZipFileHeader.Builder();
+		builder.versionNeeded = IoUtils.readShort(inputStream, "ZipFileHeader.versionNeeded");
+		builder.generalPurposeFlags = IoUtils.readShort(inputStream, "ZipFileHeader.generalPurposeFlags");
+		builder.compressionMethod = IoUtils.readShort(inputStream, "ZipFileHeader.compressionMethod");
+		builder.lastModifiedTime = IoUtils.readShort(inputStream, "ZipFileHeader.lastModifiedTime");
+		builder.lastModifiedDate = IoUtils.readShort(inputStream, "ZipFileHeader.lastModifiedDate");
+		builder.crc32 = IoUtils.readIntAsLong(inputStream, "ZipFileHeader.crc32");
+		builder.compressedSize = IoUtils.readInt(inputStream, "ZipFileHeader.compressedSize");
+		builder.uncompressedSize = IoUtils.readInt(inputStream, "ZipFileHeader.uncompressedSize");
+		int fileNameLength = IoUtils.readShort(inputStream, "ZipFileHeader.fileNameLength");
+		int extraLength = IoUtils.readShort(inputStream, "ZipFileHeader.extraLength");
+		builder.fileNameBytes = IoUtils.readBytes(inputStream, fileNameLength, "ZipFileHeader.fileName");
+		builder.extraFieldBytes = IoUtils.readBytes(inputStream, extraLength, "ZipFileHeader.extra");
 		return builder.build();
 	}
 
@@ -334,10 +334,11 @@ public class ZipFileHeader {
 
 			// if we don't have a zip64 field set then check our values and maybe add one
 			if (zip64ExtraField == null) {
-				if (uncompressedSize > MAX_4_BYTE_SIZE || compressedSize > MAX_4_BYTE_SIZE) {
+				if (uncompressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE
+						|| compressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE) {
 					zip64ExtraField = new Zip64ExtraField(uncompressedSize, compressedSize, 0, 0);
-					uncompressedSize = MAX_4_BYTE_SIZE;
-					compressedSize = MAX_4_BYTE_SIZE;
+					uncompressedSize = IoUtils.MAX_UNSIGNED_INT_VALUE;
+					compressedSize = IoUtils.MAX_UNSIGNED_INT_VALUE;
 				}
 			}
 

@@ -1,8 +1,14 @@
 package com.j256.simplezip.format;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+
+import com.j256.simplezip.IoUtils;
 
 public class ZipCentralDirectoryEndInfoTest {
 
@@ -42,7 +48,7 @@ public class ZipCentralDirectoryEndInfoTest {
 		assertEquals(numberDisks, builder.getNumberDisks());
 
 		ZipCentralDirectoryEndInfo endInfo = builder.build();
-		assertEquals(zip64, endInfo.isZip64());
+		assertEquals(zip64, endInfo.isNeedsZip64());
 		assertEquals(versionMade, endInfo.getVersionMade());
 		assertEquals(versionNeeded, endInfo.getVersionNeeded());
 		assertEquals(diskNumber, endInfo.getDiskNumber());
@@ -84,7 +90,7 @@ public class ZipCentralDirectoryEndInfoTest {
 		builder.withNumberDisks(numberDisks);
 
 		ZipCentralDirectoryEndInfo endInfo = builder.build();
-		assertEquals(zip64, endInfo.isZip64());
+		assertEquals(zip64, endInfo.isNeedsZip64());
 		assertEquals(versionMade, endInfo.getVersionMade());
 		assertEquals(versionNeeded, endInfo.getVersionNeeded());
 		assertEquals(diskNumber, endInfo.getDiskNumber());
@@ -109,7 +115,7 @@ public class ZipCentralDirectoryEndInfoTest {
 		ZipCentralDirectoryEnd.Builder endBuilder = ZipCentralDirectoryEnd.builder();
 		int diskNumber = 21321;
 		endBuilder.setDiskNumber(diskNumber);
-		int diskNumberStart = 87696796;
+		int diskNumberStart = 8796;
 		endBuilder.setDiskNumberStart(diskNumberStart);
 		String comment = "fewjpfjewp";
 		byte[] commentBytes = comment.getBytes();
@@ -121,5 +127,37 @@ public class ZipCentralDirectoryEndInfoTest {
 		assertEquals(diskNumberStart, endInfoBuilder.getDiskNumberStart());
 		assertEquals(comment, endInfoBuilder.getComment());
 		assertEquals(commentBytes, endInfoBuilder.getCommentBytes());
+	}
+
+	@Test
+	public void testNeedsZip64() {
+		ZipCentralDirectoryEndInfo.Builder builder = ZipCentralDirectoryEndInfo.builder();
+		assertFalse(builder.hasZip64Values());
+		assertFalse(builder.build().isNeedsZip64());
+
+		builder = ZipCentralDirectoryEndInfo.builder();
+		builder.setVersionMade(1);
+		assertTrue(builder.hasZip64Values());
+		assertTrue(builder.build().isNeedsZip64());
+
+		builder = ZipCentralDirectoryEndInfo.builder();
+		builder.setVersionNeeded(1);
+		assertTrue(builder.hasZip64Values());
+		assertTrue(builder.build().isNeedsZip64());
+
+		builder = ZipCentralDirectoryEndInfo.builder();
+		builder.setDiskNumber(IoUtils.MAX_UNSIGNED_SHORT_VALUE);
+		assertTrue(builder.hasZip64Values());
+		assertTrue(builder.build().isNeedsZip64());
+
+		builder = ZipCentralDirectoryEndInfo.builder();
+		builder.setDiskNumberStart(IoUtils.MAX_UNSIGNED_SHORT_VALUE);
+		assertTrue(builder.hasZip64Values());
+		assertTrue(builder.build().isNeedsZip64());
+
+		builder = ZipCentralDirectoryEndInfo.builder();
+		builder.setNumberDisks(1);
+		assertTrue(builder.hasZip64Values());
+		assertTrue(builder.build().isNeedsZip64());
 	}
 }
