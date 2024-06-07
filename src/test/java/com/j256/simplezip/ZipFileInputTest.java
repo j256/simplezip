@@ -18,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.zip.CRC32;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
@@ -496,6 +497,46 @@ public class ZipFileInputTest {
 		assertNull(input.readFileHeader());
 		input.close();
 		tmpFile.delete();
+	}
+
+	@Test
+	public void testIterators() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		String fileName1 = "hello1";
+		ZipEntry zipEntry = new ZipEntry(fileName1);
+		ZipOutputStream zos = new ZipOutputStream(baos);
+		zos.putNextEntry(zipEntry);
+		byte[] fileContent1 = new byte[] { 1, 2, 3 };
+		zos.write(fileContent1);
+		zos.closeEntry();
+		String fileName2 = "hello2";
+		zipEntry = new ZipEntry(fileName2);
+		zos.putNextEntry(zipEntry);
+		byte[] fileContent2 = new byte[] { 3, 1, 2 };
+		zos.write(fileContent2);
+		zos.closeEntry();
+		zos.close();
+
+		InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+		ZipFileInput input = new ZipFileInput(inputStream);
+
+		Iterator<ZipFileHeader> fileIterator = input.fileHeaderIterator();
+		assertTrue(fileIterator.hasNext());
+		ZipFileHeader header = fileIterator.next();
+		assertEquals(fileName1, header.getFileName());
+		header = fileIterator.next();
+		assertEquals(fileName2, header.getFileName());
+		assertFalse(fileIterator.hasNext());
+
+		Iterator<ZipCentralDirectoryFileEntry> entryIterator = input.directoryFileEntryIterator();
+		assertTrue(entryIterator.hasNext());
+		ZipCentralDirectoryFileEntry entry = entryIterator.next();
+		assertEquals(fileName1, entry.getFileName());
+		entry = entryIterator.next();
+		assertEquals(fileName2, header.getFileName());
+		assertFalse(entryIterator.hasNext());
+
+		input.close();
 	}
 
 	private byte[] readFileToBytes(File file) throws IOException {

@@ -6,9 +6,9 @@
 @c %**end of header
 
 @c ----------------------------------------------------------------
-@set simplezip_version 1.1
+@set simplezip_version 2.0
 @set simplezip_year 2024
-@set simplezip_date May @value{simplezip_year}
+@set simplezip_date June @value{simplezip_year}
 @set package SimpleZip
 @c ----------------------------------------------------------------
 
@@ -55,6 +55,7 @@ There is also a @uref{http://256stuff.com/sources/simplezip/docs/simplezip.pdf, 
 @iftex
 There is also a @uref{http://256stuff.com/sources/simplezip/docs/simplezip.html, HTML version of this documentation}.
 @end iftex
+For more information, see the @uref{https://256stuff.com/sources/simplezip/,SimpleZip home page}.
 
 Gray Watson @uref{http://256stuff.com/gray/}
 

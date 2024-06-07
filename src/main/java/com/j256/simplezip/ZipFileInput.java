@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import com.j256.simplezip.code.FileDataDecoder;
@@ -78,6 +79,14 @@ public class ZipFileInput implements Closeable {
 		// reset the counting info now that we are ready to read the next file
 		fileDataCountingInfo.reset();
 		return currentFileHeader;
+	}
+
+	/**
+	 * Return an iterator that can be used to step across the file-headers. The iterator will return false for
+	 * {@link Iterator#hasNext()} and null for {@link Iterator#next()} once the end has been reached.
+	 */
+	public Iterator<ZipFileHeader> fileHeaderIterator() {
+		return new FileHeaderIterator();
 	}
 
 	/**
@@ -244,10 +253,18 @@ public class ZipFileInput implements Closeable {
 	}
 
 	/**
+	 * Return an iterator that can be used to step across the central-directory file entries. The iterator will return
+	 * false for {@link Iterator#hasNext()} and null for {@link Iterator#next()} once the end has been reached.
+	 */
+	public Iterator<ZipCentralDirectoryFileEntry> directoryFileEntryIterator() {
+		return new DirectoryFileEntryIterator();
+	}
+
+	/**
 	 * Assigns the file permissions from the current dir-entry to the File that was previously read by
-	 * {@link #readFileDataToFile(File)}. A previous call to {@link #readDirectoryFileEntry()} must have been made with a
-	 * file-name that matches the file-header written with the File previously. This assigns the permissions based on a
-	 * call to {@link ExternalFileAttributesUtils#assignToFile(File, int)}.
+	 * {@link #readFileDataToFile(File)}. A previous call to {@link #readDirectoryFileEntry()} must have been made with
+	 * a file-name that matches the file-header written with the File previously. This assigns the permissions based on
+	 * a call to {@link ExternalFileAttributesUtils#assignToFile(File, int)}.
 	 * 
 	 * @return True if successful otherwise false if the file was not found.
 	 */
@@ -459,6 +476,68 @@ public class ZipFileInput implements Closeable {
 		@Override
 		public void close() {
 			// no-op, nothing to close
+		}
+	}
+
+	/**
+	 * Iterator for the file headers in the Zip file.
+	 */
+	private class FileHeaderIterator implements Iterator<ZipFileHeader> {
+
+		private ZipFileHeader previousFileHeader;
+
+		@Override
+		public boolean hasNext() {
+			try {
+				previousFileHeader = readFileHeader();
+			} catch (IOException ioe) {
+				previousFileHeader = null;
+				throw new RuntimeException("problems reading next file-header", ioe);
+			}
+			return (previousFileHeader != null);
+		}
+
+		@Override
+		public ZipFileHeader next() {
+			if (previousFileHeader == null) {
+				if (!hasNext()) {
+					return null;
+				}
+			}
+			ZipFileHeader result = previousFileHeader;
+			previousFileHeader = null;
+			return result;
+		}
+	}
+
+	/**
+	 * Iterator for the central directory file entries in the Zip file.
+	 */
+	private class DirectoryFileEntryIterator implements Iterator<ZipCentralDirectoryFileEntry> {
+
+		private ZipCentralDirectoryFileEntry previousFileEntry;
+
+		@Override
+		public boolean hasNext() {
+			try {
+				previousFileEntry = readDirectoryFileEntry();
+			} catch (IOException ioe) {
+				previousFileEntry = null;
+				throw new RuntimeException("problems reading next file-header", ioe);
+			}
+			return (previousFileEntry != null);
+		}
+
+		@Override
+		public ZipCentralDirectoryFileEntry next() {
+			if (previousFileEntry == null) {
+				if (!hasNext()) {
+					return null;
+				}
+			}
+			ZipCentralDirectoryFileEntry result = previousFileEntry;
+			previousFileEntry = null;
+			return result;
 		}
 	}
 }
