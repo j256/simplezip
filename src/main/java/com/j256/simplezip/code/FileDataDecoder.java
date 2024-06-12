@@ -22,4 +22,14 @@ public interface FileDataDecoder extends Closeable {
 	 * @return The number of bytes written into the outputBlock at the outputOffset.
 	 */
 	public int decode(byte[] outputBuffer, int offset, int length) throws IOException;
+
+	/**
+	 * Return the number of encoded bytes read in.
+	 */
+	public long getBytesRead();
+
+	/**
+	 * Return the number of decoded bytes written out.
+	 */
+	public long getBytesWritten();
 }

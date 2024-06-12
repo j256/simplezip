@@ -18,11 +18,13 @@ public class ZipDataDescriptor {
 	public static final int OPTIONAL_EXPECTED_SIGNATURE = 0x8074b50;
 	public static final long MAX_ZIP32_SIZE = 0xFFFFFFFFL;
 
+	private final boolean zip64;
 	private final long crc32;
 	private final long compressedSize;
 	private final long uncompressedSize;
 
-	public ZipDataDescriptor(long crc32, long compressedSize, long uncompressedSize) {
+	public ZipDataDescriptor(boolean zip64, long crc32, long compressedSize, long uncompressedSize) {
+		this.zip64 = zip64;
 		this.crc32 = crc32;
 		this.compressedSize = compressedSize;
 		this.uncompressedSize = uncompressedSize;
@@ -37,8 +39,12 @@ public class ZipDataDescriptor {
 
 	/**
 	 * Read from the input-stream.
+	 * 
+	 * @param zip64
+	 *            Whether or not the sizes of the data read indicate that we should have a zip64 data-descriptor with 8
+	 *            byte sizes or one with 4 byte sizes.
 	 */
-	public static ZipDataDescriptor read(RewindableInputStream inputStream) throws IOException {
+	public static ZipDataDescriptor read(RewindableInputStream inputStream, boolean zip64) throws IOException {
 		byte[] tmpBytes = new byte[8];
 		Builder builder = new ZipDataDescriptor.Builder();
 		/*
@@ -56,8 +62,13 @@ public class ZipDataDescriptor {
 			builder.crc32 = first;
 		}
 
-		builder.compressedSize = IoUtils.readInt(inputStream, tmpBytes, "ZipDataDescriptor.compressedSize");
-		builder.uncompressedSize = IoUtils.readInt(inputStream, tmpBytes, "ZipDataDescriptor.uncompressedSize");
+		if (zip64) {
+			builder.compressedSize = IoUtils.readLong(inputStream, tmpBytes, "ZipDataDescriptor.compressedSize");
+			builder.uncompressedSize = IoUtils.readLong(inputStream, tmpBytes, "ZipDataDescriptor.uncompressedSize");
+		} else {
+			builder.compressedSize = IoUtils.readInt(inputStream, tmpBytes, "ZipDataDescriptor.compressedSize");
+			builder.uncompressedSize = IoUtils.readInt(inputStream, tmpBytes, "ZipDataDescriptor.uncompressedSize");
+		}
 
 		return builder.build();
 	}
@@ -69,8 +80,17 @@ public class ZipDataDescriptor {
 		byte[] tmpBytes = new byte[8];
 		IoUtils.writeInt(outputStream, tmpBytes, OPTIONAL_EXPECTED_SIGNATURE);
 		IoUtils.writeInt(outputStream, tmpBytes, crc32);
-		IoUtils.writeInt(outputStream, tmpBytes, compressedSize);
-		IoUtils.writeInt(outputStream, tmpBytes, uncompressedSize);
+		if (zip64) {
+			IoUtils.writeLong(outputStream, tmpBytes, compressedSize);
+			IoUtils.writeLong(outputStream, tmpBytes, uncompressedSize);
+		} else {
+			IoUtils.writeInt(outputStream, tmpBytes, compressedSize);
+			IoUtils.writeInt(outputStream, tmpBytes, uncompressedSize);
+		}
+	}
+
+	public boolean isZip64() {
+		return zip64;
 	}
 
 	public long getCrc32() {
@@ -114,7 +134,8 @@ public class ZipDataDescriptor {
 		}
 
 		public ZipDataDescriptor build() {
-			return new ZipDataDescriptor(crc32, compressedSize, uncompressedSize);
+			boolean zip64 = (compressedSize > 0xFFFFFFFFL || uncompressedSize > 0xFFFFFFFFL);
+			return new ZipDataDescriptor(zip64, crc32, compressedSize, uncompressedSize);
 		}
 
 		public long getCrc32() {

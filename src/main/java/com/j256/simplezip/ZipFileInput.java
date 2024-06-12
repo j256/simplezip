@@ -442,14 +442,16 @@ public class ZipFileInput implements Closeable {
 	 * Close a specific file-data portion.
 	 */
 	private void closeFileData() throws IOException {
-		if (fileDataDecoder != null) {
-			fileDataDecoder.close();
-			fileDataDecoder = null;
-		}
+		fileDataDecoder.close();
+		long bytesRead = fileDataDecoder.getBytesRead();
+		long bytesWritten = fileDataDecoder.getBytesWritten();
 		if (currentFileHeader.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR)) {
-			currentDataDescriptor = ZipDataDescriptor.read(inputStream);
+			boolean zip64 =
+					(bytesRead >= ZipDataDescriptor.MAX_ZIP32_SIZE || bytesWritten >= ZipDataDescriptor.MAX_ZIP32_SIZE);
+			currentDataDescriptor = ZipDataDescriptor.read(inputStream, zip64);
 		}
 		currentFileEofReached = true;
+		fileDataDecoder = null;
 	}
 
 	private void assignFileDataDecoder(int compressionMethod) throws IOException {

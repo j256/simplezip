@@ -189,7 +189,7 @@ public class ZipFileHeaderTest {
 		assertEquals(CompressionMethod.DEFLATED, copy.getCompressionMethodAsEnum());
 		assertEquals(CompressionMethod.DEFLATED.getValue(), copy.getCompressionMethod());
 		assertEquals(0, copy.getVersionNeeded());
-		assertEquals(0, copy.getGeneralPurposeFlags());
+		assertEquals(GeneralPurposeFlag.DATA_DESCRIPTOR.getValue(), copy.getGeneralPurposeFlags());
 		assertEquals(0, copy.getLastModifiedTime());
 		assertEquals(0, copy.getLastModifiedDate());
 		assertEquals(0, copy.getCrc32());
