@@ -51,20 +51,21 @@ public class ZipCentralDirectoryEnd {
 	 */
 	public static ZipCentralDirectoryEnd read(RewindableInputStream inputStream) throws IOException {
 
-		int signature = IoUtils.readInt(inputStream, "ZipCentralDirectoryEnd.signature");
+		byte[] tmpBytes = new byte[8];
+		int signature = IoUtils.readInt(inputStream, tmpBytes, "ZipCentralDirectoryEnd.signature");
 		if (signature != EXPECTED_SIGNATURE) {
 			inputStream.rewind(4);
 			return null;
 		}
 
 		Builder builder = new ZipCentralDirectoryEnd.Builder();
-		builder.diskNumber = IoUtils.readShort(inputStream, "ZipCentralDirectoryEnd.diskNumber");
-		builder.diskNumberStart = IoUtils.readShort(inputStream, "ZipCentralDirectoryEnd.diskNumberStart");
-		builder.numRecordsOnDisk = IoUtils.readShort(inputStream, "ZipCentralDirectoryEnd.numRecordsOnDisk");
-		builder.numRecordsTotal = IoUtils.readShort(inputStream, "ZipCentralDirectoryEnd.numRecordsTotal");
-		builder.directorySize = IoUtils.readInt(inputStream, "ZipCentralDirectoryEnd.sizeDirectory");
-		builder.directoryOffset = IoUtils.readInt(inputStream, "ZipCentralDirectoryEnd.directoryOffset");
-		int commentLength = IoUtils.readShort(inputStream, "ZipCentralDirectoryEnd.commentLength");
+		builder.diskNumber = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryEnd.diskNumber");
+		builder.diskNumberStart = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryEnd.diskNumberStart");
+		builder.numRecordsOnDisk = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryEnd.numRecordsOnDisk");
+		builder.numRecordsTotal = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryEnd.numRecordsTotal");
+		builder.directorySize = IoUtils.readInt(inputStream, tmpBytes, "ZipCentralDirectoryEnd.sizeDirectory");
+		builder.directoryOffset = IoUtils.readInt(inputStream, tmpBytes, "ZipCentralDirectoryEnd.directoryOffset");
+		int commentLength = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryEnd.commentLength");
 		builder.commentBytes = IoUtils.readBytes(inputStream, commentLength, "ZipCentralDirectoryEnd.comment");
 
 		return builder.build();
@@ -74,18 +75,19 @@ public class ZipCentralDirectoryEnd {
 	 * Write to the output-stream.
 	 */
 	public void write(OutputStream outputStream) throws IOException {
-		IoUtils.writeInt(outputStream, EXPECTED_SIGNATURE);
-		IoUtils.writeShort(outputStream, diskNumber);
-		IoUtils.writeShort(outputStream, diskNumberStart);
-		IoUtils.writeShort(outputStream, numRecordsOnDisk);
-		IoUtils.writeShort(outputStream, numRecordsTotal);
-		IoUtils.writeInt(outputStream, directorySize);
-		IoUtils.writeInt(outputStream, directoryOffset);
+		byte[] tmpBytes = new byte[8];
+		IoUtils.writeInt(outputStream, tmpBytes, EXPECTED_SIGNATURE);
+		IoUtils.writeShort(outputStream, tmpBytes, diskNumber);
+		IoUtils.writeShort(outputStream, tmpBytes, diskNumberStart);
+		IoUtils.writeShort(outputStream, tmpBytes, numRecordsOnDisk);
+		IoUtils.writeShort(outputStream, tmpBytes, numRecordsTotal);
+		IoUtils.writeInt(outputStream, tmpBytes, directorySize);
+		IoUtils.writeInt(outputStream, tmpBytes, directoryOffset);
 		if (commentBytes == null) {
-			IoUtils.writeShort(outputStream, 0);
+			IoUtils.writeShort(outputStream, tmpBytes, 0);
 			// no comment-bytes
 		} else {
-			IoUtils.writeShort(outputStream, commentBytes.length);
+			IoUtils.writeShort(outputStream, tmpBytes, commentBytes.length);
 			IoUtils.writeBytes(outputStream, commentBytes);
 		}
 	}

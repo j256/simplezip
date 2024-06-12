@@ -338,20 +338,18 @@ public class ZipFileOutput implements Closeable {
 		dirFileBuilder.setFileHeader(writtenFileHeader);
 		if (writtenFileHeader != currentFileHeader) {
 			dirFileBuilder.assignGeneralPurposeFlag(GeneralPurposeFlag.DATA_DESCRIPTOR, false);
-			// XXX: need to handle zip64
-			dirFileBuilder.setCompressedSize((int) bufferedOutputStream.getEncodedSize());
+			dirFileBuilder.setCompressedSize(bufferedOutputStream.getEncodedSize());
 		}
 		if (currentFileHeader.getCrc32() == 0 || currentFileHeader.getUncompressedSize() == 0) {
 			// calculate the crc and size from the incoming file data
-			dirFileBuilder.setUncompressedSize((int) incomingFileDateInfo.getByteCount());
+			dirFileBuilder.setUncompressedSize(incomingFileDateInfo.getByteCount());
 			dirFileBuilder.setCrc32(incomingFileDateInfo.getCrc32());
 		}
 		// set our optional data-descriptor info
 		if (writtenFileHeader.needsDataDescriptor()) {
 			dataDescriptorBuilder.reset();
-			// XXX: need to handle zip64
-			dataDescriptorBuilder.setCompressedSize((int) bufferedOutputStream.getEncodedSize());
-			dataDescriptorBuilder.setUncompressedSize((int) incomingFileDateInfo.getByteCount());
+			dataDescriptorBuilder.setCompressedSize(bufferedOutputStream.getEncodedSize());
+			dataDescriptorBuilder.setUncompressedSize(incomingFileDateInfo.getByteCount());
 			dataDescriptorBuilder.setCrc32(incomingFileDateInfo.getCrc32());
 			ZipDataDescriptor dataDescriptor = dataDescriptorBuilder.build();
 			dataDescriptor.write(bufferedOutputStream);

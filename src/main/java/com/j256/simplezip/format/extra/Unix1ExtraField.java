@@ -42,12 +42,13 @@ public class Unix1ExtraField extends BaseExtraField {
 	 * Read from the input-stream.
 	 */
 	public static Unix1ExtraField read(InputStream inputStream, int id, int size) throws IOException {
+		byte[] tmpBytes = new byte[8]; 
 		Builder builder = new Unix1ExtraField.Builder();
-		builder.timeLastAccessed = IoUtils.readLong(inputStream, "Unix1ExtraField.timeLastAccessed");
-		builder.timeLastModified = IoUtils.readLong(inputStream, "Unix1ExtraField.timeLastModified");
+		builder.timeLastAccessed = IoUtils.readLong(inputStream, tmpBytes, "Unix1ExtraField.timeLastAccessed");
+		builder.timeLastModified = IoUtils.readLong(inputStream, tmpBytes, "Unix1ExtraField.timeLastModified");
 		if (size > EXPECTED_MINIMUM_SIZE) {
-			builder.userId = IoUtils.readShort(inputStream, "Unix1ExtraField.userId");
-			builder.groupId = IoUtils.readShort(inputStream, "Unix1ExtraField.groupId");
+			builder.userId = IoUtils.readShort(inputStream, tmpBytes, "Unix1ExtraField.userId");
+			builder.groupId = IoUtils.readShort(inputStream, tmpBytes, "Unix1ExtraField.groupId");
 		}
 		return builder.build();
 	}
@@ -57,12 +58,13 @@ public class Unix1ExtraField extends BaseExtraField {
 	 */
 	@Override
 	public void write(OutputStream outputStream) throws IOException {
-		super.write(outputStream);
-		IoUtils.writeLong(outputStream, timeLastAccessed);
-		IoUtils.writeLong(outputStream, timeLastModified);
+		byte[] tmpBytes = new byte[8]; 
+		super.write(outputStream, tmpBytes);
+		IoUtils.writeLong(outputStream, tmpBytes, timeLastAccessed);
+		IoUtils.writeLong(outputStream, tmpBytes, timeLastModified);
 		if (userId != null && groupId != null) {
-			IoUtils.writeShort(outputStream, userId);
-			IoUtils.writeShort(outputStream, groupId);
+			IoUtils.writeShort(outputStream, tmpBytes, userId);
+			IoUtils.writeShort(outputStream, tmpBytes, groupId);
 		}
 	}
 

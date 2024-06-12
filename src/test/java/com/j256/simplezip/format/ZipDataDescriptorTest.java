@@ -44,16 +44,18 @@ public class ZipDataDescriptorTest {
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-		IoUtils.writeInt(baos, ZipDataDescriptor.OPTIONAL_EXPECTED_SIGNATURE);
+		byte[] tmpBytes = new byte[8];
+		IoUtils.writeInt(baos, tmpBytes, ZipDataDescriptor.OPTIONAL_EXPECTED_SIGNATURE);
 		int crc32 = 13123123;
-		IoUtils.writeInt(baos, crc32);
+		IoUtils.writeInt(baos, tmpBytes, crc32);
 		int compressedSize = 1789123;
-		IoUtils.writeInt(baos, compressedSize);
+		IoUtils.writeInt(baos, tmpBytes, compressedSize);
 		int uncompressedSize = 1723;
-		IoUtils.writeInt(baos, uncompressedSize);
+		IoUtils.writeInt(baos, tmpBytes, uncompressedSize);
 
-		ZipDataDescriptor dataDesc =
-				ZipDataDescriptor.read(new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 1024));
+		RewindableInputStream inputStream =
+				new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 1024);
+		ZipDataDescriptor dataDesc = ZipDataDescriptor.read(inputStream);
 
 		assertEquals(crc32, dataDesc.getCrc32());
 		assertEquals(compressedSize, dataDesc.getCompressedSize());
@@ -62,12 +64,12 @@ public class ZipDataDescriptorTest {
 		baos.reset();
 
 		// now write without magic
-		IoUtils.writeInt(baos, crc32);
-		IoUtils.writeInt(baos, compressedSize);
-		IoUtils.writeInt(baos, uncompressedSize);
+		IoUtils.writeInt(baos, tmpBytes, crc32);
+		IoUtils.writeInt(baos, tmpBytes, compressedSize);
+		IoUtils.writeInt(baos, tmpBytes, uncompressedSize);
 
-		dataDesc =
-				ZipDataDescriptor.read(new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 1024));
+		inputStream = new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 1024);
+		dataDesc = ZipDataDescriptor.read(inputStream);
 
 		assertEquals(crc32, dataDesc.getCrc32());
 		assertEquals(compressedSize, dataDesc.getCompressedSize());

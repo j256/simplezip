@@ -16,12 +16,13 @@ public class ZipDataDescriptor {
 
 	/** optional signature at the start of the data-descriptor */
 	public static final int OPTIONAL_EXPECTED_SIGNATURE = 0x8074b50;
+	public static final long MAX_ZIP32_SIZE = 0xFFFFFFFFL;
 
 	private final long crc32;
-	private final int compressedSize;
-	private final int uncompressedSize;
+	private final long compressedSize;
+	private final long uncompressedSize;
 
-	public ZipDataDescriptor(long crc32, int compressedSize, int uncompressedSize) {
+	public ZipDataDescriptor(long crc32, long compressedSize, long uncompressedSize) {
 		this.crc32 = crc32;
 		this.compressedSize = compressedSize;
 		this.uncompressedSize = uncompressedSize;
@@ -38,6 +39,7 @@ public class ZipDataDescriptor {
 	 * Read from the input-stream.
 	 */
 	public static ZipDataDescriptor read(RewindableInputStream inputStream) throws IOException {
+		byte[] tmpBytes = new byte[8];
 		Builder builder = new ZipDataDescriptor.Builder();
 		/*
 		 * This is a little strange since there is an optional magic value according to Wikipedia. If the first value
@@ -46,18 +48,16 @@ public class ZipDataDescriptor {
 		 * next 4 bytes to see if that is also the same CRC value if not then we sort of throw up our hands and assume
 		 * that the first 4 bytes is the CRC without a signature and pray.
 		 */
-		int first = IoUtils.readInt(inputStream, "DataDescriptor.signature-or-crc32");
+		int first = IoUtils.readInt(inputStream, tmpBytes, "ZipDataDescriptor.signature-or-crc32");
 		if (first == OPTIONAL_EXPECTED_SIGNATURE) {
-			builder.crc32 = IoUtils.readIntAsLong(inputStream, "DataDescriptor.crc32");
+			builder.crc32 = IoUtils.readIntAsLong(inputStream, tmpBytes, "ZipDataDescriptor.crc32");
 		} else {
 			// guess that we have crc, compressed-size, uncompressed-size with the crc matching the signature
 			builder.crc32 = first;
 		}
 
-		builder.compressedSize = IoUtils.readInt(inputStream, "DataDescriptor.compressedSize");
-		builder.uncompressedSize = IoUtils.readInt(inputStream, "DataDescriptor.uncompressedSize");
-
-		// XXX: if the sizes are -1 then is there an additional 8+8 byte long sizes?
+		builder.compressedSize = IoUtils.readInt(inputStream, tmpBytes, "ZipDataDescriptor.compressedSize");
+		builder.uncompressedSize = IoUtils.readInt(inputStream, tmpBytes, "ZipDataDescriptor.uncompressedSize");
 
 		return builder.build();
 	}
@@ -66,21 +66,22 @@ public class ZipDataDescriptor {
 	 * Write to the output-stream.
 	 */
 	public void write(OutputStream outputStream) throws IOException {
-		IoUtils.writeInt(outputStream, OPTIONAL_EXPECTED_SIGNATURE);
-		IoUtils.writeInt(outputStream, crc32);
-		IoUtils.writeInt(outputStream, compressedSize);
-		IoUtils.writeInt(outputStream, uncompressedSize);
+		byte[] tmpBytes = new byte[8];
+		IoUtils.writeInt(outputStream, tmpBytes, OPTIONAL_EXPECTED_SIGNATURE);
+		IoUtils.writeInt(outputStream, tmpBytes, crc32);
+		IoUtils.writeInt(outputStream, tmpBytes, compressedSize);
+		IoUtils.writeInt(outputStream, tmpBytes, uncompressedSize);
 	}
 
 	public long getCrc32() {
 		return crc32;
 	}
 
-	public int getCompressedSize() {
+	public long getCompressedSize() {
 		return compressedSize;
 	}
 
-	public int getUncompressedSize() {
+	public long getUncompressedSize() {
 		return uncompressedSize;
 	}
 
@@ -89,8 +90,8 @@ public class ZipDataDescriptor {
 	 */
 	public static class Builder {
 		private long crc32;
-		private int compressedSize;
-		private int uncompressedSize;
+		private long compressedSize;
+		private long uncompressedSize;
 
 		/**
 		 * Create a builder from an existing entry.
@@ -124,19 +125,19 @@ public class ZipDataDescriptor {
 			this.crc32 = crc32;
 		}
 
-		public int getCompressedSize() {
+		public long getCompressedSize() {
 			return compressedSize;
 		}
 
-		public void setCompressedSize(int compressedSize) {
+		public void setCompressedSize(long compressedSize) {
 			this.compressedSize = compressedSize;
 		}
 
-		public int getUncompressedSize() {
+		public long getUncompressedSize() {
 			return uncompressedSize;
 		}
 
-		public void setUncompressedSize(int uncompressedSize) {
+		public void setUncompressedSize(long uncompressedSize) {
 			this.uncompressedSize = uncompressedSize;
 		}
 	}

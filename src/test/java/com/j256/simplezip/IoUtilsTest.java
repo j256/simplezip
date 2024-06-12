@@ -25,27 +25,30 @@ public class IoUtilsTest {
 	public void testReadWriteShort() throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		int s = 14321;
-		IoUtils.writeShort(baos, s);
+		byte[] tmpBytes = new byte[8];
+		IoUtils.writeShort(baos, tmpBytes, s);
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-		assertEquals(s, IoUtils.readShort(bais, "stuff"));
+		assertEquals(s, IoUtils.readShort(bais, tmpBytes, "stuff"));
 	}
 
 	@Test
 	public void testReadWriteInt() throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		int i = 1434522321;
-		IoUtils.writeInt(baos, i);
+		byte[] tmpBytes = new byte[8]; 
+		IoUtils.writeInt(baos, tmpBytes, i);
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-		assertEquals(i, IoUtils.readInt(bais, "stuff"));
+		assertEquals(i, IoUtils.readInt(bais, tmpBytes, "stuff"));
 	}
 
 	@Test
 	public void testReadWriteLong() throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		long l = 14342342345534321L;
-		IoUtils.writeLong(baos, l);
+		byte[] tmpBytes = new byte[8]; 
+		IoUtils.writeLong(baos, tmpBytes, l);
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-		assertEquals(l, IoUtils.readLong(bais, "stuff"));
+		assertEquals(l, IoUtils.readLong(bais, tmpBytes, "stuff"));
 	}
 
 	@Test
