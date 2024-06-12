@@ -55,7 +55,7 @@ public class ZipDataDescriptorTest {
 
 		RewindableInputStream inputStream =
 				new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 1024);
-		ZipDataDescriptor dataDesc = ZipDataDescriptor.read(inputStream);
+		ZipDataDescriptor dataDesc = ZipDataDescriptor.read(inputStream, false);
 
 		assertEquals(crc32, dataDesc.getCrc32());
 		assertEquals(compressedSize, dataDesc.getCompressedSize());
@@ -69,7 +69,7 @@ public class ZipDataDescriptorTest {
 		IoUtils.writeInt(baos, tmpBytes, uncompressedSize);
 
 		inputStream = new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 1024);
-		dataDesc = ZipDataDescriptor.read(inputStream);
+		dataDesc = ZipDataDescriptor.read(inputStream, false);
 
 		assertEquals(crc32, dataDesc.getCrc32());
 		assertEquals(compressedSize, dataDesc.getCompressedSize());

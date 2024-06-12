@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.zip.CRC32;
@@ -39,20 +38,13 @@ public class ZipFileOutputTest {
 
 		String fileName1 = "hello";
 		byte[] fileBytes1 = new byte[] { 1, 2, 3 };
-
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try (InputStream testStream = getClass().getResourceAsStream("/src.tgz");) {
-			assertNotNull(testStream);
-			IoUtils.copyStream(testStream, baos);
-		}
-		byte[] fileBytes2 = baos.toByteArray();
+		byte[] fileBytes2 = new byte[] { 21, 32, 35, 99, 19, 12, 127 };
 
 		/*
 		 * Write out our zip-file.
 		 */
 
-		baos.reset();
-
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ZipFileOutput output = new ZipFileOutput(baos);
 		assertEquals(0, output.getNumBytesWritten());
 

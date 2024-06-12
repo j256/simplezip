@@ -14,6 +14,8 @@ public class StoredFileDataDecoder implements FileDataDecoder {
 
 	private InputStream inputStream;
 	private long inputOffset;
+	private long bytesRead;
+	private long bytesWritten;
 
 	public StoredFileDataDecoder(InputStream inputStream, long dataSize) {
 		this.dataSize = dataSize;
@@ -40,11 +42,23 @@ public class StoredFileDataDecoder implements FileDataDecoder {
 			return -1;
 		}
 		inputOffset += numRead;
+		bytesRead += numRead;
+		bytesWritten += numRead;
 		return numRead;
 	}
 
 	@Override
 	public void close() {
 		// no-op
+	}
+
+	@Override
+	public long getBytesRead() {
+		return bytesRead;
+	}
+
+	@Override
+	public long getBytesWritten() {
+		return bytesWritten;
 	}
 }

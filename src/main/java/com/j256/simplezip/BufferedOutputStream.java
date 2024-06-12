@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 
+import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.ZipDataDescriptor;
 import com.j256.simplezip.format.ZipFileHeader;
 import com.j256.simplezip.format.ZipFileHeader.Builder;
@@ -106,10 +107,10 @@ public class BufferedOutputStream extends OutputStream {
 
 		// need to build a new file-header from the newly calculated information
 		Builder fullHeaderBuilder = ZipFileHeader.Builder.fromHeader(fileHeader);
-		fullHeaderBuilder.setCompressedSize((int) totalSize);
+		fullHeaderBuilder.clearGeneralPurposeFlag(GeneralPurposeFlag.DATA_DESCRIPTOR);
+		fullHeaderBuilder.setCompressedSize(totalSize);
 		fullHeaderBuilder.setCrc32(crc32);
-		// XXX: need to handle zip64
-		fullHeaderBuilder.setUncompressedSize((int) uncompressedSize);
+		fullHeaderBuilder.setUncompressedSize(uncompressedSize);
 		ZipFileHeader writtenFileHeader = fullHeaderBuilder.build();
 		writtenFileHeader.write(delegate);
 

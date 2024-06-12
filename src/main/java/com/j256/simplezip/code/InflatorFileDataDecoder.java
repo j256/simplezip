@@ -24,6 +24,8 @@ public class InflatorFileDataDecoder implements FileDataDecoder {
 	 */
 	private final byte[] tmpBuffer =
 			new byte[ZipCentralDirectoryFileEntry.MINIMUM_READ_SIZE + ZipCentralDirectoryEnd.MINIMUM_READ_SIZE];
+	private long bytesRead;
+	private long bytesWritten;
 
 	public InflatorFileDataDecoder(RewindableInputStream inputStream) throws IOException {
 		this.delegate = inputStream;
@@ -37,6 +39,7 @@ public class InflatorFileDataDecoder implements FileDataDecoder {
 			try {
 				int num = inflater.inflate(outputFuffer, offset, length);
 				if (num > 0) {
+					bytesWritten += num;
 					return num;
 				} else {
 					// 0 means that it is either finished or needs more input
@@ -51,7 +54,9 @@ public class InflatorFileDataDecoder implements FileDataDecoder {
 				 * might have read more bytes than it needed and we need to rewind to the start of the data-descriptor
 				 * or the next record.
 				 */
-				delegate.rewind(inflater.getRemaining());
+				int numRemaining = inflater.getRemaining();
+				delegate.rewind(numRemaining);
+				bytesRead -= numRemaining;
 				return -1;
 			} else if (inflater.needsInput()) {
 				fillInflaterBuffer();
@@ -64,12 +69,23 @@ public class InflatorFileDataDecoder implements FileDataDecoder {
 		inflater.end();
 	}
 
+	@Override
+	public long getBytesRead() {
+		return bytesRead;
+	}
+
+	@Override
+	public long getBytesWritten() {
+		return bytesWritten;
+	}
+
 	/**
 	 * Read data from the input stream and write to the inflater to fill its buffer.
 	 */
 	private void fillInflaterBuffer() throws IOException {
 		int num = delegate.read(tmpBuffer);
 		if (num > 0) {
+			bytesRead += num;
 			inflater.setInput(tmpBuffer, 0, num);
 		}
 	}
