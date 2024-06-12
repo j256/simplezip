@@ -334,8 +334,10 @@ public class ZipFileHeader {
 
 			// if we don't have a zip64 field set then check our values and maybe add one
 			if (zip64ExtraField == null) {
-				if (uncompressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE
-						|| compressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE) {
+				if (uncompressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE //
+						|| uncompressedSize < 0 //
+						|| compressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE //
+						|| compressedSize < 0) {
 					zip64ExtraField = new Zip64ExtraField(uncompressedSize, compressedSize, 0, 0);
 					uncompressedSize = IoUtils.MAX_UNSIGNED_INT_VALUE;
 					compressedSize = IoUtils.MAX_UNSIGNED_INT_VALUE;
@@ -685,9 +687,9 @@ public class ZipFileHeader {
 		/**
 		 * Set to the compressed (encoded) size of the bytes. This can be left as 0 if you want a
 		 * {@link ZipDataDescriptor} written after the file data or if you have buffered enabled via
-		 * {@link ZipFileOutput#enableFileBuffering(int, int)}. If this value >= 0xFFFFFFFF then a Zip64 extra field
-		 * will be written into the extra bytes if not otherwise specified. You can also set this to 0xFFFFFFFF and add
-		 * a {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
+		 * {@link ZipFileOutput#enableFileBuffering(int, int)}. If this value < 0 or >= 0xFFFFFFFF then a Zip64 extra
+		 * field will be written into the extra bytes if not otherwise specified. You can also set this to 0xFFFFFFFF
+		 * and add a {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
 		 * {@link #setZip64ExtraField(Zip64ExtraField)}.
 		 */
 		public void setCompressedSize(long compressedSize) {
@@ -707,9 +709,9 @@ public class ZipFileHeader {
 		}
 
 		/**
-		 * Set to the uncompressed (unencoded) size of the bytes. If this value >= 0xFFFFFFFF then a Zip64 extra field
-		 * will be written into the extra bytes if not otherwise specified. You can also set this to 0xFFFFFFFF and add
-		 * a {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
+		 * Set to the uncompressed (unencoded) size of the bytes. If this value < 0 or >= 0xFFFFFFFF then a Zip64 extra
+		 * field will be written into the extra bytes if not otherwise specified. You can also set this to 0xFFFFFFFF
+		 * and add a {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
 		 * {@link #setZip64ExtraField(Zip64ExtraField)}.
 		 */
 		public void setUncompressedSize(long uncompressedSize) {
