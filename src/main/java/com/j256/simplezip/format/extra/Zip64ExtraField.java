@@ -97,12 +97,22 @@ public class Zip64ExtraField extends BaseExtraField {
 			this.uncompressedSize = uncompressedSize;
 		}
 
+		public Builder withUncompressedSize(long uncompressedSize) {
+			this.uncompressedSize = uncompressedSize;
+			return this;
+		}
+
 		public long getCompressedSize() {
 			return compressedSize;
 		}
 
 		public void setCompressedSize(long compressedSize) {
 			this.compressedSize = compressedSize;
+		}
+
+		public Builder withCompressedSize(long compressedSize) {
+			this.compressedSize = compressedSize;
+			return this;
 		}
 
 		public long getOffset() {
@@ -113,12 +123,22 @@ public class Zip64ExtraField extends BaseExtraField {
 			this.offset = offset;
 		}
 
+		public Builder withOffset(long offset) {
+			this.offset = offset;
+			return this;
+		}
+
 		public int getDiskNumber() {
 			return diskNumber;
 		}
 
 		public void setDiskNumber(int diskNumber) {
 			this.diskNumber = diskNumber;
+		}
+
+		public Builder withDiskNumber(int diskNumber) {
+			this.diskNumber = diskNumber;
+			return this;
 		}
 	}
 }

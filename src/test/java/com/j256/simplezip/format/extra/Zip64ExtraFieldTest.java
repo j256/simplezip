@@ -36,6 +36,25 @@ public class Zip64ExtraFieldTest {
 		assertEquals(diskNumber, field.getDiskNumber());
 		assertEquals(offset, field.getOffset());
 		assertEquals(uncompressedSize, field.getUncompressedSize());
+
+		compressedSize = 342432;
+		builder.withCompressedSize(compressedSize);
+		assertEquals(compressedSize, builder.getCompressedSize());
+		diskNumber = 995534;
+		builder.withDiskNumber(diskNumber);
+		assertEquals(diskNumber, builder.getDiskNumber());
+		offset = 4427743L;
+		builder.withOffset(offset);
+		assertEquals(offset, (int) builder.getOffset());
+		uncompressedSize = 223413;
+		builder.withUncompressedSize(uncompressedSize);
+		assertEquals(uncompressedSize, builder.getUncompressedSize());
+
+		field = builder.build();
+		assertEquals(compressedSize, field.getCompressedSize());
+		assertEquals(diskNumber, field.getDiskNumber());
+		assertEquals(offset, field.getOffset());
+		assertEquals(uncompressedSize, field.getUncompressedSize());
 	}
 
 	@Test
