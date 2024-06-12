@@ -81,33 +81,34 @@ public class ZipCentralDirectoryFileEntry {
 	 */
 	public static ZipCentralDirectoryFileEntry read(RewindableInputStream inputStream) throws IOException {
 
-		int signature = IoUtils.readInt(inputStream, "ZipCentralDirectoryFileEntry.signature");
+		byte[] tmpBytes = new byte[8]; 
+		int signature = IoUtils.readInt(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.signature");
 		if (signature != EXPECTED_SIGNATURE) {
 			inputStream.rewind(4);
 			return null;
 		}
 
 		Builder builder = new ZipCentralDirectoryFileEntry.Builder();
-		builder.versionMade = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.versionMade");
-		builder.versionNeeded = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.versionNeeded");
+		builder.versionMade = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.versionMade");
+		builder.versionNeeded = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.versionNeeded");
 		builder.generalPurposeFlags =
-				IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.generalPurposeFlags");
-		builder.compressionMethod = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.compressionMethod");
-		builder.lastModifiedTime = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.lastModifiedTime");
-		builder.lastModifiedDate = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.lastModifiedDate");
-		builder.crc32 = IoUtils.readIntAsLong(inputStream, "ZipCentralDirectoryFileEntry.crc32");
-		builder.compressedSize = IoUtils.readInt(inputStream, "ZipCentralDirectoryFileEntry.compressedSize");
-		builder.uncompressedSize = IoUtils.readInt(inputStream, "ZipCentralDirectoryFileEntry.uncompressedSize");
-		int fileNameLength = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.fileNameLength");
-		int extraFieldLength = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.extraFieldLength");
-		int commentLength = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.commentLength");
-		builder.diskNumberStart = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.diskNumberStart");
+				IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.generalPurposeFlags");
+		builder.compressionMethod = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.compressionMethod");
+		builder.lastModifiedTime = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.lastModifiedTime");
+		builder.lastModifiedDate = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.lastModifiedDate");
+		builder.crc32 = IoUtils.readIntAsLong(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.crc32");
+		builder.compressedSize = IoUtils.readInt(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.compressedSize");
+		builder.uncompressedSize = IoUtils.readInt(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.uncompressedSize");
+		int fileNameLength = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.fileNameLength");
+		int extraFieldLength = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.extraFieldLength");
+		int commentLength = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.commentLength");
+		builder.diskNumberStart = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.diskNumberStart");
 		builder.internalFileAttributes =
-				IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEntry.internalFileAttributes");
+				IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.internalFileAttributes");
 		builder.externalFileAttributes =
-				IoUtils.readInt(inputStream, "ZipCentralDirectoryFileEntry.externalFileAttributes");
+				IoUtils.readInt(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.externalFileAttributes");
 		builder.relativeOffsetOfLocalHeader =
-				IoUtils.readInt(inputStream, "ZipCentralDirectoryFileEntry.relativeOffsetOfLocalHeader");
+				IoUtils.readInt(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.relativeOffsetOfLocalHeader");
 
 		builder.fileNameBytes = IoUtils.readBytes(inputStream, fileNameLength, "ZipCentralDirectoryFileEntry.fileName");
 		builder.extraFieldBytes =
@@ -122,24 +123,25 @@ public class ZipCentralDirectoryFileEntry {
 	 */
 	public void write(OutputStream outputStream) throws IOException {
 
-		IoUtils.writeInt(outputStream, EXPECTED_SIGNATURE);
-		IoUtils.writeShort(outputStream, versionMade);
-		IoUtils.writeShort(outputStream, versionNeeded);
-		IoUtils.writeShort(outputStream, generalPurposeFlags);
-		IoUtils.writeShort(outputStream, compressionMethod);
-		IoUtils.writeShort(outputStream, lastModifiedTime);
-		IoUtils.writeShort(outputStream, lastModifiedDate);
-		IoUtils.writeInt(outputStream, crc32);
-		IoUtils.writeInt(outputStream, compressedSize);
-		IoUtils.writeInt(outputStream, uncompressedSize);
+		byte[] tmpBytes = new byte[8]; 
+		IoUtils.writeInt(outputStream, tmpBytes, EXPECTED_SIGNATURE);
+		IoUtils.writeShort(outputStream, tmpBytes, versionMade);
+		IoUtils.writeShort(outputStream, tmpBytes, versionNeeded);
+		IoUtils.writeShort(outputStream, tmpBytes, generalPurposeFlags);
+		IoUtils.writeShort(outputStream, tmpBytes, compressionMethod);
+		IoUtils.writeShort(outputStream, tmpBytes, lastModifiedTime);
+		IoUtils.writeShort(outputStream, tmpBytes, lastModifiedDate);
+		IoUtils.writeInt(outputStream, tmpBytes, crc32);
+		IoUtils.writeInt(outputStream, tmpBytes, compressedSize);
+		IoUtils.writeInt(outputStream, tmpBytes, uncompressedSize);
 
-		IoUtils.writeShortBytesLength(outputStream, fileNameBytes);
-		IoUtils.writeShortBytesLength(outputStream, extraFieldBytes);
-		IoUtils.writeShortBytesLength(outputStream, commentBytes);
-		IoUtils.writeShort(outputStream, diskNumberStart);
-		IoUtils.writeShort(outputStream, internalFileAttributes);
-		IoUtils.writeInt(outputStream, externalFileAttributes);
-		IoUtils.writeInt(outputStream, relativeOffsetOfLocalHeader);
+		IoUtils.writeShortBytesLength(outputStream, tmpBytes, fileNameBytes);
+		IoUtils.writeShortBytesLength(outputStream, tmpBytes, extraFieldBytes);
+		IoUtils.writeShortBytesLength(outputStream, tmpBytes, commentBytes);
+		IoUtils.writeShort(outputStream, tmpBytes, diskNumberStart);
+		IoUtils.writeShort(outputStream, tmpBytes, internalFileAttributes);
+		IoUtils.writeInt(outputStream, tmpBytes, externalFileAttributes);
+		IoUtils.writeInt(outputStream, tmpBytes, relativeOffsetOfLocalHeader);
 		IoUtils.writeBytes(outputStream, fileNameBytes);
 		IoUtils.writeBytes(outputStream, extraFieldBytes);
 		IoUtils.writeBytes(outputStream, commentBytes);

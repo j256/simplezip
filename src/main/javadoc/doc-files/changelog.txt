@@ -1,4 +1,4 @@
-2.0: 5/??/2024
+2.0: 6/??/2024
 	* Removed the ZipVersion which seemed artificial.  Replaced with major/minor numbers.
 	* Renamed some methods around the version-needed and version-made getters and setters.
 	* Renamed the ZipFileOutput.enableBufferedOutput() method to enableFileBuffering().
@@ -12,6 +12,7 @@
 	* Added iterators for the ZipFileHeader and ZipCentralDirectoryFileEntry sections.
 	* Renamed the ZipFileInput.readFileData(File) methods to be readFileDataToFile().
 	* Added support for file-header and directory-file-entry iterators.
+	* Reduced the IO calls by using IO buffers.
 
 1.1: 5/23/2024
 	* Fixed some of the logic to allow us to control all bytes in the output Zip.

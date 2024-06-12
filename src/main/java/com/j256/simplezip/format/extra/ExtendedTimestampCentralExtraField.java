@@ -44,7 +44,8 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 		Builder builder = new ExtendedTimestampCentralExtraField.Builder();
 		builder.flags = IoUtils.readByte(inputStream, "ExtendedTimestampCentralExtraField.flags");
 		if (size >= EXPECTED_MINIMUM_SIZE + 8) {
-			builder.time = IoUtils.readLong(inputStream, "ExtendedTimestampCentralExtraField.time");
+			byte[] tmpBytes = new byte[8]; 
+			builder.time = IoUtils.readLong(inputStream, tmpBytes, "ExtendedTimestampCentralExtraField.time");
 		}
 		return builder.build();
 	}
@@ -54,10 +55,11 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 	 */
 	@Override
 	public void write(OutputStream outputStream) throws IOException {
-		super.write(outputStream);
+		byte[] tmpBytes = new byte[8]; 
+		super.write(outputStream, tmpBytes);
 		IoUtils.writeByte(outputStream, flags);
 		if (time != null) {
-			IoUtils.writeLong(outputStream, time);
+			IoUtils.writeLong(outputStream, tmpBytes, time);
 		}
 	}
 

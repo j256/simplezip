@@ -45,14 +45,16 @@ public class ExtraFieldUtilTest {
 
 	private byte[] idToBytes(int id) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		IoUtils.writeShort(baos, id);
+		byte[] tmpBytes = new byte[8];
+		IoUtils.writeShort(baos, tmpBytes, id);
 		return baos.toByteArray();
 	}
 
 	private byte[] idAndSizeToBytes(int id, int size) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		IoUtils.writeShort(baos, id);
-		IoUtils.writeShort(baos, size);
+		byte[] tmpBytes = new byte[8];
+		IoUtils.writeShort(baos, tmpBytes, id);
+		IoUtils.writeShort(baos, tmpBytes, size);
 		return baos.toByteArray();
 	}
 }
