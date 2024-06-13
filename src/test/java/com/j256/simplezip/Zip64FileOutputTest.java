@@ -20,7 +20,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.j256.simplezip.format.CompressionMethod;
@@ -114,7 +113,6 @@ public class Zip64FileOutputTest {
 	}
 
 	@Test
-	@Ignore
 	public void testZip64BigWrite() throws IOException, InterruptedException {
 
 		// create our blocking stream that works with the input stream
@@ -145,6 +143,7 @@ public class Zip64FileOutputTest {
 		List<ZipEntry> entries = zipReader.entries;
 		assertTrue(!entries.isEmpty());
 		assertEquals(fileName, entries.get(0).getName());
+		assertNull(zipReader.exception);
 	}
 
 	public static void main(String[] args) throws IOException {
@@ -174,6 +173,7 @@ public class Zip64FileOutputTest {
 
 		private final ZipInputStream zis;
 		private final List<ZipEntry> entries = new ArrayList<>();
+		private Exception exception;
 
 		public ZipReader(InputStream inputStream) {
 			this.zis = new ZipInputStream(inputStream);
@@ -184,7 +184,7 @@ public class Zip64FileOutputTest {
 			try {
 				doRun();
 			} catch (IOException ioe) {
-				throw new RuntimeException(ioe);
+				exception = ioe;
 			}
 		}
 
@@ -197,13 +197,11 @@ public class Zip64FileOutputTest {
 			while (true) {
 				ZipEntry entry = zis.getNextEntry();
 				if (entry == null) {
-					// System.out.println("Got no more entries");
 					break;
 				}
 				entries.add(entry);
 				while (true) {
 					if (zis.read(buffer) < 0) {
-						// System.out.println("Got eof on file read");
 						break;
 					}
 				}
@@ -225,7 +223,6 @@ public class Zip64FileOutputTest {
 
 		@Override
 		public void write(int b) {
-			// System.out.println("writing " + b);
 			buffer[bufferOffset++] = (byte) b;
 			if (bufferOffset >= buffer.length) {
 				flush();
@@ -234,7 +231,6 @@ public class Zip64FileOutputTest {
 
 		@Override
 		public void write(byte[] from, int fromOffset, int fromLength) {
-			// System.out.println("writing " + Arrays.toString(Arrays.copyOfRange(from, fromOffset, fromLength)));
 			while (fromLength > 0) {
 				int writeLen = Math.min(buffer.length - bufferOffset, fromLength);
 				System.arraycopy(from, fromOffset, buffer, bufferOffset, writeLen);
@@ -294,10 +290,8 @@ public class Zip64FileOutputTest {
 			public int read() {
 				if (maybeGetMoreData()) {
 					int val = (int) (readBuffer[readOffset++] & 0xFF);
-					// System.out.println("reading " + val);
 					return val;
 				} else {
-					// System.out.println("read EOF on read byte");
 					return -1;
 				}
 			}
@@ -305,20 +299,16 @@ public class Zip64FileOutputTest {
 			@Override
 			public int read(byte[] buf, int offset, int length) {
 				if (!maybeGetMoreData()) {
-					// System.out.println("read EOF on read buffer");
 					return -1;
 				}
 				int readLength = Math.min(length, readBuffer.length - readOffset);
 				System.arraycopy(readBuffer, readOffset, buf, offset, readLength);
 				readOffset += readLength;
-				// System.out.println("reading " + Arrays.toString(Arrays.copyOfRange(buf, offset, offset +
-				// readLength)));
 				return readLength;
 			}
 
 			private boolean maybeGetMoreData() {
 				if (eof) {
-					// System.out.println("EOF on read byte");
 					return false;
 				}
 				while (readBuffer == null || readOffset >= readBuffer.length) {

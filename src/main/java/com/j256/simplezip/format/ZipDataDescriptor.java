@@ -8,7 +8,8 @@ import com.j256.simplezip.RewindableInputStream;
 
 /**
  * Optional data descriptor immediately after the file-data. Only written if {@link GeneralPurposeFlag#DATA_DESCRIPTOR}
- * is set in the {@link ZipFileHeader}.
+ * is set in the {@link ZipFileHeader}. This can be encoded as 32-bit or 64-bit sizes depending on whether or not the
+ * sizes overflow the 4-byte integer.
  * 
  * @author graywatson
  */
