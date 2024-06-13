@@ -10,7 +10,7 @@ jobs:
           key: j256-simplezip-{{ checksum "pom.xml" }}
       - run:
           name: Get maven project dependencies
-          command: mvn -U -Dmaven.test.skip=true dependency:go-offline package
+          command: mvn -U -Dtest=ZipStatusTest dependency:go-offline package
       # save the project dependencies
       - save_cache:
           paths:
