@@ -81,7 +81,7 @@ public class ZipCentralDirectoryFileEntry {
 	 */
 	public static ZipCentralDirectoryFileEntry read(RewindableInputStream inputStream) throws IOException {
 
-		byte[] tmpBytes = new byte[8]; 
+		byte[] tmpBytes = new byte[8];
 		int signature = IoUtils.readInt(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.signature");
 		if (signature != EXPECTED_SIGNATURE) {
 			inputStream.rewind(4);
@@ -93,16 +93,22 @@ public class ZipCentralDirectoryFileEntry {
 		builder.versionNeeded = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.versionNeeded");
 		builder.generalPurposeFlags =
 				IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.generalPurposeFlags");
-		builder.compressionMethod = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.compressionMethod");
-		builder.lastModifiedTime = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.lastModifiedTime");
-		builder.lastModifiedDate = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.lastModifiedDate");
+		builder.compressionMethod =
+				IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.compressionMethod");
+		builder.lastModifiedTime =
+				IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.lastModifiedTime");
+		builder.lastModifiedDate =
+				IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.lastModifiedDate");
 		builder.crc32 = IoUtils.readIntAsLong(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.crc32");
 		builder.compressedSize = IoUtils.readInt(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.compressedSize");
-		builder.uncompressedSize = IoUtils.readInt(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.uncompressedSize");
+		builder.uncompressedSize =
+				IoUtils.readInt(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.uncompressedSize");
 		int fileNameLength = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.fileNameLength");
-		int extraFieldLength = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.extraFieldLength");
+		int extraFieldLength =
+				IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.extraFieldLength");
 		int commentLength = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.commentLength");
-		builder.diskNumberStart = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.diskNumberStart");
+		builder.diskNumberStart =
+				IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.diskNumberStart");
 		builder.internalFileAttributes =
 				IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEntry.internalFileAttributes");
 		builder.externalFileAttributes =
@@ -123,7 +129,7 @@ public class ZipCentralDirectoryFileEntry {
 	 */
 	public void write(OutputStream outputStream) throws IOException {
 
-		byte[] tmpBytes = new byte[8]; 
+		byte[] tmpBytes = new byte[8];
 		IoUtils.writeInt(outputStream, tmpBytes, EXPECTED_SIGNATURE);
 		IoUtils.writeShort(outputStream, tmpBytes, versionMade);
 		IoUtils.writeShort(outputStream, tmpBytes, versionNeeded);
@@ -602,9 +608,9 @@ public class ZipCentralDirectoryFileEntry {
 		}
 
 		/**
-		 * Set to the compressed (encoded) size of the bytes. If this value >= 0xFFFFFFFF then a Zip64 extra field will
-		 * be written into the extra bytes if not otherwise specified. You can also set this to 0xFFFFFFFF and add a
-		 * {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
+		 * Set to the compressed (encoded) size of the bytes. If this value is more than 0xFFFFFFFF then a Zip64 extra
+		 * field will be written into the extra bytes if not otherwise specified. You can also set this to 0xFFFFFFFF
+		 * and add a {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
 		 * {@link #setZip64ExtraField(Zip64ExtraField)}.
 		 */
 		public long getCompressedSize() {
@@ -620,9 +626,9 @@ public class ZipCentralDirectoryFileEntry {
 		}
 
 		/**
-		 * Set to the uncompressed (unencoded) size of the bytes. If this value >= 0xFFFFFFFF then a Zip64 extra field
-		 * will be written into the extra bytes if not otherwise specified. You can also set this to 0xFFFFFFFF and add
-		 * a {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
+		 * Set to the uncompressed (unencoded) size of the bytes. If this value is more than 0xFFFFFFFF then a Zip64
+		 * extra field will be written into the extra bytes if not otherwise specified. You can also set this to
+		 * 0xFFFFFFFF and add a {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
 		 * {@link #setZip64ExtraField(Zip64ExtraField)}.
 		 */
 		public void setUncompressedSize(long uncompressedSize) {

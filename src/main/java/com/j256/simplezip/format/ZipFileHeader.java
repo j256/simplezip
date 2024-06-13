@@ -709,9 +709,9 @@ public class ZipFileHeader {
 		/**
 		 * Set to the compressed (encoded) size of the bytes. This can be left as 0 if you want a
 		 * {@link ZipDataDescriptor} written after the file data or if you have buffered enabled via
-		 * {@link ZipFileOutput#enableFileBuffering(int, int)}. If this value < 0 or >= 0xFFFFFFFF then a Zip64 extra
-		 * field will be written into the extra bytes if not otherwise specified. You can also set this to 0xFFFFFFFF
-		 * and add a {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
+		 * {@link ZipFileOutput#enableFileBuffering(int, int)}. If this value is less than 0 or more than 0xFFFFFFFF
+		 * then a Zip64 extra field will be written into the extra bytes if not otherwise specified. You can also set
+		 * this to 0xFFFFFFFF and add a {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
 		 * {@link #setZip64ExtraField(Zip64ExtraField)}.
 		 */
 		public void setCompressedSize(long compressedSize) {
@@ -731,9 +731,9 @@ public class ZipFileHeader {
 		}
 
 		/**
-		 * Set to the uncompressed (unencoded) size of the bytes. If this value < 0 or >= 0xFFFFFFFF then a Zip64 extra
-		 * field will be written into the extra bytes if not otherwise specified. You can also set this to 0xFFFFFFFF
-		 * and add a {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
+		 * Set to the uncompressed (unencoded) size of the bytes. If this value is less than 0 or more than 0xFFFFFFFF
+		 * then a Zip64 extra field will be written into the extra bytes if not otherwise specified. You can also set
+		 * this to 0xFFFFFFFF and add a {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
 		 * {@link #setZip64ExtraField(Zip64ExtraField)}.
 		 */
 		public void setUncompressedSize(long uncompressedSize) {
