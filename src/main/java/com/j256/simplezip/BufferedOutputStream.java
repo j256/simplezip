@@ -30,7 +30,7 @@ public class BufferedOutputStream extends OutputStream {
 	private int maxSizeInMemory;
 	private byte[] memoryBuffer = new byte[0];
 	private int memoryOffset;
-	private long totalSize;
+	private long encodedSize;
 	private boolean buffered;
 	private File tmpFile;
 	private FileOutputStream tmpFileOutputStream;
@@ -59,6 +59,7 @@ public class BufferedOutputStream extends OutputStream {
 		if (fileHeader == null) {
 			// we have already given up and written the header
 			delegate.write(buffer, offset, length);
+			encodedSize += length;
 			return;
 		}
 		ensureMemoryBufferMaxSpace(length);
@@ -66,7 +67,7 @@ public class BufferedOutputStream extends OutputStream {
 			// store this in the memory buffer
 			System.arraycopy(buffer, offset, memoryBuffer, memoryOffset, length);
 			memoryOffset += length;
-			totalSize += length;
+			encodedSize += length;
 			return;
 		}
 		if (memoryOffset < memoryBuffer.length) {
@@ -76,9 +77,9 @@ public class BufferedOutputStream extends OutputStream {
 			offset += memLen;
 			length -= memLen;
 			memoryOffset += length;
-			totalSize += length;
+			encodedSize += length;
 		}
-		if (totalSize + length > maxSizeBuffered) {
+		if (encodedSize + length > maxSizeBuffered) {
 			// need to give up and write out to the delegate
 			giveUp(buffer, offset, length);
 			return;
@@ -91,7 +92,7 @@ public class BufferedOutputStream extends OutputStream {
 		// NOTE: no buffered output stream here because we are dealing with buffers externally
 		tmpFileOutputStream = new FileOutputStream(tmpFile);
 		tmpFileOutputStream.write(buffer, offset, length);
-		totalSize += length;
+		encodedSize += length;
 	}
 
 	/**
@@ -107,9 +108,13 @@ public class BufferedOutputStream extends OutputStream {
 
 		// need to build a new file-header from the newly calculated information
 		Builder fullHeaderBuilder = ZipFileHeader.Builder.fromHeader(fileHeader);
+		/*
+		 * We need to clear the data-descriptor flag here because we are writing enough information into the header so
+		 * we don't need one.
+		 */
 		fullHeaderBuilder.clearGeneralPurposeFlag(GeneralPurposeFlag.DATA_DESCRIPTOR);
-		fullHeaderBuilder.setCompressedSize(totalSize);
 		fullHeaderBuilder.setCrc32(crc32);
+		fullHeaderBuilder.setCompressedSize(encodedSize);
 		fullHeaderBuilder.setUncompressedSize(uncompressedSize);
 		ZipFileHeader writtenFileHeader = fullHeaderBuilder.build();
 		writtenFileHeader.write(delegate);
@@ -159,7 +164,7 @@ public class BufferedOutputStream extends OutputStream {
 	 * Encoded bytes either buffered or written of the latest file written by {@link #finishFileData(long, long)}..
 	 */
 	public long getEncodedSize() {
-		return totalSize;
+		return encodedSize;
 	}
 
 	/**
@@ -168,7 +173,7 @@ public class BufferedOutputStream extends OutputStream {
 	public void setFileHeader(ZipFileHeader fileHeader) {
 		this.fileHeader = fileHeader;
 		this.memoryOffset = 0;
-		this.totalSize = 0;
+		this.encodedSize = 0;
 		this.tmpFile = null;
 		this.tmpFileOutputStream = null;
 		this.buffered = true;
@@ -182,7 +187,7 @@ public class BufferedOutputStream extends OutputStream {
 		// write the rest of the current buffer to the delegate
 		delegate.write(buffer, offset, length);
 		// this is now our encoded size
-		totalSize = delegate.getWriteCount() - start;
+		encodedSize = delegate.getWriteCount() - start;
 		buffered = false;
 		fileHeader = null;
 	}

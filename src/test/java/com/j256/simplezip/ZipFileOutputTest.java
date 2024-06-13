@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -580,6 +581,60 @@ public class ZipFileOutputTest {
 		ZipFileOutput zipOutput = new ZipFileOutput(new ByteArrayOutputStream());
 		zipOutput.enableFileBuffering(1, 2);
 		zipOutput.close();
+	}
+
+	@Test
+	public void testLargerFile() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ZipFileOutput zipOutput = new ZipFileOutput(baos);
+		byte[] buffer = new byte[IoUtils.STANDARD_BUFFER_SIZE * 2];
+		new Random().nextBytes(buffer);
+		String fileName = "bar.txt";
+		zipOutput.writeFileHeader(ZipFileHeader.builder().withFileName(fileName).build());
+		zipOutput.writeFileDataAll(buffer);
+		zipOutput.close();
+
+		ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(baos.toByteArray()));
+		ZipEntry entry = zis.getNextEntry();
+		assertEquals(fileName, entry.getName());
+		baos.reset();
+		byte[] readBuffer = new byte[1024];
+		while (true) {
+			int numRead = zis.read(readBuffer);
+			if (numRead < 0) {
+				break;
+			}
+			baos.write(readBuffer, 0, numRead);
+		}
+		assertArrayEquals(buffer, baos.toByteArray());
+	}
+
+	@Test
+	public void testBUfferedFileNoDataDescriptor() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ZipFileOutput zipOutput = new ZipFileOutput(baos);
+		zipOutput.enableFileBuffering(Integer.MAX_VALUE, Integer.MAX_VALUE);
+		byte[] buffer = new byte[1024];
+		new Random().nextBytes(buffer);
+		String fileName1 = "bar.txt";
+		zipOutput.writeFileHeader(ZipFileHeader.builder().withFileName(fileName1).build());
+		zipOutput.writeFileDataAll(buffer);
+		String fileName2 = "bar2.txt";
+		zipOutput.writeFileHeader(ZipFileHeader.builder().withFileName(fileName2).build());
+		zipOutput.writeFileDataAll(buffer);
+		zipOutput.close();
+
+		ZipFileInput zipInput = new ZipFileInput(new ByteArrayInputStream(baos.toByteArray()));
+		ZipFileHeader header = zipInput.readFileHeader();
+		assertEquals(fileName1, header.getFileName());
+		assertFalse(header.getGeneralPurposeFlagsAsEnums().contains(GeneralPurposeFlag.DATA_DESCRIPTOR));
+		baos.reset();
+		zipInput.readFileData(baos);
+		assertArrayEquals(buffer, baos.toByteArray());
+		header = zipInput.readFileHeader();
+		assertEquals(fileName2, header.getFileName());
+
+		zipInput.close();
 	}
 
 	public static void main(String[] args) throws IOException {
