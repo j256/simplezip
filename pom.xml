@@ -8,7 +8,7 @@
 	<packaging>jar</packaging>
 	<name>Simple Zip</name>
 	<url>https://256stuff.com/sources/simplezip/</url>
-	<description>Simple Zip package for Java that gives full control over zip file and directory entries.</description>
+	<description>Simple Zip package for Java that gives full control over Zip file data entries.</description>
 	<licenses>
 		<license>
 			<name>ISC License</name>
