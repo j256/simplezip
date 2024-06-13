@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html401/loose.dtd">
 <html>
-<!-- Created on May 24, 2024 by texi2html 1.82
+<!-- Created on June 13, 2024 by texi2html 1.82
 texi2html was written by: 
             Lionel Cons <Lionel.Cons@cern.ch> (original author)
             Karl Berry  <karl@freefriends.org>
@@ -51,7 +51,7 @@ ul.toc {list-style: none}
 <a name="SimpleZip"></a>
 <h1 class="settitle">SimpleZip</h1>
 
-<p>Version 1.1 &ndash; May 2024
+<p>Version 2.0 &ndash; June 2024
 </p>
 <a name="index-introduction"></a>
 <a name="index-author"></a>
@@ -63,6 +63,7 @@ read and write Zip files with full precision.
 <p>To get started quickly using SimpleZip, see section <a href="#Quick-Start">Start Using Quickly</a>.  You can also take a look at the examples section of the
 document which has various working code packages. See section <a href="#Examples">Example Code</a>.
 There is also a <a href="http://256stuff.com/sources/simplezip/docs/simplezip.pdf">PDF version of this documentation</a>.
+For more information, see the <a href="https://256stuff.com/sources/simplezip/">SimpleZip home page</a>.
 </p>
 <p>Gray Watson <a href="http://256stuff.com/gray/">http://256stuff.com/gray/</a>
 </p>
@@ -402,7 +403,8 @@ Zip file does not have the size or checksum/crc information at the start of the 
 ZipDataDescriptor dataDesc = zipInput.getCurrentDataDescriptor();
 </pre></td></tr></table>
 
-<p>The descriptor just holds the following information.
+<p>The descriptor holds the following information and is represented in SimpleZip by the class
+<a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipDataDescriptor.html">ZipDataDescriptor.java</a>.
 </p>
 <ul>
 <li> crc32 checksum
@@ -410,9 +412,6 @@ ZipDataDescriptor dataDesc = zipInput.getCurrentDataDescriptor();
 </li><li> uncompressed size
 </li></ul>
 
-<p>The SimpleZip class representing the data-descriptor is
-<a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipDataDescriptor.html">ZipDataDescriptor.java</a>.
-</p>
 <p>Once all of the data has been read for a particular file and the optional descriptor has been read, you can then read
 the next header.  See section <a href="#Read-File-Headers">Reading Zip File Header Entries</a>. 
 </p>
@@ -449,7 +448,8 @@ ZipCentralDirectoryFileEntry directoryEntry =
 </pre></td></tr></table>
 
 <p>The central-directory file entries hold the following information for each file in the Zip.  Some of the fields are
-duplicates of the fields in the file-header.
+duplicates of the fields in the file-header.  The entries are represented by the class
+<a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipCentralDirectoryFileEntry.html">ZipCentralDirectoryFileEntry.java</a>.
 </p>
 <a name="index-external-file-attributes"></a>
 <a name="index-internal-file-attributes"></a>
@@ -475,9 +475,6 @@ duplicates of the fields in the file-header.
 </li><li> comment bytes
 </li></ul>
 
-<p>The SimpleZip class representing a central-directory file-entry is
-<a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipCentralDirectoryFileEntry.html">ZipCentralDirectoryFileEntry.java</a>.
-</p>
 <p>If you have been reading file data directly out to disk using the <code>zipInput.readFileData(File)</code> method, you can
 modify the permissions on the file from the file-entry&rsquo;s using something like the following.
 </p>
@@ -782,7 +779,7 @@ information.
 <table><tr><td>&nbsp;</td><td><pre class="example">&lt;dependency&gt;
     &lt;groupId&gt;com.j256.simplezip&lt;/groupId&gt;
     &lt;artifactId&gt;simplezip&lt;/artifactId&gt;
-    &lt;version&gt;1.1&lt;/version&gt;
+    &lt;version&gt;2.0&lt;/version&gt;
 &lt;/dependency&gt;
 </pre></td></tr></table>
 
@@ -1088,8 +1085,8 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <tr><td></td><td valign="top"><a href="#index-where-to-get-new-jars">where to get new jars</a></td><td valign="top"><a href="#Downloading">2.1 Downloading Jar</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-write-zip-file-data">write zip file data</a></td><td valign="top"><a href="#Write-File-Data">2.3.3 Writing File Data to Buffer, File, or Stream</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-write-zip-file-header">write zip file header</a></td><td valign="top"><a href="#Write-File-Headers">2.3.2 Writing File Header Entries</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-write-zip-files">write zip files</a></td><td valign="top"><a href="#ZipFileOutput">2.3.1 Constructing a ZipFileOutput</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-write-Zip-files">write Zip files</a></td><td valign="top"><a href="#Writing">2.3 Writing Zip Files</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-write-zip-files">write zip files</a></td><td valign="top"><a href="#ZipFileOutput">2.3.1 Constructing a ZipFileOutput</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-Z">Z</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-zip-data-end_002c-reading">zip data end, reading</a></td><td valign="top"><a href="#Read-Directory-Entries">2.2.4 Reading Zip Central-Directory Entries</a></td></tr>
@@ -1193,7 +1190,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 </tr></table>
 <h1>About This Document</h1>
 <p>
-  This document was generated by <em>Gray Watson</em> on <em>May 24, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
+  This document was generated by <em>Gray Watson</em> on <em>June 13, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
 </p>
 <p>
   The buttons in the navigation panels have the following meaning:
@@ -1295,7 +1292,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <hr size="1">
 <p>
  <font size="-1">
-  This document was generated by <em>Gray Watson</em> on <em>May 24, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
+  This document was generated by <em>Gray Watson</em> on <em>June 13, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
  </font>
  <br>
 
