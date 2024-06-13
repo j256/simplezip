@@ -19,7 +19,7 @@ public interface FileDataDecoder extends Closeable {
 	 *            offset in the buffer to write the decoded bytes
 	 * @param length
 	 *            number of bytes that can be read into the buffer
-	 * @return The number of bytes written into the outputBlock at the outputOffset.
+	 * @return The number of bytes written into the output-buffer or -1 on EOF.
 	 */
 	public int decode(byte[] outputBuffer, int offset, int length) throws IOException;
 

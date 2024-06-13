@@ -11,8 +11,8 @@ import java.io.InputStream;
 public class StoredFileDataDecoder implements FileDataDecoder {
 
 	private final long dataSize;
+	private final InputStream inputStream;
 
-	private InputStream inputStream;
 	private long inputOffset;
 	private long bytesRead;
 	private long bytesWritten;

@@ -161,9 +161,11 @@ public class Zip64FileOutputTest {
 		output.close();
 
 		byte[] zipBytes = baos.toByteArray();
-		FileOutputStream fos = new FileOutputStream("target/test64.zip");
+		String path = "target/test64.zip";
+		FileOutputStream fos = new FileOutputStream(path);
 		fos.write(zipBytes);
 		fos.close();
+		System.out.println("wrote " + path);
 	}
 
 	/**

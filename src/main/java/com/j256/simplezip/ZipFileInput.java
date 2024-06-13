@@ -14,6 +14,7 @@ import java.util.Map;
 
 import com.j256.simplezip.code.FileDataDecoder;
 import com.j256.simplezip.code.InflatorFileDataDecoder;
+import com.j256.simplezip.code.SimpleZipFileDataDecoder;
 import com.j256.simplezip.code.StoredFileDataDecoder;
 import com.j256.simplezip.format.CompressionMethod;
 import com.j256.simplezip.format.ExternalFileAttributesUtils;
@@ -459,6 +460,8 @@ public class ZipFileInput implements Closeable {
 			this.fileDataDecoder = new StoredFileDataDecoder(inputStream, currentFileHeader.getCompressedSize());
 		} else if (compressionMethod == CompressionMethod.DEFLATED.getValue()) {
 			this.fileDataDecoder = new InflatorFileDataDecoder(inputStream);
+		} else if (compressionMethod == CompressionMethod.SIMPLEZIP.getValue()) {
+			this.fileDataDecoder = new SimpleZipFileDataDecoder(inputStream);
 		} else {
 			throw new IllegalStateException("Unknown compression method: "
 					+ CompressionMethod.fromValue(compressionMethod) + " (" + compressionMethod + ")");

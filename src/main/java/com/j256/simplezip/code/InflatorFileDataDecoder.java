@@ -16,7 +16,7 @@ import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
 public class InflatorFileDataDecoder implements FileDataDecoder {
 
 	private final Inflater inflater = new Inflater(true /* no wrap */);
-	private RewindableInputStream delegate;
+	private final RewindableInputStream delegate;
 	/**
 	 * We need to not read too much ahead because otherwise we run the risk of reading off the end of an inner zip file
 	 * and not be able to rewind back enough. So we need to use a temporary buffer which is reading the deflated bytes

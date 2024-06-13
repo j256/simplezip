@@ -33,7 +33,7 @@ public class IoUtils {
 	 * Read a short in little-endian from the input stream throwing EOFException if end is reached.
 	 */
 	public static int readShort(InputStream input, byte[] bytes, String label) throws IOException {
-		readFully(input, 2, bytes, label);
+		readFully(input, bytes, 2, label);
 		return ((int) bytes[0] & 0xFF) | (((int) bytes[1] & 0xFF) << 8);
 	}
 
@@ -41,7 +41,7 @@ public class IoUtils {
 	 * Read an int in little-endian from the input stream throwing EOFException if end is reached.
 	 */
 	public static int readInt(InputStream input, byte[] bytes, String label) throws IOException {
-		readFully(input, 4, bytes, label);
+		readFully(input, bytes, 4, label);
 		return ((int) bytes[0] & 0xFF) //
 				| (((int) bytes[1] & 0xFF) << 8) //
 				| (((int) bytes[2] & 0xFF) << 16) //
@@ -52,7 +52,7 @@ public class IoUtils {
 	 * Read an int in little-endian from the input stream throwing EOFException if end is reached.
 	 */
 	public static long readIntAsLong(InputStream input, byte[] bytes, String label) throws IOException {
-		readFully(input, 4, bytes, label);
+		readFully(input, bytes, 4, label);
 		return ((long) bytes[0] & 0xFF) //
 				| (((long) bytes[1] & 0xFF) << 8) //
 				| (((long) bytes[2] & 0xFF) << 16) //
@@ -63,7 +63,7 @@ public class IoUtils {
 	 * Read a long in little-endian from the input stream throwing EOFException if end is reached.
 	 */
 	public static long readLong(InputStream input, byte[] bytes, String label) throws IOException {
-		readFully(input, 8, bytes, label);
+		readFully(input, bytes, 8, label);
 		return ((long) bytes[0] & 0xFF) //
 				| (((long) bytes[1] & 0xFF) << 8) //
 				| (((long) bytes[2] & 0xFF) << 16) //
@@ -161,8 +161,10 @@ public class IoUtils {
 		}
 	}
 
-	private static byte[] readFully(InputStream input, int length, String label) throws IOException {
-		byte[] bytes = new byte[length];
+	/**
+	 * Read all of the bytes into the buffer.
+	 */
+	public static void readFully(InputStream input, byte[] bytes, int length, String label) throws IOException {
 		int offset = 0;
 		while (length > 0) {
 			int numRead = input.read(bytes, offset, length);
@@ -172,18 +174,11 @@ public class IoUtils {
 			length -= numRead;
 			offset += numRead;
 		}
-		return bytes;
 	}
 
-	private static void readFully(InputStream input, int length, byte[] bytes, String label) throws IOException {
-		int offset = 0;
-		while (length > 0) {
-			int numRead = input.read(bytes, offset, length);
-			if (numRead < 0) {
-				throw new EOFException("reached unexpected EOF while reading " + length + " bytes for " + label);
-			}
-			length -= numRead;
-			offset += numRead;
-		}
+	private static byte[] readFully(InputStream input, int length, String label) throws IOException {
+		byte[] bytes = new byte[length];
+		readFully(input, bytes, length, label);
+		return bytes;
 	}
 }

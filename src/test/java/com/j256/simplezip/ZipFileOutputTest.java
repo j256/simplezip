@@ -610,7 +610,7 @@ public class ZipFileOutputTest {
 	}
 
 	@Test
-	public void testBUfferedFileNoDataDescriptor() throws IOException {
+	public void testBufferedFileNoDataDescriptor() throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ZipFileOutput zipOutput = new ZipFileOutput(baos);
 		zipOutput.enableFileBuffering(Integer.MAX_VALUE, Integer.MAX_VALUE);
@@ -635,6 +635,45 @@ public class ZipFileOutputTest {
 		assertEquals(fileName2, header.getFileName());
 
 		zipInput.close();
+	}
+
+	@Test
+	public void testFinishWithoutData() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ZipFileOutput zipOutput = new ZipFileOutput(baos);
+		String fileName1 = "boo.txt";
+		zipOutput.writeFileHeader(ZipFileHeader.builder().withFileName(fileName1).build());
+		zipOutput.finishFileData();
+		zipOutput.close();
+
+		ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(baos.toByteArray()));
+		assertNotNull(zis.getNextEntry());
+		assertNull(zis.getNextEntry());
+		zis.close();
+	}
+
+	@Test
+	public void testManyManyFiles() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ZipFileOutput zipOutput = new ZipFileOutput(baos);
+		int numFiles = IoUtils.MAX_UNSIGNED_SHORT_VALUE + 1;
+		for (int i = 0; i < numFiles; i++) {
+			String fileName1 = "bar" + i + ".txt";
+			zipOutput.writeFileHeader(ZipFileHeader.builder().withFileName(fileName1).build());
+			zipOutput.finishFileData();
+		}
+		zipOutput.close();
+
+		ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(baos.toByteArray()));
+		int fileCount = 0;
+		while (true) {
+			if (zis.getNextEntry() == null) {
+				break;
+			}
+			fileCount++;
+		}
+		assertEquals(numFiles, fileCount);
+		zis.close();
 	}
 
 	public static void main(String[] args) throws IOException {

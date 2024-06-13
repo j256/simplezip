@@ -15,6 +15,7 @@ import java.util.Map;
 
 import com.j256.simplezip.code.DeflatorFileDataEncoder;
 import com.j256.simplezip.code.FileDataEncoder;
+import com.j256.simplezip.code.SimpleZipFileDataEncoder;
 import com.j256.simplezip.code.StoredFileDataEncoder;
 import com.j256.simplezip.format.CompressionMethod;
 import com.j256.simplezip.format.GeneralPurposeFlag;
@@ -319,9 +320,11 @@ public class ZipFileOutput implements Closeable {
 		if (zipFinished) {
 			throw new IllegalStateException("Cannot finish file-data if the zip has been finished");
 		}
-		if (fileDataEncoder != null) {
-			fileDataEncoder.close();
+		if (fileDataEncoder == null) {
+			// we need to open the encoder if no data has been sent
+			assignFileDataEncoder(currentFileHeader.getCompressionMethod());
 		}
+		fileDataEncoder.close();
 		ZipFileHeader writtenFileHeader;
 		if (currentFileHeader.getCrc32() != 0 && currentFileHeader.getUncompressedSize() != 0) {
 			writtenFileHeader = bufferedOutputStream.finishFileData(currentFileHeader.getCrc32(),
@@ -507,6 +510,8 @@ public class ZipFileOutput implements Closeable {
 		} else if (compressionMethod == CompressionMethod.DEFLATED.getValue()) {
 			this.fileDataEncoder =
 					new DeflatorFileDataEncoder(bufferedOutputStream, currentFileHeader.getCompressionLevel());
+		} else if (compressionMethod == CompressionMethod.SIMPLEZIP.getValue()) {
+			this.fileDataEncoder = new SimpleZipFileDataEncoder(bufferedOutputStream);
 		} else {
 			throw new IllegalStateException("Unknown compression method: "
 					+ CompressionMethod.fromValue(compressionMethod) + " (" + compressionMethod + ")");

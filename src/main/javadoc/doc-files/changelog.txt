@@ -1,5 +1,6 @@
 2.0: 6/??/2024
-	* Fixed problem with buffering that would generate improper or unnecessary data-descriptor.
+	* Fixed problem with buffering that would generate an improper or unnecessary data-descriptor.
+	* Fixed problem when finishing zip output file without any data.
 	* Removed the ZipVersion which seemed artificial.  Replaced with major/minor numbers.
 	* Renamed some methods around the version-needed and version-made getters and setters.
 	* Renamed the ZipFileOutput.enableBufferedOutput() method to enableFileBuffering().

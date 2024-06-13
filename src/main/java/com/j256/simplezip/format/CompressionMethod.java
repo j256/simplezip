@@ -32,6 +32,8 @@ public enum CompressionMethod {
 	IBM_TERSE(18),
 	IBM_LZ77(19),
 	PPMD(99),
+	/** here for testing purposes to test zip64 data descriptor stuff */
+	SIMPLEZIP(30000),
 	UNKNOWN(-1),
 	// end
 	;
