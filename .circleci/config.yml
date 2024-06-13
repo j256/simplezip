@@ -10,7 +10,7 @@ jobs:
           key: j256-simplezip-{{ checksum "pom.xml" }}
       - run:
           name: Get maven project dependencies
-          command: mvn -U dependency:go-offline compile
+          command: mvn -U dependency:go-offline package
       # save the project dependencies
       - save_cache:
           paths:
