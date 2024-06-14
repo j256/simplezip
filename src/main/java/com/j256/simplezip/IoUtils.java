@@ -20,10 +20,10 @@ public class IoUtils {
 	/**
 	 * Read a byte from the input stream
 	 * 
-	 * @throws EOFException
-	 *             if end is reached.
+	 * @throws IOException
+	 *             If end is reached or some io problem occurs.
 	 */
-	public static int readByte(InputStream input, String label) throws IOException, EOFException {
+	public static int readByte(InputStream input, String label) throws IOException {
 		int value = input.read();
 		if (value < 0) {
 			throw new EOFException("reached unexpected EOF while reading " + label);
@@ -35,8 +35,8 @@ public class IoUtils {
 	/**
 	 * Read a short in little-endian from the input stream.
 	 * 
-	 * @throws EOFException
-	 *             if end is reached.
+	 * @throws IOException
+	 *             If end is reached or some io problem occurs.
 	 */
 	public static int readShort(InputStream input, String label) throws IOException {
 		return ((readByte(input, label) & 0xFF) << 0) //
@@ -46,8 +46,8 @@ public class IoUtils {
 	/**
 	 * Read an int in little-endian from the input stream.
 	 * 
-	 * @throws EOFException
-	 *             if end is reached.
+	 * @throws IOException
+	 *             If end is reached or some io problem occurs.
 	 */
 	public static int readInt(InputStream input, String label) throws IOException {
 		return ((readByte(input, label) & 0xFF) << 0) //
@@ -59,8 +59,8 @@ public class IoUtils {
 	/**
 	 * Read an int in little-endian from the input stream.
 	 * 
-	 * @throws EOFException
-	 *             if end is reached.
+	 * @throws IOException
+	 *             If end is reached or some io problem occurs.
 	 */
 	public static long readIntAsLong(InputStream input, String label) throws IOException {
 		return (((long) readByte(input, label) & 0xFF) << 0) //
@@ -72,8 +72,8 @@ public class IoUtils {
 	/**
 	 * Read a long in little-endian from the input stream.
 	 * 
-	 * @throws EOFException
-	 *             if end is reached.
+	 * @throws IOException
+	 *             If end is reached or some io problem occurs.
 	 */
 	public static long readLong(InputStream input, String label) throws IOException {
 		return (((long) readByte(input, label) & 0xFF) << 0) //
@@ -89,8 +89,8 @@ public class IoUtils {
 	/**
 	 * Read an array of bytes from the input stream.
 	 * 
-	 * @throws EOFException
-	 *             if end is reached.
+	 * @throws IOException
+	 *             If end is reached or some io problem occurs.
 	 */
 	public static byte[] readBytes(InputStream input, int size, String label) throws IOException {
 		if (size == 0) {
