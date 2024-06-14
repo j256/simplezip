@@ -25,7 +25,10 @@ public abstract class BaseExtraField {
 	/**
 	 * Write the base portions of the extra field.
 	 */
-	public abstract void write(OutputStream outputStream) throws IOException;
+	public void write(OutputStream outputStream) throws IOException {
+		IoUtils.writeShort(outputStream, id);
+		IoUtils.writeShort(outputStream, extraSize);
+	}
 
 	public int getId() {
 		return id;
@@ -53,10 +56,5 @@ public abstract class BaseExtraField {
 	 */
 	public ZipStatus validate() {
 		return ZipStatus.OK;
-	}
-
-	protected void write(OutputStream outputStream, byte[] tmpBytes) throws IOException {
-		IoUtils.writeShort(outputStream, tmpBytes, id);
-		IoUtils.writeShort(outputStream, tmpBytes, extraSize);
 	}
 }

@@ -36,10 +36,9 @@ public class Unix2ExtraField extends BaseExtraField {
 	 * Read from the input-stream.
 	 */
 	public static Unix2ExtraField read(InputStream inputStream, int id, int size) throws IOException {
-		byte[] tmpBytes = new byte[8]; 
 		Builder builder = new Unix2ExtraField.Builder();
-		builder.userId = IoUtils.readShort(inputStream, tmpBytes, "Unix2ExtraField.userId");
-		builder.groupId = IoUtils.readShort(inputStream, tmpBytes, "Unix2ExtraField.groupId");
+		builder.userId = IoUtils.readShort(inputStream, "Unix2ExtraField.userId");
+		builder.groupId = IoUtils.readShort(inputStream, "Unix2ExtraField.groupId");
 		return builder.build();
 	}
 
@@ -48,10 +47,9 @@ public class Unix2ExtraField extends BaseExtraField {
 	 */
 	@Override
 	public void write(OutputStream outputStream) throws IOException {
-		byte[] tmpBytes = new byte[8];
-		super.write(outputStream, tmpBytes);
-		IoUtils.writeShort(outputStream, tmpBytes, userId);
-		IoUtils.writeShort(outputStream, tmpBytes, groupId);
+		super.write(outputStream);
+		IoUtils.writeShort(outputStream, userId);
+		IoUtils.writeShort(outputStream, groupId);
 	}
 
 	public int getUserId() {

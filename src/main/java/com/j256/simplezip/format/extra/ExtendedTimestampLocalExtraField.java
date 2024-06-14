@@ -41,14 +41,11 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 	 * Read in the rest of the Zip64ExtraField after the id is read.
 	 */
 	public static ExtendedTimestampLocalExtraField read(InputStream inputStream, int id, int size) throws IOException {
-		byte[] tmpBytes = new byte[8];
 		Builder builder = new ExtendedTimestampLocalExtraField.Builder();
 		builder.flags = IoUtils.readByte(inputStream, "ExtendedTimestampLocalExtraField.flags");
-		builder.timeLastModified =
-				IoUtils.readLong(inputStream, tmpBytes, "ExtendedTimestampLocalExtraField.timeLastModified");
-		builder.timeLastAccessed =
-				IoUtils.readLong(inputStream, tmpBytes, "ExtendedTimestampLocalExtraField.timeLastAccessed");
-		builder.timeCreation = IoUtils.readLong(inputStream, tmpBytes, "ExtendedTimestampLocalExtraField.timeCreation");
+		builder.timeLastModified = IoUtils.readLong(inputStream, "ExtendedTimestampLocalExtraField.timeLastModified");
+		builder.timeLastAccessed = IoUtils.readLong(inputStream, "ExtendedTimestampLocalExtraField.timeLastAccessed");
+		builder.timeCreation = IoUtils.readLong(inputStream, "ExtendedTimestampLocalExtraField.timeCreation");
 		return builder.build();
 	}
 
@@ -57,12 +54,11 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 	 */
 	@Override
 	public void write(OutputStream outputStream) throws IOException {
-		byte[] tmpBytes = new byte[8];
-		super.write(outputStream, tmpBytes);
+		super.write(outputStream);
 		IoUtils.writeByte(outputStream, flags);
-		IoUtils.writeLong(outputStream, tmpBytes, timeLastModified);
-		IoUtils.writeLong(outputStream, tmpBytes, timeLastAccessed);
-		IoUtils.writeLong(outputStream, tmpBytes, timeCreation);
+		IoUtils.writeLong(outputStream, timeLastModified);
+		IoUtils.writeLong(outputStream, timeLastAccessed);
+		IoUtils.writeLong(outputStream, timeCreation);
 	}
 
 	public int getFlags() {

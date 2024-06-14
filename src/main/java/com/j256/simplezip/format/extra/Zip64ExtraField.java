@@ -40,12 +40,11 @@ public class Zip64ExtraField extends BaseExtraField {
 	 * Read in the rest of the Zip64ExtraField after the id is read.
 	 */
 	public static Zip64ExtraField read(InputStream inputStream, int id, int size) throws IOException {
-		byte[] tmpBytes = new byte[8];
 		Builder builder = new Zip64ExtraField.Builder();
-		builder.uncompressedSize = IoUtils.readLong(inputStream, tmpBytes, "Zip64ExtraField.uncompressedSize");
-		builder.compressedSize = IoUtils.readLong(inputStream, tmpBytes, "Zip64ExtraField.compressedSize");
-		builder.offset = IoUtils.readLong(inputStream, tmpBytes, "Zip64ExtraField.offset");
-		builder.diskNumber = IoUtils.readInt(inputStream, tmpBytes, "Zip64ExtraField.diskNumber");
+		builder.uncompressedSize = IoUtils.readLong(inputStream, "Zip64ExtraField.uncompressedSize");
+		builder.compressedSize = IoUtils.readLong(inputStream, "Zip64ExtraField.compressedSize");
+		builder.offset = IoUtils.readLong(inputStream, "Zip64ExtraField.offset");
+		builder.diskNumber = IoUtils.readInt(inputStream, "Zip64ExtraField.diskNumber");
 		return builder.build();
 	}
 
@@ -54,12 +53,11 @@ public class Zip64ExtraField extends BaseExtraField {
 	 */
 	@Override
 	public void write(OutputStream outputStream) throws IOException {
-		byte[] tmpBytes = new byte[8];
-		super.write(outputStream, tmpBytes);
-		IoUtils.writeLong(outputStream, tmpBytes, uncompressedSize);
-		IoUtils.writeLong(outputStream, tmpBytes, compressedSize);
-		IoUtils.writeLong(outputStream, tmpBytes, offset);
-		IoUtils.writeInt(outputStream, tmpBytes, diskNumber);
+		super.write(outputStream);
+		IoUtils.writeLong(outputStream, uncompressedSize);
+		IoUtils.writeLong(outputStream, compressedSize);
+		IoUtils.writeLong(outputStream, offset);
+		IoUtils.writeInt(outputStream, diskNumber);
 	}
 
 	public long getUncompressedSize() {

@@ -71,24 +71,23 @@ public class ZipFileHeader {
 		/*
 		 * When reading a file-header we aren't sure if this is a file-header or the start of the central directory.
 		 */
-		byte[] tmpBytes = new byte[8];
-		int first = IoUtils.readInt(inputStream, tmpBytes, "ZipFileHeader.signature");
+		int first = IoUtils.readInt(inputStream, "ZipFileHeader.signature");
 		if (first != EXPECTED_SIGNATURE) {
 			inputStream.rewind(4);
 			return null;
 		}
 
 		Builder builder = new ZipFileHeader.Builder();
-		builder.versionNeeded = IoUtils.readShort(inputStream, tmpBytes, "ZipFileHeader.versionNeeded");
-		builder.generalPurposeFlags = IoUtils.readShort(inputStream, tmpBytes, "ZipFileHeader.generalPurposeFlags");
-		builder.compressionMethod = IoUtils.readShort(inputStream, tmpBytes, "ZipFileHeader.compressionMethod");
-		builder.lastModifiedTime = IoUtils.readShort(inputStream, tmpBytes, "ZipFileHeader.lastModifiedTime");
-		builder.lastModifiedDate = IoUtils.readShort(inputStream, tmpBytes, "ZipFileHeader.lastModifiedDate");
-		builder.crc32 = IoUtils.readIntAsLong(inputStream, tmpBytes, "ZipFileHeader.crc32");
-		builder.compressedSize = IoUtils.readInt(inputStream, tmpBytes, "ZipFileHeader.compressedSize");
-		builder.uncompressedSize = IoUtils.readInt(inputStream, tmpBytes, "ZipFileHeader.uncompressedSize");
-		int fileNameLength = IoUtils.readShort(inputStream, tmpBytes, "ZipFileHeader.fileNameLength");
-		int extraLength = IoUtils.readShort(inputStream, tmpBytes, "ZipFileHeader.extraLength");
+		builder.versionNeeded = IoUtils.readShort(inputStream, "ZipFileHeader.versionNeeded");
+		builder.generalPurposeFlags = IoUtils.readShort(inputStream, "ZipFileHeader.generalPurposeFlags");
+		builder.compressionMethod = IoUtils.readShort(inputStream, "ZipFileHeader.compressionMethod");
+		builder.lastModifiedTime = IoUtils.readShort(inputStream, "ZipFileHeader.lastModifiedTime");
+		builder.lastModifiedDate = IoUtils.readShort(inputStream, "ZipFileHeader.lastModifiedDate");
+		builder.crc32 = IoUtils.readIntAsLong(inputStream, "ZipFileHeader.crc32");
+		builder.compressedSize = IoUtils.readInt(inputStream, "ZipFileHeader.compressedSize");
+		builder.uncompressedSize = IoUtils.readInt(inputStream, "ZipFileHeader.uncompressedSize");
+		int fileNameLength = IoUtils.readShort(inputStream, "ZipFileHeader.fileNameLength");
+		int extraLength = IoUtils.readShort(inputStream, "ZipFileHeader.extraLength");
 		builder.fileNameBytes = IoUtils.readBytes(inputStream, fileNameLength, "ZipFileHeader.fileName");
 		builder.extraFieldBytes = IoUtils.readBytes(inputStream, extraLength, "ZipFileHeader.extra");
 		return builder.build();
@@ -98,22 +97,21 @@ public class ZipFileHeader {
 	 * Write to the input stream.
 	 */
 	public void write(OutputStream outputStream) throws IOException {
-		byte[] tmpBytes = new byte[8];
-		IoUtils.writeInt(outputStream, tmpBytes, EXPECTED_SIGNATURE);
-		IoUtils.writeShort(outputStream, tmpBytes, versionNeeded);
+		IoUtils.writeInt(outputStream, EXPECTED_SIGNATURE);
+		IoUtils.writeShort(outputStream, versionNeeded);
 		int flags = generalPurposeFlags;
 		if (needsDataDescriptor()) {
 			flags |= GeneralPurposeFlag.DATA_DESCRIPTOR.getValue();
 		}
-		IoUtils.writeShort(outputStream, tmpBytes, flags);
-		IoUtils.writeShort(outputStream, tmpBytes, compressionMethod);
-		IoUtils.writeShort(outputStream, tmpBytes, lastModifiedTime);
-		IoUtils.writeShort(outputStream, tmpBytes, lastModifiedDate);
-		IoUtils.writeInt(outputStream, tmpBytes, crc32);
-		IoUtils.writeInt(outputStream, tmpBytes, compressedSize);
-		IoUtils.writeInt(outputStream, tmpBytes, uncompressedSize);
-		IoUtils.writeShortBytesLength(outputStream, tmpBytes, fileNameBytes);
-		IoUtils.writeShortBytesLength(outputStream, tmpBytes, extraFieldBytes);
+		IoUtils.writeShort(outputStream, flags);
+		IoUtils.writeShort(outputStream, compressionMethod);
+		IoUtils.writeShort(outputStream, lastModifiedTime);
+		IoUtils.writeShort(outputStream, lastModifiedDate);
+		IoUtils.writeInt(outputStream, crc32);
+		IoUtils.writeInt(outputStream, compressedSize);
+		IoUtils.writeInt(outputStream, uncompressedSize);
+		IoUtils.writeShortBytesLength(outputStream, fileNameBytes);
+		IoUtils.writeShortBytesLength(outputStream, extraFieldBytes);
 		IoUtils.writeBytes(outputStream, fileNameBytes);
 		IoUtils.writeBytes(outputStream, extraFieldBytes);
 	}

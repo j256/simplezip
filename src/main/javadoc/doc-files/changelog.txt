@@ -2,7 +2,7 @@
 	* Fixed a problem when reading file headers and getting null twice.
 	* Fixed a possible problem when the internal buffer sizes are increasing.
 	* Added more Zip64 support around central-directory entries and the offset and disk-number.
-	* Improved test coverage which caught some possible issues. 
+	* Improved test coverage which caught some possible issues.
 
 2.0: 6/13/2024
 	* Fixed problem with buffering that would generate an improper or unnecessary data-descriptor.
@@ -20,7 +20,6 @@
 	* Added iterators for the ZipFileHeader and ZipCentralDirectoryFileEntry sections.
 	* Renamed the ZipFileInput.readFileData(File) methods to be readFileDataToFile().
 	* Added support for file-header and directory-file-entry iterators.
-	* Reduced the IO calls by using IO buffers.
 
 1.1: 5/23/2024
 	* Fixed some of the logic to allow us to control all bytes in the output Zip.

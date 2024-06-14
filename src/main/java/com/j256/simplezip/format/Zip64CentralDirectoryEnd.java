@@ -54,23 +54,22 @@ public class Zip64CentralDirectoryEnd {
 	 */
 	public static Zip64CentralDirectoryEnd read(RewindableInputStream inputStream) throws IOException {
 
-		byte[] tmpBytes = new byte[8]; 
-		int signature = IoUtils.readInt(inputStream, tmpBytes, "Zip64CentralDirectoryEnd.signature");
+		int signature = IoUtils.readInt(inputStream, "Zip64CentralDirectoryEnd.signature");
 		if (signature != EXPECTED_SIGNATURE) {
 			inputStream.rewind(4);
 			return null;
 		}
 
 		Builder builder = new Zip64CentralDirectoryEnd.Builder();
-		long size = IoUtils.readLong(inputStream, tmpBytes, "ZipCentralDirectoryFileEnd.dirEndSize");
-		builder.versionMade = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEnd.versionMade");
-		builder.versionNeeded = IoUtils.readShort(inputStream, tmpBytes, "ZipCentralDirectoryFileEnd.versionNeeded");
-		builder.diskNumber = IoUtils.readInt(inputStream, tmpBytes, "ZipCentralDirectoryFileEnd.diskNumber");
-		builder.diskNumberStart = IoUtils.readInt(inputStream, tmpBytes, "ZipCentralDirectoryFileEnd.diskNumberStart");
-		builder.numRecordsOnDisk = IoUtils.readLong(inputStream, tmpBytes, "ZipCentralDirectoryFileEnd.numRecordsOnDisk");
-		builder.numRecordsTotal = IoUtils.readLong(inputStream, tmpBytes, "ZipCentralDirectoryFileEnd.numRecordsTotal");
-		builder.directorySize = IoUtils.readLong(inputStream, tmpBytes, "ZipCentralDirectoryFileEnd.sizeDirectory");
-		builder.directoryOffset = IoUtils.readLong(inputStream, tmpBytes, "ZipCentralDirectoryFileEnd.directoryOffset");
+		long size = IoUtils.readLong(inputStream, "ZipCentralDirectoryFileEnd.dirEndSize");
+		builder.versionMade = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEnd.versionMade");
+		builder.versionNeeded = IoUtils.readShort(inputStream, "ZipCentralDirectoryFileEnd.versionNeeded");
+		builder.diskNumber = IoUtils.readInt(inputStream, "ZipCentralDirectoryFileEnd.diskNumber");
+		builder.diskNumberStart = IoUtils.readInt(inputStream, "ZipCentralDirectoryFileEnd.diskNumberStart");
+		builder.numRecordsOnDisk = IoUtils.readLong(inputStream, "ZipCentralDirectoryFileEnd.numRecordsOnDisk");
+		builder.numRecordsTotal = IoUtils.readLong(inputStream, "ZipCentralDirectoryFileEnd.numRecordsTotal");
+		builder.directorySize = IoUtils.readLong(inputStream, "ZipCentralDirectoryFileEnd.sizeDirectory");
+		builder.directoryOffset = IoUtils.readLong(inputStream, "ZipCentralDirectoryFileEnd.directoryOffset");
 		long extensibleDataLength = size - FIXED_FIELDS_SIZE;
 		if (extensibleDataLength > Integer.MAX_VALUE) {
 			// may never get here but let's be careful out there
@@ -85,21 +84,20 @@ public class Zip64CentralDirectoryEnd {
 	 * Write to the output-stream.
 	 */
 	public void write(OutputStream outputStream) throws IOException {
-		byte[] tmpBytes = new byte[8]; 
-		IoUtils.writeInt(outputStream, tmpBytes, EXPECTED_SIGNATURE);
+		IoUtils.writeInt(outputStream, EXPECTED_SIGNATURE);
 		long size = FIXED_FIELDS_SIZE;
 		if (extensibleData != null) {
 			size += extensibleData.length;
 		}
-		IoUtils.writeLong(outputStream, tmpBytes, size);
-		IoUtils.writeShort(outputStream, tmpBytes, versionMade);
-		IoUtils.writeShort(outputStream, tmpBytes, versionNeeded);
-		IoUtils.writeInt(outputStream, tmpBytes, diskNumber);
-		IoUtils.writeInt(outputStream, tmpBytes, diskNumberStart);
-		IoUtils.writeLong(outputStream, tmpBytes, numRecordsOnDisk);
-		IoUtils.writeLong(outputStream, tmpBytes, numRecordsTotal);
-		IoUtils.writeLong(outputStream, tmpBytes, directorySize);
-		IoUtils.writeLong(outputStream, tmpBytes, (int) directoryOffset);
+		IoUtils.writeLong(outputStream, size);
+		IoUtils.writeShort(outputStream, versionMade);
+		IoUtils.writeShort(outputStream, versionNeeded);
+		IoUtils.writeInt(outputStream, diskNumber);
+		IoUtils.writeInt(outputStream, diskNumberStart);
+		IoUtils.writeLong(outputStream, numRecordsOnDisk);
+		IoUtils.writeLong(outputStream, numRecordsTotal);
+		IoUtils.writeLong(outputStream, directorySize);
+		IoUtils.writeLong(outputStream, (int) directoryOffset);
 		IoUtils.writeBytes(outputStream, extensibleData);
 	}
 

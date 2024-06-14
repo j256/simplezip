@@ -6,7 +6,7 @@
 @c %**end of header
 
 @c ----------------------------------------------------------------
-@set simplezip_version 2.0
+@set simplezip_version 2.1
 @set simplezip_year 2024
 @set simplezip_date June @value{simplezip_year}
 @set package SimpleZip

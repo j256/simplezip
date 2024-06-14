@@ -18,7 +18,10 @@ public class IoUtils {
 	private static final byte[] NO_BYTES = new byte[0];
 
 	/**
-	 * Read a byte from the input stream throwing EOFException if end is reached.
+	 * Read a byte from the input stream
+	 * 
+	 * @throws EOFException
+	 *             if end is reached.
 	 */
 	public static int readByte(InputStream input, String label) throws IOException, EOFException {
 		int value = input.read();
@@ -30,52 +33,64 @@ public class IoUtils {
 	}
 
 	/**
-	 * Read a short in little-endian from the input stream throwing EOFException if end is reached.
+	 * Read a short in little-endian from the input stream.
+	 * 
+	 * @throws EOFException
+	 *             if end is reached.
 	 */
-	public static int readShort(InputStream input, byte[] bytes, String label) throws IOException {
-		readFully(input, bytes, 2, label);
-		return ((int) bytes[0] & 0xFF) | (((int) bytes[1] & 0xFF) << 8);
+	public static int readShort(InputStream input, String label) throws IOException {
+		return ((readByte(input, label) & 0xFF) << 0) //
+				| ((readByte(input, label) & 0xFF) << 8);
 	}
 
 	/**
-	 * Read an int in little-endian from the input stream throwing EOFException if end is reached.
+	 * Read an int in little-endian from the input stream.
+	 * 
+	 * @throws EOFException
+	 *             if end is reached.
 	 */
-	public static int readInt(InputStream input, byte[] bytes, String label) throws IOException {
-		readFully(input, bytes, 4, label);
-		return ((int) bytes[0] & 0xFF) //
-				| (((int) bytes[1] & 0xFF) << 8) //
-				| (((int) bytes[2] & 0xFF) << 16) //
-				| (((int) bytes[3] & 0xFF) << 24);
+	public static int readInt(InputStream input, String label) throws IOException {
+		return ((readByte(input, label) & 0xFF) << 0) //
+				| ((readByte(input, label) & 0xFF) << 8) //
+				| ((readByte(input, label) & 0xFF) << 16) //
+				| ((readByte(input, label) & 0xFF) << 24);
 	}
 
 	/**
-	 * Read an int in little-endian from the input stream throwing EOFException if end is reached.
+	 * Read an int in little-endian from the input stream.
+	 * 
+	 * @throws EOFException
+	 *             if end is reached.
 	 */
-	public static long readIntAsLong(InputStream input, byte[] bytes, String label) throws IOException {
-		readFully(input, bytes, 4, label);
-		return ((long) bytes[0] & 0xFF) //
-				| (((long) bytes[1] & 0xFF) << 8) //
-				| (((long) bytes[2] & 0xFF) << 16) //
-				| (((long) bytes[3] & 0xFF) << 24);
+	public static long readIntAsLong(InputStream input, String label) throws IOException {
+		return (((long) readByte(input, label) & 0xFF) << 0) //
+				| (((long) readByte(input, label) & 0xFF) << 8) //
+				| (((long) readByte(input, label) & 0xFF) << 16) //
+				| (((long) readByte(input, label) & 0xFF) << 24);
 	}
 
 	/**
-	 * Read a long in little-endian from the input stream throwing EOFException if end is reached.
+	 * Read a long in little-endian from the input stream.
+	 * 
+	 * @throws EOFException
+	 *             if end is reached.
 	 */
-	public static long readLong(InputStream input, byte[] bytes, String label) throws IOException {
-		readFully(input, bytes, 8, label);
-		return ((long) bytes[0] & 0xFF) //
-				| (((long) bytes[1] & 0xFF) << 8) //
-				| (((long) bytes[2] & 0xFF) << 16) //
-				| (((long) bytes[3] & 0xFF) << 24) //
-				| (((long) bytes[4] & 0xFF) << 32) //
-				| (((long) bytes[5] & 0xFF) << 40) //
-				| (((long) bytes[6] & 0xFF) << 48) //
-				| (((long) bytes[7] & 0xFF) << 56);
+	public static long readLong(InputStream input, String label) throws IOException {
+		return (((long) readByte(input, label) & 0xFF) << 0) //
+				| (((long) readByte(input, label) & 0xFF) << 8) //
+				| (((long) readByte(input, label) & 0xFF) << 16) //
+				| (((long) readByte(input, label) & 0xFF) << 24) //
+				| (((long) readByte(input, label) & 0xFF) << 32) //
+				| (((long) readByte(input, label) & 0xFF) << 40) //
+				| (((long) readByte(input, label) & 0xFF) << 48) //
+				| (((long) readByte(input, label) & 0xFF) << 56);
 	}
 
 	/**
-	 * Read an array of bytes from the input stream throwing EOFException if end is reached.
+	 * Read an array of bytes from the input stream.
+	 * 
+	 * @throws EOFException
+	 *             if end is reached.
 	 */
 	public static byte[] readBytes(InputStream input, int size, String label) throws IOException {
 		if (size == 0) {
@@ -95,46 +110,43 @@ public class IoUtils {
 	/**
 	 * Write a short in little-endian to the output stream.
 	 */
-	public static void writeShort(OutputStream output, byte[] bytes, int value) throws IOException {
-		bytes[0] = (byte) ((value >> 0) & 0xFF);
-		bytes[1] = (byte) ((value >> 8) & 0xFF);
-		output.write(bytes, 0, 2);
+	public static void writeShort(OutputStream output, int value) throws IOException {
+		output.write((byte) ((value >> 0) & 0xFF));
+		output.write((byte) ((value >> 8) & 0xFF));
 	}
 
 	/**
 	 * Write an int in little-endian to the output stream.
 	 */
-	public static void writeInt(OutputStream output, byte[] bytes, long value) throws IOException {
-		bytes[0] = (byte) ((value >> 0) & 0xFF);
-		bytes[1] = (byte) ((value >> 8) & 0xFF);
-		bytes[2] = (byte) ((value >> 16) & 0xFF);
-		bytes[3] = (byte) ((value >> 24) & 0xFF);
-		output.write(bytes, 0, 4);
+	public static void writeInt(OutputStream output, long value) throws IOException {
+		output.write((byte) ((value >> 0) & 0xFF));
+		output.write((byte) ((value >> 8) & 0xFF));
+		output.write((byte) ((value >> 16) & 0xFF));
+		output.write((byte) ((value >> 24) & 0xFF));
 	}
 
 	/**
 	 * Write a long in little-endian to the output stream.
 	 */
-	public static void writeLong(OutputStream output, byte[] bytes, long value) throws IOException {
-		bytes[0] = (byte) ((value >> 0) & 0xFF);
-		bytes[1] = (byte) ((value >> 8) & 0xFF);
-		bytes[2] = (byte) ((value >> 16) & 0xFF);
-		bytes[3] = (byte) ((value >> 24) & 0xFF);
-		bytes[4] = (byte) ((value >> 32) & 0xFF);
-		bytes[5] = (byte) ((value >> 40) & 0xFF);
-		bytes[6] = (byte) ((value >> 48) & 0xFF);
-		bytes[7] = (byte) ((value >> 56) & 0xFF);
-		output.write(bytes, 0, 8);
+	public static void writeLong(OutputStream output, long value) throws IOException {
+		output.write((byte) ((value >> 0) & 0xFF));
+		output.write((byte) ((value >> 8) & 0xFF));
+		output.write((byte) ((value >> 16) & 0xFF));
+		output.write((byte) ((value >> 24) & 0xFF));
+		output.write((byte) ((value >> 32) & 0xFF));
+		output.write((byte) ((value >> 40) & 0xFF));
+		output.write((byte) ((value >> 48) & 0xFF));
+		output.write((byte) ((value >> 56) & 0xFF));
 	}
 
 	/**
 	 * Write the length of bytes as a little-endian short to the output stream.
 	 */
-	public static void writeShortBytesLength(OutputStream output, byte[] tmpBytes, byte[] bytes) throws IOException {
+	public static void writeShortBytesLength(OutputStream output, byte[] bytes) throws IOException {
 		if (bytes == null) {
-			writeShort(output, tmpBytes, 0);
+			writeShort(output, 0);
 		} else {
-			writeShort(output, tmpBytes, bytes.length);
+			writeShort(output, bytes.length);
 		}
 	}
 
