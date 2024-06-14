@@ -77,10 +77,12 @@ public class ZipFileInput implements Closeable {
 			skipFileData();
 		}
 		currentDataDescriptor = null;
-		currentFileEofReached = false;
 		currentFileHeader = ZipFileHeader.read(inputStream);
-		// reset the counting info now that we are ready to read the next file
-		fileDataCountingInfo.reset();
+		if (currentFileHeader != null) {
+			currentFileEofReached = false;
+			// reset the counting info now that we are ready to read the next file
+			fileDataCountingInfo.reset();
+		}
 		return currentFileHeader;
 	}
 
@@ -197,6 +199,9 @@ public class ZipFileInput implements Closeable {
 	/**
 	 * Read file data from the Zip stream and decode it into the buffer argument. See
 	 * {@link #readFileDataPart(byte[], int, int)} for more details.
+	 * 
+	 * @return The number of bytes written into the buffer or -1 if the end of zipped bytes for this file have been
+	 *         reached. This doesn't mean that the end of the file has been reached.
 	 */
 	public int readFileDataPart(byte[] buffer) throws IOException {
 		return readFileDataPart(buffer, 0, buffer.length);
@@ -205,6 +210,9 @@ public class ZipFileInput implements Closeable {
 	/**
 	 * Read raw file data from the Zip stream, without decoding, into the buffer argument. See
 	 * {@link #readRawFileDataPart(byte[], int, int)} for more details.
+	 * 
+	 * @return The number of bytes written into the buffer or -1 if the end of zipped bytes for this file have been
+	 *         reached. This doesn't mean that the end of the file has been reached.
 	 */
 	public int readRawFileDataPart(byte[] buffer) throws IOException {
 		return readRawFileDataPart(buffer, 0, buffer.length);
@@ -222,7 +230,7 @@ public class ZipFileInput implements Closeable {
 	 */
 	public int readFileDataPart(byte[] buffer, int offset, int length) throws IOException {
 		if (currentFileHeader == null) {
-			throw new IllegalStateException("Need to call readNextHeader() before you can read file data");
+			throw new IllegalStateException("Need to call readFileHeader() before you can read file data");
 		}
 		return doReadFileDataPart(buffer, offset, length, currentFileHeader.getCompressionMethod());
 	}
@@ -444,12 +452,10 @@ public class ZipFileInput implements Closeable {
 	 */
 	private void closeFileData() throws IOException {
 		fileDataDecoder.close();
-		long bytesRead = fileDataDecoder.getBytesRead();
-		long bytesWritten = fileDataDecoder.getBytesWritten();
+		long compressedSize = fileDataDecoder.getBytesRead();
+		long uncompressedSize = fileDataDecoder.getBytesWritten();
 		if (currentFileHeader.hasFlag(GeneralPurposeFlag.DATA_DESCRIPTOR)) {
-			boolean zip64 =
-					(bytesRead >= ZipDataDescriptor.MAX_ZIP32_SIZE || bytesWritten >= ZipDataDescriptor.MAX_ZIP32_SIZE);
-			currentDataDescriptor = ZipDataDescriptor.read(inputStream, zip64);
+			currentDataDescriptor = ZipDataDescriptor.read(inputStream, compressedSize, uncompressedSize);
 		}
 		currentFileEofReached = true;
 		fileDataDecoder = null;

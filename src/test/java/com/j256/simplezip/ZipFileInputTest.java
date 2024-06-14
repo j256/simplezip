@@ -527,6 +527,7 @@ public class ZipFileInputTest {
 		header = fileIterator.next();
 		assertEquals(fileName2, header.getFileName());
 		assertFalse(fileIterator.hasNext());
+		assertNull(fileIterator.next());
 
 		Iterator<ZipCentralDirectoryFileEntry> entryIterator = input.directoryFileEntryIterator();
 		assertTrue(entryIterator.hasNext());
@@ -535,6 +536,58 @@ public class ZipFileInputTest {
 		entry = entryIterator.next();
 		assertEquals(fileName2, header.getFileName());
 		assertFalse(entryIterator.hasNext());
+		assertNull(entryIterator.next());
+
+		input.close();
+	}
+
+	@Test
+	public void testIteratorEOF() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		String fileName1 = "hello1";
+		ZipFileOutput zipOutput = new ZipFileOutput(baos);
+		zipOutput.writeFileHeader(ZipFileHeader.builder()
+				.withFileName(fileName1)
+				.withCompressedSize(10)
+				.withUncompressedSize(10)
+				.build());
+		zipOutput.close();
+
+		InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+		ZipFileInput input = new ZipFileInput(inputStream);
+
+		Iterator<ZipFileHeader> fileIterator = input.fileHeaderIterator();
+		assertTrue(fileIterator.hasNext());
+		ZipFileHeader header = fileIterator.next();
+		assertEquals(fileName1, header.getFileName());
+		header = fileIterator.next();
+		assertFalse(fileIterator.hasNext());
+		assertNull(fileIterator.next());
+
+		Iterator<ZipCentralDirectoryFileEntry> entryIterator = input.directoryFileEntryIterator();
+		assertTrue(entryIterator.hasNext());
+		ZipCentralDirectoryFileEntry entry = entryIterator.next();
+		assertEquals(fileName1, entry.getFileName());
+		assertNull(entryIterator.next());
+
+		input.close();
+	}
+
+	@Test
+	public void testReadFileHeaderNullTwice() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		String fileName1 = "hello1";
+		ZipFileOutput zipOutput = new ZipFileOutput(baos);
+		zipOutput.writeFileHeader(ZipFileHeader.builder().withFileName(fileName1).build());
+		zipOutput.close();
+
+		InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
+		ZipFileInput input = new ZipFileInput(inputStream);
+
+		assertNotNull(input.readFileHeader());
+		assertNull(input.readFileHeader());
+		assertNull(input.readFileHeader());
+		assertNull(input.readFileHeader());
 
 		input.close();
 	}
