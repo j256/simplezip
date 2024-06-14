@@ -1,4 +1,4 @@
-2.1: 6/??/2024
+2.1: 6/14/2024
 	* Fixed a problem when reading file headers and getting null twice.
 	* Fixed a possible problem when the internal buffer sizes are increasing.
 	* Added more Zip64 support around central-directory entries and the offset and disk-number.
