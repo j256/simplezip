@@ -107,8 +107,7 @@ public class ZipFileOutput implements Closeable {
 		currentFileHeader = fileHeader;
 		incomingFileDateInfo.reset();
 		dirFileBuilder = ZipCentralDirectoryFileEntry.builder();
-		// XXX: need to handle zip64
-		dirFileBuilder.setRelativeOffsetOfLocalHeader((int) bufferedOutputStream.getWriteCount());
+		dirFileBuilder.setRelativeOffsetOfLocalHeader(bufferedOutputStream.getWriteCount());
 		fileFinished = false;
 		fileCount++;
 	}

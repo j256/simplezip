@@ -15,5 +15,6 @@ public class PlatformTest {
 		System.out.println("Current platform is: " + Platform.detectPlatform());
 
 		assertEquals(Platform.OTHER, Platform.fromValue(1213321));
+		assertEquals("other", Platform.OTHER.getLabel());
 	}
 }

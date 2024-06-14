@@ -10,9 +10,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.File;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -287,6 +287,18 @@ public class ZipFileHeaderTest {
 
 		builder.withGeneralPurposeFlags(Arrays.asList(GeneralPurposeFlag.PKWARE1));
 		flags |= GeneralPurposeFlag.PKWARE1.getValue();
+		assertEquals(flags, builder.getGeneralPurposeFlags());
+
+		builder.withGeneralPurposeFlag(GeneralPurposeFlag.COMPRESS_PATCHED);
+		flags |= GeneralPurposeFlag.COMPRESS_PATCHED.getValue();
+		assertEquals(flags, builder.getGeneralPurposeFlags());
+
+		builder.clearGeneralPurposeFlag(GeneralPurposeFlag.COMPRESS_PATCHED);
+		flags &= ~GeneralPurposeFlag.COMPRESS_PATCHED.getValue();
+		assertEquals(flags, builder.getGeneralPurposeFlags());
+
+		builder.addGeneralPurposeFlag(GeneralPurposeFlag.COMPRESS_PATCHED);
+		flags |= GeneralPurposeFlag.COMPRESS_PATCHED.getValue();
 		assertEquals(flags, builder.getGeneralPurposeFlags());
 	}
 

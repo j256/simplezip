@@ -73,6 +73,7 @@ public class Zip64CentralDirectoryEnd {
 		builder.directoryOffset = IoUtils.readLong(inputStream, tmpBytes, "ZipCentralDirectoryFileEnd.directoryOffset");
 		long extensibleDataLength = size - FIXED_FIELDS_SIZE;
 		if (extensibleDataLength > Integer.MAX_VALUE) {
+			// may never get here but let's be careful out there
 			throw new IllegalArgumentException("Zip64 extensibleData length " + extensibleDataLength + "is too large");
 		}
 		builder.extensibleData =

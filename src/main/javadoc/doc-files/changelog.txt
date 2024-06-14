@@ -1,7 +1,8 @@
 2.1: 6/??/2024
 	* Fixed a problem when reading file headers and getting null twice.
 	* Fixed a possible problem when the internal buffer sizes are increasing.
-	* Added more Zip64 support around central-directory entries and the offset and disk-number. 
+	* Added more Zip64 support around central-directory entries and the offset and disk-number.
+	* Improved test coverage which caught some possible issues. 
 
 2.0: 6/13/2024
 	* Fixed problem with buffering that would generate an improper or unnecessary data-descriptor.

@@ -1,6 +1,7 @@
 package com.j256.simplezip.format.extra;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -18,11 +19,16 @@ public class ExtendedTimestampCentralExtraFieldTest {
 	public void testCoverage() {
 		Builder builder = ExtendedTimestampCentralExtraField.builder();
 
+		ExtendedTimestampCentralExtraField field = builder.build();
+		assertFalse(field.isTimeModified());
+		assertFalse(field.isTimeAccessed());
+		assertFalse(field.isTimeCreated());
+
 		int flags = 0;
-		boolean timeModified = true;
+		boolean timeModified = false;
 		builder.setTimeModified(timeModified);
 		assertEquals(timeModified, builder.isTimeModified());
-		timeModified = false;
+		timeModified = true;
 		builder.setTimeModified(timeModified);
 		assertEquals(timeModified, builder.isTimeModified());
 		boolean timeAccessed = false;
@@ -31,19 +37,21 @@ public class ExtendedTimestampCentralExtraFieldTest {
 		timeAccessed = true;
 		builder.setTimeAccessed(timeAccessed);
 		assertEquals(timeAccessed, builder.isTimeAccessed());
-		boolean timeCreated = true;
+		boolean timeCreated = false;
 		builder.setTimeCreated(timeCreated);
 		assertEquals(timeCreated, builder.isTimeCreated());
-		timeCreated = false;
+		timeCreated = true;
 		builder.setTimeCreated(timeCreated);
 		assertEquals(timeCreated, builder.isTimeCreated());
+		flags |= ExtendedTimestampCentralExtraField.TIME_MODIFIED_FLAG;
 		flags |= ExtendedTimestampCentralExtraField.TIME_ACCESSED_FLAG;
+		flags |= ExtendedTimestampCentralExtraField.TIME_CREATED_FLAG;
 		assertEquals(flags, builder.getFlags());
 		long time = 5251312;
 		builder.setTime(time);
 		assertEquals(time, (long) builder.getTime());
 
-		ExtendedTimestampCentralExtraField field = builder.build();
+		field = builder.build();
 		assertEquals(flags, field.getFlags());
 		assertEquals(time, (long) field.getTime());
 		assertEquals(timeModified, field.isTimeModified());

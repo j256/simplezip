@@ -23,6 +23,7 @@ import java.util.zip.ZipInputStream;
 import org.junit.Test;
 
 import com.j256.simplezip.format.CompressionMethod;
+import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.Zip64CentralDirectoryEnd;
 import com.j256.simplezip.format.Zip64CentralDirectoryEndLocator;
 import com.j256.simplezip.format.ZipCentralDirectoryEnd;
@@ -126,7 +127,10 @@ public class Zip64FileOutputTest {
 		String fileName = "foo.txt3";
 		byte[] buf = new byte[4096000];
 		int times = 1000;
-		zipOutput.writeFileHeader(ZipFileHeader.builder().withFileName(fileName).build());
+		zipOutput.writeFileHeader(ZipFileHeader.builder()
+				.withFileName(fileName)
+				.withGeneralPurposeFlag(GeneralPurposeFlag.DEFLATING_SUPER_FAST)
+				.build());
 		Random random = new Random();
 		for (int i = 0; i < times; i++) {
 			random.nextBytes(buf);
@@ -138,7 +142,38 @@ public class Zip64FileOutputTest {
 		assertTrue(offset > Integer.MAX_VALUE);
 		zipOutput.close();
 
-		// was for the ZipInputStream to read everything
+		// wait for the ZipInputStream to read everything
+		thread.join();
+		List<ZipEntry> entries = zipReader.entries;
+		assertTrue(!entries.isEmpty());
+		assertEquals(fileName, entries.get(0).getName());
+		assertNull(zipReader.exception);
+	}
+
+	@Test
+	public void testZip64BigWriteZeros() throws IOException, InterruptedException {
+
+		// create our blocking stream that works with the input stream
+		BlockingOutputStream bos = new BlockingOutputStream();
+		// fork our thread
+		ZipReader zipReader = new ZipReader(bos.getInputStream());
+		Thread thread = new Thread(zipReader, "zipReader");
+		thread.start();
+
+		ZipFileOutput zipOutput = new ZipFileOutput(bos);
+		String fileName = "foo.txt3";
+		byte[] buf = new byte[4096000];
+		int times = 1000;
+		zipOutput.writeFileHeader(ZipFileHeader.builder().withFileName(fileName).build());
+		for (int i = 0; i < times; i++) {
+			System.out.print(i + " ");
+			zipOutput.writeFileDataPart(buf);
+		}
+		System.out.println();
+		zipOutput.finishFileData();
+		zipOutput.close();
+
+		// wait for the ZipInputStream to read everything
 		thread.join();
 		List<ZipEntry> entries = zipReader.entries;
 		assertTrue(!entries.isEmpty());

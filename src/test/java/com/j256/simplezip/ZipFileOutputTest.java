@@ -14,6 +14,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Random;
@@ -576,6 +578,49 @@ public class ZipFileOutputTest {
 		input.close();
 	}
 
+	@Test
+	public void testRawInputOutput() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ByteArrayOutputStream expected = new ByteArrayOutputStream();
+		ZipFileOutput output = new ZipFileOutput(baos);
+		output.enableFileBuffering(1024 * 1024, 1024 * 1024);
+		String fileName = "outer.bin";
+		output.writeFileHeader(
+				ZipFileHeader.builder().withFileName(fileName).withCompressionMethod(CompressionMethod.STORED).build());
+		byte[] fileBytes1 = new byte[] { 1, 2, 3 };
+		output.writeRawFileDataPart(fileBytes1);
+		expected.write(fileBytes1);
+		byte[] fileBytes2 = new byte[] { 1, 2, 3, 4, 5, 6 };
+		OutputStream fos = output.openFileDataOutputStream(true);
+		fos.write(fileBytes2[0]);
+		fos.write(fileBytes2, 1, fileBytes2.length - 1);
+		expected.write(fileBytes2);
+		fos.flush();
+		output.finishFileData();
+		output.close();
+
+		/*
+		 * Read it back in.
+		 */
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+
+		// read using ZipInputStream
+		ZipFileInput zipInput = new ZipFileInput(bais);
+		ZipFileHeader entry = zipInput.readFileHeader();
+		assertEquals(fileName, entry.getFileName());
+		byte[] output1 = new byte[fileBytes1.length];
+		zipInput.readRawFileDataPart(output1);
+		InputStream fis = zipInput.openFileDataInputStream(true);
+		baos.reset();
+		baos.write(output1);
+		baos.write(fis.read());
+		IoUtils.copyStream(fis, baos);
+		assertArrayEquals(expected.toByteArray(), baos.toByteArray());
+		IoUtils.copyStream(fis, baos);
+		zipInput.close();
+	}
+
 	@Test(expected = IllegalArgumentException.class)
 	public void testBadEnable() throws IOException {
 		ZipFileOutput zipOutput = new ZipFileOutput(new ByteArrayOutputStream());
@@ -674,6 +719,17 @@ public class ZipFileOutputTest {
 		}
 		assertEquals(numFiles, fileCount);
 		zis.close();
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testWriteAfterFinished() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ZipFileOutput zipOutput = new ZipFileOutput(baos);
+		String fileName1 = "barbing.txt";
+		zipOutput.writeFileHeader(ZipFileHeader.builder().withFileName(fileName1).build());
+		zipOutput.finishFileData();
+		zipOutput.close();
+		zipOutput.writeFileDataPart(new byte[] { 1, 2, 3 });
 	}
 
 	public static void main(String[] args) throws IOException {

@@ -457,16 +457,14 @@ public class ZipFileHeader {
 		}
 
 		/**
-		 * Sets the general-purpose-flags as a integer value. This overrides the value set by
-		 * {@link #addGeneralPurposeFlags(Collection)}.
+		 * Sets the general-purpose-flags as a integer value. This overrides the value set by the add and with flag(s).
 		 */
 		public void setGeneralPurposeFlags(int generalPurposeFlags) {
 			this.generalPurposeFlags = generalPurposeFlags;
 		}
 
 		/**
-		 * Sets the general-purpose-flags as a integer value. This overrides the value set by
-		 * {@link #addGeneralPurposeFlags(Collection)}.
+		 * Sets the general-purpose-flags as a integer value. This overrides the value set by the add and with flag(s).
 		 */
 		public Builder withGeneralPurposeFlags(int generalPurposeFlags) {
 			this.generalPurposeFlags = generalPurposeFlags;
@@ -474,7 +472,7 @@ public class ZipFileHeader {
 		}
 
 		/**
-		 * Assign a flag via turning on and off.
+		 * Assign a flag via turning on and off. This updates the value set by {@link #setGeneralPurposeFlags(int)}.
 		 */
 		public void assignGeneralPurposeFlag(GeneralPurposeFlag flag, boolean value) {
 			if (value) {
@@ -492,21 +490,30 @@ public class ZipFileHeader {
 		}
 
 		/**
-		 * Add a general-purpose-flag as an enum.
+		 * Add a general-purpose-flag as an enum. This adds to the value set by {@link #setGeneralPurposeFlags(int)}.
 		 */
 		public void addGeneralPurposeFlag(GeneralPurposeFlag generalPurposeFlag) {
 			generalPurposeFlags |= generalPurposeFlag.getValue();
 		}
 
 		/**
-		 * Clear a general-purpose-flag as an enum.
+		 * Sets the general-purpose-flag as a an enums. This adds to the value set by
+		 * {@link #setGeneralPurposeFlags(int)}.
+		 */
+		public Builder withGeneralPurposeFlag(GeneralPurposeFlag generalPurposeFlag) {
+			addGeneralPurposeFlag(generalPurposeFlag);
+			return this;
+		}
+
+		/**
+		 * Clear a general-purpose-flag as an enum. This changes the value set by {@link #setGeneralPurposeFlags(int)}.
 		 */
 		public void clearGeneralPurposeFlag(GeneralPurposeFlag generalPurposeFlag) {
 			generalPurposeFlags &= ~generalPurposeFlag.getValue();
 		}
 
 		/**
-		 * Sets the general-purpose-flags as a set of enums. This overrides the value set by
+		 * Sets the general-purpose-flags as a set of enums. This adds to the value set by
 		 * {@link #setGeneralPurposeFlags(int)}.
 		 */
 		public void addGeneralPurposeFlags(Collection<GeneralPurposeFlag> generalPurposeFlagSet) {
@@ -516,7 +523,7 @@ public class ZipFileHeader {
 		}
 
 		/**
-		 * Sets the general-purpose-flags as a set of enums. This overrides the value set by
+		 * Sets the general-purpose-flags as a set of enums. This adds to the value set by
 		 * {@link #setGeneralPurposeFlags(int)}.
 		 */
 		public Builder withGeneralPurposeFlags(Collection<GeneralPurposeFlag> generalPurposeFlagSet) {
@@ -525,7 +532,7 @@ public class ZipFileHeader {
 		}
 
 		/**
-		 * Sets the general-purpose-flags as an array of enums. This overrides the value set by
+		 * Sets the general-purpose-flags as an array of enums. This adds to the value set by
 		 * {@link #setGeneralPurposeFlags(int)}.
 		 */
 		public void addGeneralPurposeFlags(GeneralPurposeFlag... generalPurposeFlagEnums) {
@@ -542,7 +549,7 @@ public class ZipFileHeader {
 		}
 
 		/**
-		 * Sets the general-purpose-flags as an array of enums. This overrides the value set by
+		 * Sets the general-purpose-flags as an array of enums. This adds to the value set by
 		 * {@link #setGeneralPurposeFlags(int)}.
 		 */
 		public Builder withGeneralPurposeFlags(GeneralPurposeFlag... generalPurposeFlagEnums) {

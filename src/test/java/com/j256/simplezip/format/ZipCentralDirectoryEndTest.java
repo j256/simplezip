@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.junit.Test;
@@ -18,7 +19,7 @@ import com.j256.simplezip.format.ZipCentralDirectoryEnd.Builder;
 public class ZipCentralDirectoryEndTest {
 
 	@Test
-	public void testCoverage() {
+	public void testCoverage() throws IOException {
 		Builder builder = ZipCentralDirectoryEnd.builder();
 
 		int diskNumber = 1312;
@@ -45,6 +46,19 @@ public class ZipCentralDirectoryEndTest {
 		assertEquals(commentBytes, builder.getCommentBytes());
 
 		ZipCentralDirectoryEnd dirEnd = builder.build();
+		assertEquals(diskNumber, dirEnd.getDiskNumber());
+		assertEquals(diskNumberStart, dirEnd.getDiskNumberStart());
+		assertEquals(numRecordsOnDisk, dirEnd.getNumRecordsOnDisk());
+		assertEquals(numRecordsTotal, dirEnd.getNumRecordsTotal());
+		assertEquals(directorySize, dirEnd.getDirectorySize());
+		assertEquals(directoryOffset, dirEnd.getDirectoryOffset());
+		assertArrayEquals(commentBytes, dirEnd.getCommentBytes());
+		assertEquals(comment, dirEnd.getComment());
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		dirEnd.write(baos);
+		dirEnd = ZipCentralDirectoryEnd
+				.read(new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 1024));
 		assertEquals(diskNumber, dirEnd.getDiskNumber());
 		assertEquals(diskNumberStart, dirEnd.getDiskNumberStart());
 		assertEquals(numRecordsOnDisk, dirEnd.getNumRecordsOnDisk());

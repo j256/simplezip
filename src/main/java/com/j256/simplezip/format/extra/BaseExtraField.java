@@ -17,19 +17,15 @@ public abstract class BaseExtraField {
 	private final int id;
 	private final int extraSize;
 
-	public BaseExtraField(int id, int extraSize) {
+	protected BaseExtraField(int id, int extraSize) {
 		this.id = id;
 		this.extraSize = extraSize;
 	}
 
 	/**
-	 * Write the start to the output-stream;
+	 * Write the base portions of the extra field.
 	 */
-	public void write(OutputStream outputStream) throws IOException {
-		byte[] tmpBytes = new byte[8];
-		IoUtils.writeShort(outputStream, tmpBytes, id);
-		IoUtils.writeShort(outputStream, tmpBytes, extraSize);
-	}
+	public abstract void write(OutputStream outputStream) throws IOException;
 
 	public int getId() {
 		return id;

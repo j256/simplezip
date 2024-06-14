@@ -60,6 +60,32 @@ public class ZipCentralDirectoryEndInfoTest {
 	}
 
 	@Test
+	public void testFromEnd() {
+		Zip64CentralDirectoryEnd.Builder endBuilder = Zip64CentralDirectoryEnd.builder();
+
+		int versionMade = 2354;
+		endBuilder.setVersionMade(versionMade);
+		int versionNeeded = 22354;
+		endBuilder.setVersionNeeded(versionNeeded);
+		int diskNumber = 131221321;
+		endBuilder.setDiskNumber(diskNumber);
+		int diskNumberStart = 525131212;
+		endBuilder.setDiskNumberStart(diskNumberStart);
+		byte[] extensibleData = "32131231231".getBytes();
+		endBuilder.setExtensibleData(extensibleData);
+
+		ZipCentralDirectoryEndInfo.Builder builder =
+				ZipCentralDirectoryEndInfo.Builder.fromCentralDirectoryEnd(endBuilder.build());
+		ZipCentralDirectoryEndInfo endInfo = builder.build();
+		assertTrue(endInfo.isNeedsZip64());
+		assertEquals(versionMade, endInfo.getVersionMade());
+		assertEquals(versionNeeded, endInfo.getVersionNeeded());
+		assertEquals(diskNumber, endInfo.getDiskNumber());
+		assertEquals(diskNumberStart, endInfo.getDiskNumberStart());
+		assertEquals(extensibleData, endInfo.getExtensibleData());
+	}
+
+	@Test
 	public void testBuildWith() {
 		ZipCentralDirectoryEndInfo.Builder builder = ZipCentralDirectoryEndInfo.builder();
 
