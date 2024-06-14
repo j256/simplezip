@@ -13,7 +13,6 @@ import com.j256.simplezip.IoUtils;
  */
 public class SimpleZipFileDataDecoder implements FileDataDecoder {
 
-	private final byte[] tmpBuffer = new byte[8];
 	private final InputStream inputStream;
 	private final String label = getClass().getSimpleName();
 
@@ -68,7 +67,7 @@ public class SimpleZipFileDataDecoder implements FileDataDecoder {
 	 * @return >0 if ok or -1 if EOF.
 	 */
 	private int fillBuffer() throws IOException {
-		int bufLength = IoUtils.readInt(inputStream, tmpBuffer, label);
+		int bufLength = IoUtils.readInt(inputStream, label);
 		bytesRead += 4;
 		if (bufLength == SimpleZipFileDataEncoder.EOF_MARKER) {
 			eof = true;

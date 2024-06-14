@@ -15,7 +15,6 @@ public class SimpleZipFileDataEncoder implements FileDataEncoder {
 
 	public static final int EOF_MARKER = 0;
 	private final OutputStream outputStream;
-	private final byte[] tmpBuffer = new byte[8];
 	private long bytesWritten;
 
 	public SimpleZipFileDataEncoder(OutputStream outputStream) {
@@ -25,7 +24,7 @@ public class SimpleZipFileDataEncoder implements FileDataEncoder {
 	@Override
 	public void encode(byte[] inputBuffer, int offset, int length) throws IOException {
 		if (length > 0) {
-			IoUtils.writeInt(outputStream, tmpBuffer, length);
+			IoUtils.writeInt(outputStream, length);
 			bytesWritten += 4;
 			outputStream.write(inputBuffer, offset, length);
 			bytesWritten += length;
@@ -35,7 +34,7 @@ public class SimpleZipFileDataEncoder implements FileDataEncoder {
 	@Override
 	public void close() throws IOException {
 		// write our EOF marker
-		IoUtils.writeInt(outputStream, tmpBuffer, EOF_MARKER);
+		IoUtils.writeInt(outputStream, EOF_MARKER);
 		bytesWritten += 4;
 	}
 

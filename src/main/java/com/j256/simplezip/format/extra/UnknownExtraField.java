@@ -42,8 +42,7 @@ public class UnknownExtraField extends BaseExtraField {
 	 */
 	@Override
 	public void write(OutputStream outputStream) throws IOException {
-		byte[] tmpBytes = new byte[8]; 
-		super.write(outputStream, tmpBytes);
+		super.write(outputStream);
 		IoUtils.writeBytes(outputStream, bytes);
 	}
 

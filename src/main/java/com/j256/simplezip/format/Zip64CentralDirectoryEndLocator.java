@@ -40,18 +40,17 @@ public class Zip64CentralDirectoryEndLocator {
 	 * Read one from the input-stream.
 	 */
 	public static Zip64CentralDirectoryEndLocator read(RewindableInputStream inputStream) throws IOException {
-		byte[] tmpBytes = new byte[8]; 
-		int signature = IoUtils.readInt(inputStream, tmpBytes, "Zip64CentralDirectoryEndLocator.signature");
+		int signature = IoUtils.readInt(inputStream, "Zip64CentralDirectoryEndLocator.signature");
 		if (signature != EXPECTED_SIGNATURE) {
 			inputStream.rewind(4);
 			return null;
 		}
 
 		Builder builder = new Zip64CentralDirectoryEndLocator.Builder();
-		builder.diskNumber = IoUtils.readInt(inputStream, tmpBytes, "Zip64CentralDirectoryEndLocator.diskNumber");
-		builder.diskNumberStart = IoUtils.readInt(inputStream, tmpBytes, "Zip64CentralDirectoryEndLocator.diskNumberStart");
-		builder.endOffset = IoUtils.readLong(inputStream, tmpBytes, "Zip64CentralDirectoryEndLocator.endOffset");
-		builder.numberDisks = IoUtils.readInt(inputStream, tmpBytes, "Zip64CentralDirectoryEndLocator.numberDisks");
+		builder.diskNumber = IoUtils.readInt(inputStream, "Zip64CentralDirectoryEndLocator.diskNumber");
+		builder.diskNumberStart = IoUtils.readInt(inputStream, "Zip64CentralDirectoryEndLocator.diskNumberStart");
+		builder.endOffset = IoUtils.readLong(inputStream, "Zip64CentralDirectoryEndLocator.endOffset");
+		builder.numberDisks = IoUtils.readInt(inputStream, "Zip64CentralDirectoryEndLocator.numberDisks");
 		return builder.build();
 	}
 
@@ -59,12 +58,11 @@ public class Zip64CentralDirectoryEndLocator {
 	 * Write to the output-stream.
 	 */
 	public void write(OutputStream outputStream) throws IOException {
-		byte[] tmpBytes = new byte[8]; 
-		IoUtils.writeInt(outputStream, tmpBytes, EXPECTED_SIGNATURE);
-		IoUtils.writeInt(outputStream, tmpBytes, diskNumber);
-		IoUtils.writeInt(outputStream, tmpBytes, diskNumberStart);
-		IoUtils.writeLong(outputStream, tmpBytes, endOffset);
-		IoUtils.writeInt(outputStream, tmpBytes, numberDisks);
+		IoUtils.writeInt(outputStream, EXPECTED_SIGNATURE);
+		IoUtils.writeInt(outputStream, diskNumber);
+		IoUtils.writeInt(outputStream, diskNumberStart);
+		IoUtils.writeLong(outputStream, endOffset);
+		IoUtils.writeInt(outputStream, numberDisks);
 	}
 
 	public int getDiskNumber() {

@@ -38,9 +38,8 @@ public class ExtraFieldUtil {
 		/*
 		 * When reading a file-header we aren't sure if this is a file-header or the start of the central directory.
 		 */
-		byte[] tmpBytes = new byte[8];
-		int id = IoUtils.readShort(input, tmpBytes, "BaseExtraField.id");
-		int size = IoUtils.readShort(input, tmpBytes, "BaseExtraField.size");
+		int id = IoUtils.readShort(input, "BaseExtraField.id");
+		int size = IoUtils.readShort(input, "BaseExtraField.size");
 
 		switch (id) {
 			case ExtendedTimestampCentralExtraField.EXPECTED_ID: {
