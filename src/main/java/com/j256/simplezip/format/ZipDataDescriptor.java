@@ -17,7 +17,6 @@ public class ZipDataDescriptor {
 
 	/** optional signature at the start of the data-descriptor */
 	public static final int OPTIONAL_EXPECTED_SIGNATURE = 0x8074b50;
-	public static final long MAX_ZIP32_SIZE = 0xFFFFFFFFL;
 
 	private final boolean zip64;
 	private final long crc32;
@@ -41,11 +40,13 @@ public class ZipDataDescriptor {
 	/**
 	 * Read from the input-stream.
 	 * 
-	 * @param zip64
-	 *            Whether or not the sizes of the data read indicate that we should have a zip64 data-descriptor with 8
-	 *            byte sizes or one with 4 byte sizes.
+	 * @param compressedSize
+	 *            Size of the compressed data which is uses to see if we need to read in a zip64 or zip32 descriptor.
+	 * @param uncompressedSize
+	 *            Size of the uncompressed data which is uses to see if we need to read in a zip64 or zip32 descriptor.
 	 */
-	public static ZipDataDescriptor read(RewindableInputStream inputStream, boolean zip64) throws IOException {
+	public static ZipDataDescriptor read(RewindableInputStream inputStream, long compressedSize, long uncompressedSize)
+			throws IOException {
 		byte[] tmpBytes = new byte[8];
 		Builder builder = new ZipDataDescriptor.Builder();
 		/*
@@ -63,7 +64,7 @@ public class ZipDataDescriptor {
 			builder.crc32 = first;
 		}
 
-		if (zip64) {
+		if (compressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE || uncompressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE) {
 			builder.compressedSize = IoUtils.readLong(inputStream, tmpBytes, "ZipDataDescriptor.compressedSize");
 			builder.uncompressedSize = IoUtils.readLong(inputStream, tmpBytes, "ZipDataDescriptor.uncompressedSize");
 		} else {
@@ -135,7 +136,8 @@ public class ZipDataDescriptor {
 		}
 
 		public ZipDataDescriptor build() {
-			boolean zip64 = (compressedSize > 0xFFFFFFFFL || uncompressedSize > 0xFFFFFFFFL);
+			boolean zip64 = (compressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE
+					|| uncompressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE);
 			return new ZipDataDescriptor(zip64, crc32, compressedSize, uncompressedSize);
 		}
 
