@@ -88,9 +88,9 @@ public class BufferedOutputStream extends OutputStream {
 		if (tmpFile == null) {
 			tmpFile = File.createTempFile(getClass().getSimpleName(), ".ztf");
 			tmpFile.deleteOnExit();
+			// NOTE: no buffered output stream here because we are dealing with buffers externally
+			tmpFileOutputStream = new FileOutputStream(tmpFile);
 		}
-		// NOTE: no buffered output stream here because we are dealing with buffers externally
-		tmpFileOutputStream = new FileOutputStream(tmpFile);
 		tmpFileOutputStream.write(buffer, offset, length);
 		encodedSize += length;
 	}
@@ -240,6 +240,7 @@ public class BufferedOutputStream extends OutputStream {
 
 		@Override
 		public void write(int b) throws IOException {
+			// may not get here
 			delegate.write(b);
 			writeCount++;
 		}
