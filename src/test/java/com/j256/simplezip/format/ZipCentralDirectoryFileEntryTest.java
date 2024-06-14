@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -20,6 +21,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.j256.simplezip.IoUtils;
+import com.j256.simplezip.RewindableInputStream;
 import com.j256.simplezip.format.ZipCentralDirectoryFileEntry.Builder;
 import com.j256.simplezip.format.extra.UnknownExtraField;
 import com.j256.simplezip.format.extra.Zip64ExtraField;
@@ -27,7 +29,7 @@ import com.j256.simplezip.format.extra.Zip64ExtraField;
 public class ZipCentralDirectoryFileEntryTest {
 
 	@Test
-	public void testCoverage() {
+	public void testCoverage() throws IOException {
 		Builder builder = ZipCentralDirectoryFileEntry.builder();
 
 		int major = 2;
@@ -53,13 +55,13 @@ public class ZipCentralDirectoryFileEntryTest {
 		}
 		builder.setGeneralPurposeFlags(generalPurposeFlags);
 		assertEquals(generalPurposeFlags, builder.getGeneralPurposeFlags());
-		int compressionMethodValue = 6334324;
+		int compressionMethodValue = 4324;
 		builder.setCompressionMethod(compressionMethodValue);
 		assertEquals(compressionMethodValue, builder.getCompressionMethod());
 		int lastModifiedFileTime = 32434;
 		builder.setLastModifiedTime(lastModifiedFileTime);
 		assertEquals(lastModifiedFileTime, builder.getLastModifiedTime());
-		int lastModifiedFileDate = 1267556;
+		int lastModifiedFileDate = 7556;
 		builder.setLastModifiedDate(lastModifiedFileDate);
 		assertEquals(lastModifiedFileDate, builder.getLastModifiedDate());
 		int crc32 = 654654;
@@ -71,10 +73,10 @@ public class ZipCentralDirectoryFileEntryTest {
 		int uncompressedSize = 65654568;
 		builder.setUncompressedSize(uncompressedSize);
 		assertEquals(uncompressedSize, builder.getUncompressedSize());
-		int diskNumberStart = 5664572;
+		int diskNumberStart = 5672;
 		builder.setDiskNumberStart(diskNumberStart);
 		assertEquals(diskNumberStart, builder.getDiskNumberStart());
-		int internalFileAttributes = 6554634;
+		int internalFileAttributes = 6544;
 		builder.setInternalFileAttributes(internalFileAttributes);
 		assertEquals(internalFileAttributes, builder.getInternalFileAttributes());
 		int externalFileAttributes = 976753523;
@@ -128,12 +130,41 @@ public class ZipCentralDirectoryFileEntryTest {
 		assertEquals(externalFileAttributes, fileEntry.getExternalFileAttributes());
 		assertEquals(relativeOffsetOfLocalHeader, fileEntry.getRelativeOffsetOfLocalHeader());
 		assertArrayEquals(fileNameBytes, fileEntry.getFileNameBytes());
+		assertEquals(fileName, fileEntry.getFileName());
 		assertArrayEquals(extraBytes, fileEntry.getExtraFieldBytes());
 		assertArrayEquals(commentBytes, fileEntry.getCommentBytes());
 		assertEquals(new String(commentBytes), fileEntry.getComment());
 		assertEquals(textFile, fileEntry.isTextFile());
 
 		System.out.println("entry = " + fileEntry);
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		fileEntry.write(baos);
+		fileEntry = ZipCentralDirectoryFileEntry
+				.read(new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 1024));
+		assertEquals(versionMade, fileEntry.getVersionMade());
+		assertEquals((versionMade & 0XFF), fileEntry.getVersionMadeMajorMinor());
+		assertEquals(versionNeeded, fileEntry.getVersionNeeded());
+		assertEquals("21.2", fileEntry.getVersionNeededMajorMinorString());
+		assertEquals(generalPurposeFlagList, resultList);
+		assertEquals(generalPurposeFlags, fileEntry.getGeneralPurposeFlags());
+		assertEquals(compressionMethodValue, fileEntry.getCompressionMethod());
+		assertEquals(lastModifiedFileTime, fileEntry.getLastModifiedTime());
+		assertEquals(lastModifiedFileDate, fileEntry.getLastModifiedDate());
+		assertEquals(crc32, fileEntry.getCrc32());
+		assertEquals(compressedSize, fileEntry.getCompressedSize());
+		assertEquals(compressedSize, fileEntry.getZip64CompressedSize());
+		assertEquals(uncompressedSize, fileEntry.getUncompressedSize());
+		assertEquals(uncompressedSize, fileEntry.getZip64UncompressedSize());
+		assertEquals(diskNumberStart, fileEntry.getDiskNumberStart());
+		assertEquals(internalFileAttributes, fileEntry.getInternalFileAttributes());
+		assertEquals(externalFileAttributes, fileEntry.getExternalFileAttributes());
+		assertEquals(relativeOffsetOfLocalHeader, fileEntry.getRelativeOffsetOfLocalHeader());
+		assertArrayEquals(fileNameBytes, fileEntry.getFileNameBytes());
+		assertArrayEquals(extraBytes, fileEntry.getExtraFieldBytes());
+		assertArrayEquals(commentBytes, fileEntry.getCommentBytes());
+		assertEquals(new String(commentBytes), fileEntry.getComment());
+		assertEquals(textFile, fileEntry.isTextFile());
 	}
 
 	@Test
@@ -303,7 +334,7 @@ public class ZipCentralDirectoryFileEntryTest {
 		builder.setCompressedSize(compressedSize);
 		int uncompressedSize = 65654568;
 		builder.setUncompressedSize(uncompressedSize);
-		int diskNumberStart = 5664572;
+		int diskNumberStart = 5572;
 		builder.setDiskNumberStart(diskNumberStart);
 		int internalFileAttributes = 6554634;
 		builder.setInternalFileAttributes(internalFileAttributes);

@@ -39,7 +39,7 @@ public class ZipCentralDirectoryFileEntry {
 	private final int diskNumberStart;
 	private final int internalFileAttributes;
 	private final int externalFileAttributes;
-	private final int relativeOffsetOfLocalHeader;
+	private final long relativeOffsetOfLocalHeader;
 	private final byte[] fileNameBytes;
 	private final byte[] extraFieldBytes;
 	private final byte[] commentBytes;
@@ -48,7 +48,7 @@ public class ZipCentralDirectoryFileEntry {
 	public ZipCentralDirectoryFileEntry(int versionMade, int versionNeeded, int generalPurposeFlags,
 			int compressionMethod, int lastModifiedTime, int lastModifiedDate, long crc32, long compressedSize,
 			long uncompressedSize, int diskNumberStart, int internalFileAttributes, int externalFileAttributes,
-			int relativeOffsetOfLocalHeader, byte[] fileNameBytes, byte[] extraFieldBytes, byte[] commentBytes,
+			long relativeOffsetOfLocalHeader, byte[] fileNameBytes, byte[] extraFieldBytes, byte[] commentBytes,
 			Zip64ExtraField zip64ExtraField) {
 		this.versionMade = versionMade;
 		this.versionNeeded = versionNeeded;
@@ -312,7 +312,7 @@ public class ZipCentralDirectoryFileEntry {
 		return externalFileAttributes;
 	}
 
-	public int getRelativeOffsetOfLocalHeader() {
+	public long getRelativeOffsetOfLocalHeader() {
 		return relativeOffsetOfLocalHeader;
 	}
 
@@ -374,7 +374,7 @@ public class ZipCentralDirectoryFileEntry {
 		private int diskNumberStart = DEFAULT_DISK_NUMBER;
 		private int internalFileAttributes;
 		private int externalFileAttributes;
-		private int relativeOffsetOfLocalHeader;
+		private long relativeOffsetOfLocalHeader;
 		private byte[] fileNameBytes;
 		private byte[] extraFieldBytes;
 		private ByteArrayOutputStream extraFieldsOutputStream;
@@ -448,9 +448,12 @@ public class ZipCentralDirectoryFileEntry {
 		public ZipCentralDirectoryFileEntry build() {
 			// if we don't have a zip64 field set then check our values and maybe add one
 			if (zip64ExtraField == null) {
-				if (uncompressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE
-						|| compressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE) {
-					zip64ExtraField = new Zip64ExtraField(uncompressedSize, compressedSize, 0, 0);
+				if (compressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE
+						|| uncompressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE
+						|| diskNumberStart >= IoUtils.MAX_UNSIGNED_SHORT_VALUE
+						|| relativeOffsetOfLocalHeader >= IoUtils.MAX_UNSIGNED_INT_VALUE) {
+					zip64ExtraField = new Zip64ExtraField(uncompressedSize, compressedSize, relativeOffsetOfLocalHeader,
+							diskNumberStart);
 					uncompressedSize = IoUtils.MAX_UNSIGNED_INT_VALUE;
 					compressedSize = IoUtils.MAX_UNSIGNED_INT_VALUE;
 				}
@@ -639,6 +642,12 @@ public class ZipCentralDirectoryFileEntry {
 			return diskNumberStart;
 		}
 
+		/**
+		 * Set to the disk-number of the start of the file. If this value is more than 0xFFFF then a Zip64 extra field
+		 * will be written into the extra bytes if not otherwise specified. You can also set this to 0xFFFF and add a
+		 * {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
+		 * {@link #setZip64ExtraField(Zip64ExtraField)}.
+		 */
 		public void setDiskNumberStart(int diskNumberStart) {
 			this.diskNumberStart = diskNumberStart;
 		}
@@ -677,11 +686,17 @@ public class ZipCentralDirectoryFileEntry {
 			this.externalFileAttributes = externalFileAttributes;
 		}
 
-		public int getRelativeOffsetOfLocalHeader() {
+		public long getRelativeOffsetOfLocalHeader() {
 			return relativeOffsetOfLocalHeader;
 		}
 
-		public void setRelativeOffsetOfLocalHeader(int relativeOffsetOfLocalHeader) {
+		/**
+		 * Set to the relative offset of the file's header. If this value is more than 0xFFFFFFFF then a Zip64 extra
+		 * field will be written into the extra bytes if not otherwise specified. You can also set this to 0xFFFFFFFF
+		 * and add a {@link Zip64ExtraField} to the {@link #setExtraFieldBytes(byte[])} or
+		 * {@link #setZip64ExtraField(Zip64ExtraField)}.
+		 */
+		public void setRelativeOffsetOfLocalHeader(long relativeOffsetOfLocalHeader) {
 			this.relativeOffsetOfLocalHeader = relativeOffsetOfLocalHeader;
 		}
 
