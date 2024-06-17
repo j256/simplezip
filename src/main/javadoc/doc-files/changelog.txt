@@ -1,3 +1,6 @@
+2.2: 6/??/2024
+	* Fixed the size specified of the Zip64 extra-field.
+
 2.1: 6/14/2024
 	* Fixed a problem when reading file headers and getting null twice.
 	* Fixed a possible problem when the internal buffer sizes are increasing.
@@ -6,7 +9,7 @@
 
 2.0: 6/13/2024
 	* Fixed problem with buffering that would generate an improper or unnecessary data-descriptor.
-	* Fixed problem when finishing zip output file without any data.
+	* Fixed problem when finishing Zip output file without any data.
 	* Removed the ZipVersion which seemed artificial.  Replaced with major/minor numbers.
 	* Renamed some methods around the version-needed and version-made getters and setters.
 	* Renamed the ZipFileOutput.enableBufferedOutput() method to enableFileBuffering().

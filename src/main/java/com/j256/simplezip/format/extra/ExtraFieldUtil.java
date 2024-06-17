@@ -44,13 +44,13 @@ public class ExtraFieldUtil {
 		switch (id) {
 			case ExtendedTimestampCentralExtraField.EXPECTED_ID: {
 				if (fileHeader) {
-					if (size == ExtendedTimestampLocalExtraField.EXPECTED_SIZE) {
+					if (size == ExtendedTimestampLocalExtraField.EXTRA_SIZE) {
 						@SuppressWarnings("unchecked")
 						T extra = (T) ExtendedTimestampLocalExtraField.read(input, id, size);
 						return extra;
 					}
 				} else {
-					if (size >= ExtendedTimestampCentralExtraField.EXPECTED_MINIMUM_SIZE) {
+					if (size >= ExtendedTimestampCentralExtraField.EXTRA_MINIMUM_SIZE) {
 						@SuppressWarnings("unchecked")
 						T extra = (T) ExtendedTimestampCentralExtraField.read(input, id, size);
 						return extra;
@@ -59,7 +59,7 @@ public class ExtraFieldUtil {
 				break;
 			}
 			case Unix1ExtraField.EXPECTED_ID: {
-				if (size >= Unix1ExtraField.EXPECTED_MINIMUM_SIZE) {
+				if (size >= Unix1ExtraField.EXTRA_MINIMUM_SIZE) {
 					@SuppressWarnings("unchecked")
 					T extra = (T) Unix1ExtraField.read(input, id, size);
 					return extra;
@@ -67,7 +67,7 @@ public class ExtraFieldUtil {
 				break;
 			}
 			case Unix2ExtraField.EXPECTED_ID: {
-				if (size >= Unix2ExtraField.EXPECTED_SIZE) {
+				if (size >= Unix2ExtraField.EXTRA_SIZE) {
 					@SuppressWarnings("unchecked")
 					T extra = (T) Unix2ExtraField.read(input, id, size);
 					return extra;
@@ -75,7 +75,7 @@ public class ExtraFieldUtil {
 				break;
 			}
 			case Zip64ExtraField.EXPECTED_ID: {
-				if (size == Zip64ExtraField.EXPECTED_SIZE) {
+				if (size == Zip64ExtraField.EXTRA_SIZE) {
 					@SuppressWarnings("unchecked")
 					T extra = (T) Zip64ExtraField.read(input, id, size);
 					return extra;

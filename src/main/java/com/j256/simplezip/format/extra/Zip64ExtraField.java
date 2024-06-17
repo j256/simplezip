@@ -14,7 +14,7 @@ import com.j256.simplezip.IoUtils;
 public class Zip64ExtraField extends BaseExtraField {
 
 	public static final int EXPECTED_ID = 0x0001;
-	public static final int EXPECTED_SIZE = 2 + 2 + 8 + 8 + 8 + 4;
+	public static final int EXTRA_SIZE = 8 + 8 + 8 + 4;
 
 	private final long uncompressedSize;
 	private final long compressedSize;
@@ -22,7 +22,7 @@ public class Zip64ExtraField extends BaseExtraField {
 	private final int diskNumber;
 
 	public Zip64ExtraField(long uncompressedSize, long compressedSize, long offset, int diskNumber) {
-		super(EXPECTED_ID, EXPECTED_SIZE);
+		super(EXPECTED_ID, EXTRA_SIZE);
 		this.uncompressedSize = uncompressedSize;
 		this.compressedSize = compressedSize;
 		this.offset = offset;

@@ -15,7 +15,7 @@ import com.j256.simplezip.IoUtils;
 public class Unix1ExtraField extends BaseExtraField {
 
 	public static final int EXPECTED_ID = 0x5855;
-	public static final int EXPECTED_MINIMUM_SIZE = 8 + 8;
+	public static final int EXTRA_MINIMUM_SIZE = 8 + 8;
 
 	private final long timeLastAccessed;
 	private final long timeLastModified;;
@@ -45,7 +45,7 @@ public class Unix1ExtraField extends BaseExtraField {
 		Builder builder = new Unix1ExtraField.Builder();
 		builder.timeLastAccessed = IoUtils.readLong(inputStream, "Unix1ExtraField.timeLastAccessed");
 		builder.timeLastModified = IoUtils.readLong(inputStream, "Unix1ExtraField.timeLastModified");
-		if (size > EXPECTED_MINIMUM_SIZE) {
+		if (size > EXTRA_MINIMUM_SIZE) {
 			builder.userId = IoUtils.readShort(inputStream, "Unix1ExtraField.userId");
 			builder.groupId = IoUtils.readShort(inputStream, "Unix1ExtraField.groupId");
 		}
@@ -105,7 +105,7 @@ public class Unix1ExtraField extends BaseExtraField {
 		 * Build and return the extra field. 
 		 */
 		public Unix1ExtraField build() {
-			int size = EXPECTED_MINIMUM_SIZE;
+			int size = EXTRA_MINIMUM_SIZE;
 			if (userId != null && groupId != null) {
 				size += 2 + 2;
 			}

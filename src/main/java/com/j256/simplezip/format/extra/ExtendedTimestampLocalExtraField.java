@@ -14,7 +14,7 @@ import com.j256.simplezip.IoUtils;
 public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 
 	public static final int EXPECTED_ID = 0x5455;
-	public static final int EXPECTED_SIZE = 1 + 8 + 8 + 8;
+	public static final int EXTRA_SIZE = 1 + 8 + 8 + 8;
 
 	private final int flags;
 	private final long timeLastModified;;
@@ -23,7 +23,7 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 
 	public ExtendedTimestampLocalExtraField(int flags, long timeLastModified, long timeLastAccessed,
 			long timeCreation) {
-		super(EXPECTED_ID, EXPECTED_SIZE);
+		super(EXPECTED_ID, EXTRA_SIZE);
 		this.flags = flags;
 		this.timeLastModified = timeLastModified;
 		this.timeLastAccessed = timeLastAccessed;
