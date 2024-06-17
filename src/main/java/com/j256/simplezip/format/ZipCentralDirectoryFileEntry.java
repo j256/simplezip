@@ -438,6 +438,7 @@ public class ZipCentralDirectoryFileEntry {
 		 * Build an instance of the central-directory file-entry.
 		 */
 		public ZipCentralDirectoryFileEntry build() {
+
 			// if we don't have a zip64 field set then check our values and maybe add one
 			if (zip64ExtraField == null) {
 				if (compressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE
@@ -449,6 +450,11 @@ public class ZipCentralDirectoryFileEntry {
 					uncompressedSize = IoUtils.MAX_UNSIGNED_INT_VALUE;
 					compressedSize = IoUtils.MAX_UNSIGNED_INT_VALUE;
 				}
+			}
+
+			// if we have e zip64 information then automatically increase the version to where zip64 was documented
+			if (zip64ExtraField != null && versionNeeded == 0) {
+				versionNeeded = Zip64CentralDirectoryEnd.DEFAULT_VERSION_NEEDED;
 			}
 
 			// build the extra bytes

@@ -1,5 +1,6 @@
 2.2: 6/??/2024
 	* Fixed the size specified of the Zip64 extra-field.
+	* Added default version needed of 4.5 fore Zip64 support.
 
 2.1: 6/14/2024
 	* Fixed a problem when reading file headers and getting null twice.
