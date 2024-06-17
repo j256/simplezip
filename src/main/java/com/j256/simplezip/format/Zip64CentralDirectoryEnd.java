@@ -16,6 +16,8 @@ public class Zip64CentralDirectoryEnd {
 
 	/** signature that is expected to be at the start of the central directory */
 	private static final int EXPECTED_SIGNATURE = 0x6064b50;
+	/** zip64 was documented in version 4.5 */
+	public static final int DEFAULT_VERSION_NEEDED = 45;
 	public static final int FIXED_FIELDS_SIZE = 2 + 2 + 4 + 4 + 8 + 8 + 8 + 8;
 
 	private final int versionMade;
@@ -155,6 +157,9 @@ public class Zip64CentralDirectoryEnd {
 		 * Build an instance of our directory end.
 		 */
 		public Zip64CentralDirectoryEnd build() {
+			if (versionNeeded == 0) {
+				versionNeeded = DEFAULT_VERSION_NEEDED;
+			}
 			return new Zip64CentralDirectoryEnd(versionMade, versionNeeded, diskNumber, diskNumberStart,
 					numRecordsOnDisk, numRecordsTotal, directorySize, directoryOffset, extensibleData);
 		}

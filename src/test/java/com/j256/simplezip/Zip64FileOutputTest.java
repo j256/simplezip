@@ -163,11 +163,12 @@ public class Zip64FileOutputTest {
 		ZipFileOutput zipOutput = new ZipFileOutput(bos);
 		String fileName = "foo.txt3";
 		byte[] buf = new byte[4096000];
-		int times = 1000;
 		zipOutput.writeFileHeader(ZipFileHeader.builder().withFileName(fileName).build());
-		for (int i = 0; i < times; i++) {
+		long size = 0;
+		for (int i = 0; size <= 0xFFFFFFFFL; i++) {
 			System.out.print(i + " ");
 			zipOutput.writeFileDataPart(buf);
+			size += buf.length;
 		}
 		System.out.println();
 		zipOutput.finishFileData();
@@ -202,23 +203,32 @@ public class Zip64FileOutputTest {
 		fos.close();
 		System.out.println("wrote " + path);
 
+		/*
+		 * Large.
+		 */
+
 		ZipFileOutput zipOutput = new ZipFileOutput("target/large.zip64");
-		String fileName = "foo.txt3";
 		byte[] buf = new byte[4096000];
-		int times = 1000;
 		zipOutput.writeFileHeader(ZipFileHeader.builder()
-				.withFileName(fileName)
+				.withFileName("foo.txt")
 				.withGeneralPurposeFlag(GeneralPurposeFlag.DEFLATING_SUPER_FAST)
 				.build());
 		Random random = new Random();
-		for (int i = 0; i < times; i++) {
+		long size = 0;
+		for (int i = 0; size <= 0xFFFFFFFFL; i++) {
 			random.nextBytes(buf);
 			System.out.print(i + " ");
 			zipOutput.writeFileDataPart(buf);
+			size += buf.length;
 		}
 		System.out.println();
 		long offset = zipOutput.finishFileData();
 		assertTrue(offset > Integer.MAX_VALUE);
+		zipOutput.writeFileHeader(ZipFileHeader.builder()
+				.withFileName("foo2.txt")
+				.withGeneralPurposeFlag(GeneralPurposeFlag.DEFLATING_SUPER_FAST)
+				.build());
+		zipOutput.writeFileDataAll("wow lookie another file".getBytes());
 		zipOutput.close();
 	}
 
