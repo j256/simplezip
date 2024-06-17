@@ -14,7 +14,7 @@ import com.j256.simplezip.IoUtils;
 public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 
 	public static final int EXPECTED_ID = 0x5455;
-	public static final int EXPECTED_MINIMUM_SIZE = 1;
+	public static final int EXTRA_MINIMUM_SIZE = 1;
 
 	public static final int TIME_MODIFIED_FLAG = (1 << 0);
 	public static final int TIME_ACCESSED_FLAG = (1 << 1);
@@ -43,7 +43,7 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 			throws IOException {
 		Builder builder = new ExtendedTimestampCentralExtraField.Builder();
 		builder.flags = IoUtils.readByte(inputStream, "ExtendedTimestampCentralExtraField.flags");
-		if (size >= EXPECTED_MINIMUM_SIZE + 8) {
+		if (size >= EXTRA_MINIMUM_SIZE + 8) {
 			builder.time = IoUtils.readLong(inputStream, "ExtendedTimestampCentralExtraField.time");
 		}
 		return builder.build();
@@ -96,7 +96,7 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 		 * Build and return the extra field. 
 		 */
 		public ExtendedTimestampCentralExtraField build() {
-			int size = EXPECTED_MINIMUM_SIZE;
+			int size = EXTRA_MINIMUM_SIZE;
 			if (time != null) {
 				size += 8;
 			}

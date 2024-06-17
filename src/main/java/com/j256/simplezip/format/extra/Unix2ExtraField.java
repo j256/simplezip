@@ -14,13 +14,13 @@ import com.j256.simplezip.IoUtils;
 public class Unix2ExtraField extends BaseExtraField {
 
 	public static final int EXPECTED_ID = 0x756e;
-	public static final int EXPECTED_SIZE = 8 + 8;
+	public static final int EXTRA_SIZE = 8 + 8;
 
 	private final int userId;
 	private final int groupId;
 
 	public Unix2ExtraField(int userId, int groupId) {
-		super(EXPECTED_ID, EXPECTED_SIZE);
+		super(EXPECTED_ID, EXTRA_SIZE);
 		this.userId = userId;
 		this.groupId = groupId;
 	}
