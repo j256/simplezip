@@ -13,10 +13,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.j256.simplezip.code.DeflatorFileDataEncoder;
-import com.j256.simplezip.code.FileDataEncoder;
-import com.j256.simplezip.code.SimpleZipFileDataEncoder;
-import com.j256.simplezip.code.StoredFileDataEncoder;
+import com.j256.simplezip.codec.DeflatorFileDataEncoder;
+import com.j256.simplezip.codec.FileDataEncoder;
+import com.j256.simplezip.codec.SimpleZipFileDataEncoder;
+import com.j256.simplezip.codec.StoredFileDataEncoder;
 import com.j256.simplezip.format.CompressionMethod;
 import com.j256.simplezip.format.GeneralPurposeFlag;
 import com.j256.simplezip.format.Zip64CentralDirectoryEnd;
