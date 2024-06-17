@@ -1,4 +1,4 @@
-package com.j256.simplezip.code;
+package com.j256.simplezip.codec;
 
 import java.io.Closeable;
 import java.io.IOException;

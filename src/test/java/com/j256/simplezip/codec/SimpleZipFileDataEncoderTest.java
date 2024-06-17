@@ -1,4 +1,4 @@
-package com.j256.simplezip.code;
+package com.j256.simplezip.codec;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
