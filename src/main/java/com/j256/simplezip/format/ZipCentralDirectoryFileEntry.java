@@ -435,7 +435,7 @@ public class ZipCentralDirectoryFileEntry {
 		}
 
 		/**
-		 * Builder an instance of the central-directory file-header.
+		 * Build an instance of the central-directory file-entry.
 		 */
 		public ZipCentralDirectoryFileEntry build() {
 			// if we don't have a zip64 field set then check our values and maybe add one

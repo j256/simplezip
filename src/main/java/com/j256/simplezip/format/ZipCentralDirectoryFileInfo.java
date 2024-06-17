@@ -113,7 +113,7 @@ public class ZipCentralDirectoryFileInfo {
 	}
 
 	/**
-	 * Builder for the {@link ZipCentralDirectoryFileInfo}.
+	 * Builder for {@link ZipCentralDirectoryFileInfo}.
 	 */
 	public static class Builder {
 		private int versionMade;
@@ -154,7 +154,7 @@ public class ZipCentralDirectoryFileInfo {
 		}
 
 		/**
-		 * Builder an instance of the central-directory file-entry.
+		 * Build an instance of the central-directory file info.
 		 */
 		public ZipCentralDirectoryFileInfo build() {
 			return new ZipCentralDirectoryFileInfo(versionMade, versionNeeded, diskNumberStart, internalFileAttributes,

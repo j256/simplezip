@@ -78,7 +78,7 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 	}
 
 	/**
-	 * Builder for the Zip64Info.
+	 * Builder for {@link ExtendedTimestampLocalExtraField}..
 	 */
 	public static class Builder {
 
@@ -87,6 +87,9 @@ public class ExtendedTimestampLocalExtraField extends BaseExtraField {
 		private long timeLastAccessed;
 		private long timeCreation;
 
+		/**
+		 * Build and return the extra field. 
+		 */
 		public ExtendedTimestampLocalExtraField build() {
 			return new ExtendedTimestampLocalExtraField(flags, timeLastModified, timeLastAccessed, timeCreation);
 		}

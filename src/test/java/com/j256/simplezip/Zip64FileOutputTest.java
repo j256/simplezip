@@ -196,11 +196,30 @@ public class Zip64FileOutputTest {
 		output.close();
 
 		byte[] zipBytes = baos.toByteArray();
-		String path = "target/test64.zip";
+		String path = "target/small.zip64";
 		FileOutputStream fos = new FileOutputStream(path);
 		fos.write(zipBytes);
 		fos.close();
 		System.out.println("wrote " + path);
+
+		ZipFileOutput zipOutput = new ZipFileOutput("target/large.zip64");
+		String fileName = "foo.txt3";
+		byte[] buf = new byte[4096000];
+		int times = 1000;
+		zipOutput.writeFileHeader(ZipFileHeader.builder()
+				.withFileName(fileName)
+				.withGeneralPurposeFlag(GeneralPurposeFlag.DEFLATING_SUPER_FAST)
+				.build());
+		Random random = new Random();
+		for (int i = 0; i < times; i++) {
+			random.nextBytes(buf);
+			System.out.print(i + " ");
+			zipOutput.writeFileDataPart(buf);
+		}
+		System.out.println();
+		long offset = zipOutput.finishFileData();
+		assertTrue(offset > Integer.MAX_VALUE);
+		zipOutput.close();
 	}
 
 	/**

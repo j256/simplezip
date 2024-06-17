@@ -308,7 +308,7 @@ public class ZipFileHeader {
 	}
 
 	/**
-	 * Builder for the LocalFileHeader class.
+	 * Builder for {@link ZipFileHeader}.
 	 */
 	public static class Builder {
 		private int versionNeeded;
@@ -330,6 +330,9 @@ public class ZipFileHeader {
 			setLastModifiedDateTime(LocalDateTime.now());
 		}
 
+		/**
+		 * Build an instance of the file-header.
+		 */
 		public ZipFileHeader build() {
 
 			// if we don't have a zip64 field set then check our values and maybe add one

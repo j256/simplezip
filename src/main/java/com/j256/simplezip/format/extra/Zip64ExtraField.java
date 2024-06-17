@@ -77,7 +77,7 @@ public class Zip64ExtraField extends BaseExtraField {
 	}
 
 	/**
-	 * Builder for the Zip64Info.
+	 * Builder for {@link Zip64ExtraField}.
 	 */
 	public static class Builder {
 		private long uncompressedSize;
@@ -85,6 +85,9 @@ public class Zip64ExtraField extends BaseExtraField {
 		private long offset;
 		private int diskNumber;
 
+		/**
+		 * Build and return the extra field. 
+		 */
 		public Zip64ExtraField build() {
 			return new Zip64ExtraField(uncompressedSize, compressedSize, offset, diskNumber);
 		}

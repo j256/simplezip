@@ -61,12 +61,15 @@ public class Unix2ExtraField extends BaseExtraField {
 	}
 
 	/**
-	 * Builder for the Unix1ExtraField.
+	 * Builder for {@link Unix2ExtraField}.
 	 */
 	public static class Builder {
 		private int userId;
 		private int groupId;
 
+		/**
+		 * Build and return the extra field. 
+		 */
 		public Unix2ExtraField build() {
 			return new Unix2ExtraField(userId, groupId);
 		}

@@ -85,13 +85,16 @@ public class ExtendedTimestampCentralExtraField extends BaseExtraField {
 	}
 
 	/**
-	 * Builder for the Zip64Info.
+	 * Builder for @{link ExtendedTimestampCentralExtraField}.
 	 */
 	public static class Builder {
 
 		private int flags;
 		private Long time;;
 
+		/**
+		 * Build and return the extra field. 
+		 */
 		public ExtendedTimestampCentralExtraField build() {
 			int size = EXPECTED_MINIMUM_SIZE;
 			if (time != null) {

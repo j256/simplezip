@@ -135,7 +135,7 @@ public class ZipCentralDirectoryEnd {
 	}
 
 	/**
-	 * Builder for the {@link ZipCentralDirectoryEnd}.
+	 * Builder for {@link ZipCentralDirectoryEnd}.
 	 */
 	public static class Builder {
 		private int diskNumber = ZipCentralDirectoryFileEntry.DEFAULT_DISK_NUMBER;
@@ -147,7 +147,7 @@ public class ZipCentralDirectoryEnd {
 		private byte[] commentBytes;
 
 		/**
-		 * Build a copy of our directory end.
+		 * Build an instance of our directory end.
 		 */
 		public ZipCentralDirectoryEnd build() {
 			boolean needsZip64 = false;

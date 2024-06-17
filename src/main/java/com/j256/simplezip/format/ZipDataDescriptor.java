@@ -106,7 +106,7 @@ public class ZipDataDescriptor {
 	}
 
 	/**
-	 * Builder for the DataDescriptor class.
+	 * Builder for {@link ZipDataDescriptor}.
 	 */
 	public static class Builder {
 		private long crc32;
@@ -133,6 +133,9 @@ public class ZipDataDescriptor {
 			uncompressedSize = 0;
 		}
 
+		/**
+		 * Build an instance of the data-descriptor. 
+		 */
 		public ZipDataDescriptor build() {
 			boolean zip64 = (compressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE
 					|| uncompressedSize >= IoUtils.MAX_UNSIGNED_INT_VALUE);

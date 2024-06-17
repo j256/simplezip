@@ -91,7 +91,7 @@ public class Zip64CentralDirectoryEndLocator {
 		private int numberDisks = 1;
 
 		/**
-		 * Build a copy of our directory end.
+		 * Build an instance of our directory end.
 		 */
 		public Zip64CentralDirectoryEndLocator build() {
 			return new Zip64CentralDirectoryEndLocator(diskNumber, diskNumberStart, endOffset, numberDisks);

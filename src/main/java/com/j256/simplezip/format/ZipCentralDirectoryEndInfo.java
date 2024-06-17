@@ -137,7 +137,7 @@ public class ZipCentralDirectoryEndInfo {
 		}
 
 		/**
-		 * Builder an instance of the central-directory file-header.
+		 * Build an instance of the end information.
 		 */
 		public ZipCentralDirectoryEndInfo build() {
 			boolean needsZip64 = zip64;

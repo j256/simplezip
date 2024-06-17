@@ -51,12 +51,15 @@ public class UnknownExtraField extends BaseExtraField {
 	}
 
 	/**
-	 * Builder for the UnknownExtraField.
+	 * Builder for {@link UnknownExtraField}.
 	 */
 	public static class Builder {
 		private int id;
 		private byte[] bytes;
 
+		/**
+		 * Build and return the extra field. 
+		 */
 		public UnknownExtraField build() {
 			return new UnknownExtraField(id, bytes);
 		}

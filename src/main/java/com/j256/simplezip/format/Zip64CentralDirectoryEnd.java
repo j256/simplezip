@@ -138,7 +138,7 @@ public class Zip64CentralDirectoryEnd {
 	}
 
 	/**
-	 * Builder for the {@link Zip64CentralDirectoryEnd}.
+	 * Builder for {@link Zip64CentralDirectoryEnd}.
 	 */
 	public static class Builder {
 		private int versionMade;
@@ -152,7 +152,7 @@ public class Zip64CentralDirectoryEnd {
 		private byte[] extensibleData;
 
 		/**
-		 * Build a copy of our directory end.
+		 * Build an instance of our directory end.
 		 */
 		public Zip64CentralDirectoryEnd build() {
 			return new Zip64CentralDirectoryEnd(versionMade, versionNeeded, diskNumber, diskNumberStart,

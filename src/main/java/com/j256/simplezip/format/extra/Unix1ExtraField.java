@@ -93,7 +93,7 @@ public class Unix1ExtraField extends BaseExtraField {
 	}
 
 	/**
-	 * Builder for the Unix1ExtraField.
+	 * Builder for {@link Unix1ExtraField}.
 	 */
 	public static class Builder {
 		private long timeLastAccessed;
@@ -101,6 +101,9 @@ public class Unix1ExtraField extends BaseExtraField {
 		private Integer userId;
 		private Integer groupId;
 
+		/**
+		 * Build and return the extra field. 
+		 */
 		public Unix1ExtraField build() {
 			int size = EXPECTED_MINIMUM_SIZE;
 			if (userId != null && groupId != null) {
