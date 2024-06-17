@@ -7,7 +7,7 @@ import java.util.zip.CRC32;
  * 
  * @author graywatson
  */
-public class ZipFileDataInfo {
+public class ZipDataInfo {
 
 	private long byteCount;
 	private final CRC32 crc32 = new CRC32();

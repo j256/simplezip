@@ -1,6 +1,8 @@
 2.2: 6/??/2024
 	* Fixed the size specified of the Zip64 extra-field.
-	* Added default version needed of 4.5 fore Zip64 support.
+	* Added default version-needed field of 4.5 for Zip64 support.
+	* Renamed the code package to be codec which does the encoding/decoding.
+	* Renamed the ZipFileDataInfo to be ZipDataInfo.
 
 2.1: 6/14/2024
 	* Fixed a problem when reading file headers and getting null twice.

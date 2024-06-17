@@ -34,7 +34,7 @@ import com.j256.simplezip.format.ZipFileHeader;
 public class ZipFileInput implements Closeable {
 
 	private final RewindableInputStream inputStream;
-	private final ZipFileDataInfo fileDataCountingInfo = new ZipFileDataInfo();
+	private final ZipDataInfo fileDataCountingInfo = new ZipDataInfo();
 	private final byte[] tmpBuffer = new byte[IoUtils.STANDARD_BUFFER_SIZE];
 
 	private FileDataDecoder fileDataDecoder;
@@ -387,7 +387,7 @@ public class ZipFileInput implements Closeable {
 	/**
 	 * Return some counting and CRC information from the current file that was read.
 	 */
-	public ZipFileDataInfo getCurrentFileCountingInfo() {
+	public ZipDataInfo getCurrentFileCountingInfo() {
 		return fileDataCountingInfo;
 	}
 

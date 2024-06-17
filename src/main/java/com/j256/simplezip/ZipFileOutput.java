@@ -36,7 +36,7 @@ import com.j256.simplezip.format.ZipFileHeader;
 public class ZipFileOutput implements Closeable {
 
 	private final BufferedOutputStream bufferedOutputStream;
-	private final ZipFileDataInfo incomingFileDateInfo = new ZipFileDataInfo();
+	private final ZipDataInfo incomingFileDataInfo = new ZipDataInfo();
 	private final byte[] tmpBuffer = new byte[IoUtils.STANDARD_BUFFER_SIZE];
 	private final List<ZipCentralDirectoryFileEntry.Builder> dirFileEntryBuilders = new ArrayList<>();
 	private final Map<String, ZipCentralDirectoryFileEntry.Builder> dirFileEntryBuilderMap = new HashMap<>();
@@ -105,7 +105,7 @@ public class ZipFileOutput implements Closeable {
 		}
 		bufferedOutputStream.setFileHeader(fileHeader);
 		currentFileHeader = fileHeader;
-		incomingFileDateInfo.reset();
+		incomingFileDataInfo.reset();
 		dirFileBuilder = ZipCentralDirectoryFileEntry.builder();
 		dirFileBuilder.setRelativeOffsetOfLocalHeader(bufferedOutputStream.getWriteCount());
 		fileFinished = false;
@@ -330,8 +330,8 @@ public class ZipFileOutput implements Closeable {
 					currentFileHeader.getUncompressedSize());
 		} else {
 			// calculate the crc and size from the incoming file data
-			writtenFileHeader = bufferedOutputStream.finishFileData(incomingFileDateInfo.getCrc32(),
-					incomingFileDateInfo.getByteCount());
+			writtenFileHeader = bufferedOutputStream.finishFileData(incomingFileDataInfo.getCrc32(),
+					incomingFileDataInfo.getByteCount());
 		}
 		if (writtenFileHeader == null) {
 			writtenFileHeader = currentFileHeader;
@@ -344,15 +344,15 @@ public class ZipFileOutput implements Closeable {
 		}
 		if (currentFileHeader.getCrc32() == 0 || currentFileHeader.getUncompressedSize() == 0) {
 			// calculate the crc and size from the incoming file data
-			dirFileBuilder.setUncompressedSize(incomingFileDateInfo.getByteCount());
-			dirFileBuilder.setCrc32(incomingFileDateInfo.getCrc32());
+			dirFileBuilder.setUncompressedSize(incomingFileDataInfo.getByteCount());
+			dirFileBuilder.setCrc32(incomingFileDataInfo.getCrc32());
 		}
 		// set our optional data-descriptor info
 		if (writtenFileHeader.needsDataDescriptor()) {
 			dataDescriptorBuilder.reset();
 			dataDescriptorBuilder.setCompressedSize(bufferedOutputStream.getEncodedSize());
-			dataDescriptorBuilder.setUncompressedSize(incomingFileDateInfo.getByteCount());
-			dataDescriptorBuilder.setCrc32(incomingFileDateInfo.getCrc32());
+			dataDescriptorBuilder.setUncompressedSize(incomingFileDataInfo.getByteCount());
+			dataDescriptorBuilder.setCrc32(incomingFileDataInfo.getCrc32());
 			ZipDataDescriptor dataDescriptor = dataDescriptorBuilder.build();
 			dataDescriptor.write(bufferedOutputStream);
 		}
@@ -499,7 +499,7 @@ public class ZipFileOutput implements Closeable {
 			assignFileDataEncoder(compressionMethod);
 		}
 
-		incomingFileDateInfo.update(buffer, offset, length);
+		incomingFileDataInfo.update(buffer, offset, length);
 		fileDataEncoder.encode(buffer, offset, length);
 	}
 
