@@ -86,11 +86,12 @@ public class ZipCentralDirectoryFileEntryTest {
 		builder.setRelativeOffsetOfLocalHeader(relativeOffsetOfLocalHeader);
 		assertEquals(relativeOffsetOfLocalHeader, builder.getRelativeOffsetOfLocalHeader());
 		assertNull(builder.getFileName());
-		String fileName = "hello.txt";
-		byte[] fileNameBytes = fileName.getBytes();
-		builder.setFileNameBytes(fileNameBytes);
+		String fileName = "hello1.txt";
+		builder.setFileNameBytes(fileName.getBytes());
+		fileName = "hello.txt";
+		builder.setFileName(fileName);
 		assertEquals(fileName, builder.getFileName());
-		assertArrayEquals(fileNameBytes, builder.getFileNameBytes());
+		assertArrayEquals(fileName.getBytes(), builder.getFileNameBytes());
 		byte[] extraBytes = new byte[] { 7, 8, 1, 2, 1, 5 };
 		builder.setExtraFieldBytes(extraBytes);
 		assertEquals(extraBytes, builder.getExtraFieldBytes());
@@ -129,7 +130,7 @@ public class ZipCentralDirectoryFileEntryTest {
 		assertEquals(internalFileAttributes, fileEntry.getInternalFileAttributes());
 		assertEquals(externalFileAttributes, fileEntry.getExternalFileAttributes());
 		assertEquals(relativeOffsetOfLocalHeader, fileEntry.getRelativeOffsetOfLocalHeader());
-		assertArrayEquals(fileNameBytes, fileEntry.getFileNameBytes());
+		assertArrayEquals(fileName.getBytes(), fileEntry.getFileNameBytes());
 		assertEquals(fileName, fileEntry.getFileName());
 		assertArrayEquals(extraBytes, fileEntry.getExtraFieldBytes());
 		assertArrayEquals(commentBytes, fileEntry.getCommentBytes());
@@ -160,7 +161,7 @@ public class ZipCentralDirectoryFileEntryTest {
 		assertEquals(internalFileAttributes, fileEntry.getInternalFileAttributes());
 		assertEquals(externalFileAttributes, fileEntry.getExternalFileAttributes());
 		assertEquals(relativeOffsetOfLocalHeader, fileEntry.getRelativeOffsetOfLocalHeader());
-		assertArrayEquals(fileNameBytes, fileEntry.getFileNameBytes());
+		assertArrayEquals(fileName.getBytes(), fileEntry.getFileNameBytes());
 		assertArrayEquals(extraBytes, fileEntry.getExtraFieldBytes());
 		assertArrayEquals(commentBytes, fileEntry.getCommentBytes());
 		assertEquals(new String(commentBytes), fileEntry.getComment());
@@ -225,8 +226,6 @@ public class ZipCentralDirectoryFileEntryTest {
 		builder.setLastModifiedDateTime(input);
 		int date = builder.getLastModifiedDate();
 		int time = builder.getLastModifiedTime();
-		// coverage
-		builder.withLastModifiedDateTime(input);
 		ZipCentralDirectoryFileEntry entry = builder.build();
 		System.out.println("last-mod date is: " + entry.getLastModifiedDateString());
 		System.out.println("last-mod time is: " + entry.getLastModifiedTimeString());

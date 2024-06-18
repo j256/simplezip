@@ -375,10 +375,9 @@ public class ZipCentralDirectoryFileEntry {
 		private boolean zip64ExtraFieldInBytes;
 
 		public Builder() {
-			// XXX: should we calculate this based on features used somehow? Zip64 is v4.5 based for example.
 			setVersionMadeMajorMinor(2, 0);
+			setVersionNeededMajorMinor(1, 0);
 			setPlatformMade(Platform.detectPlatform());
-			setVersionMadeMajorMinor(1, 0);
 			setExternalFileAttributes(ExternalFileAttributesUtils.UNIX_READ_WRITE_PERMISSIONS);
 		}
 
@@ -591,15 +590,6 @@ public class ZipCentralDirectoryFileEntry {
 					| (lastModifiedDateTime.getSecond() / 2));
 		}
 
-		/**
-		 * Set the lastModFileDate and lastModFileTime as a {@link LocalDateTime}. Warning, the time has a 2 second
-		 * resolution so some normalization will occur.
-		 */
-		public Builder withLastModifiedDateTime(LocalDateTime lastModifiedDateTime) {
-			setLastModifiedDateTime(lastModifiedDateTime);
-			return this;
-		}
-
 		public long getCrc32() {
 			return crc32;
 		}
@@ -712,6 +702,10 @@ public class ZipCentralDirectoryFileEntry {
 			} else {
 				return new String(fileNameBytes);
 			}
+		}
+
+		public void setFileName(String fileName) {
+			fileNameBytes = fileName.getBytes();
 		}
 
 		public byte[] getExtraFieldBytes() {
