@@ -207,6 +207,35 @@ public class ZipFileInput implements Closeable {
 	}
 
 	/**
+	 * Read raw file data from the Zip stream, decode it, and write it to the file path argument.
+	 * 
+	 * @param outputPath
+	 *            Where to write the data read from the zip stream.
+	 * @return THe number of bytes written into the output-stream.
+	 */
+	public long readRawFileDataToFile(String outputPath) throws IOException {
+		return readRawFileDataToFile(new File(outputPath));
+	}
+
+	/**
+	 * Read raw file data from the Zip stream, decode it, and write it to the file argument. This will associate the
+	 * File with the current header file-name so you can call assign the permissions for the file with a later call to
+	 * {@link #assignDirectoryFileEntryPermissions()} or {@link #readDirectoryFileEntriesAndAssignPermissions()}.
+	 * 
+	 * @param outputFile
+	 *            Where to write the data read from the zip stream.
+	 * @return THe number of bytes written into the output-stream.
+	 */
+	public long readRawFileDataToFile(File outputFile) throws IOException {
+		long numBytes = readRawFileData(new FileOutputStream(outputFile));
+		if (outputFileMap == null) {
+			outputFileMap = new HashMap<>();
+		}
+		outputFileMap.put(currentFileHeader.getFileName(), outputFile);
+		return numBytes;
+	}
+
+	/**
 	 * Read raw file data from the Zip stream, without decoding, into the buffer argument. See
 	 * {@link #readRawFileDataPart(byte[], int, int)} for more details.
 	 * 
