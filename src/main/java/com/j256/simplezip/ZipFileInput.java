@@ -39,7 +39,6 @@ public class ZipFileInput implements Closeable {
 
 	private FileDataDecoder fileDataDecoder;
 	private ZipFileHeader currentFileHeader;
-	private ZipCentralDirectoryFileEntry currentDirHeader;
 	private ZipDataDescriptor currentDataDescriptor;
 	private boolean currentFileEofReached = true;
 	private ZipFileDataInputStream fileDataInputStream;
@@ -259,8 +258,8 @@ public class ZipFileInput implements Closeable {
 	 * @return The next central-directory file-header or null if all entries have been read.
 	 */
 	public ZipCentralDirectoryFileEntry readDirectoryFileEntry() throws IOException {
-		currentDirHeader = ZipCentralDirectoryFileEntry.read(inputStream);
-		return currentDirHeader;
+		ZipCentralDirectoryFileEntry entry = ZipCentralDirectoryFileEntry.read(inputStream);
+		return entry;
 	}
 
 	/**
@@ -279,18 +278,15 @@ public class ZipFileInput implements Closeable {
 	 * 
 	 * @return True if successful otherwise false if the file was not found.
 	 */
-	public boolean assignDirectoryFileEntryPermissions() {
-		if (outputFileMap == null) {
+	public boolean assignDirectoryFileEntryPermissions(ZipCentralDirectoryFileEntry entry) {
+		if (entry.getFileName() == null) {
 			return false;
 		}
-		if (currentDirHeader == null) {
-			throw new IllegalStateException("Need to call readNextHeader() before you can assign file permissions");
-		}
-		File file = outputFileMap.get(currentDirHeader.getFileName());
+		File file = outputFileMap.get(entry.getFileName());
 		if (file == null) {
 			return false;
 		} else {
-			ExternalFileAttributesUtils.assignToFile(file, currentDirHeader.getExternalFileAttributes());
+			ExternalFileAttributesUtils.assignToFile(file, entry.getExternalFileAttributes());
 			return true;
 		}
 	}
@@ -304,11 +300,11 @@ public class ZipFileInput implements Closeable {
 	public boolean readDirectoryFileEntriesAndAssignPermissions() throws IOException {
 		boolean result = true;
 		while (true) {
-			currentDirHeader = ZipCentralDirectoryFileEntry.read(inputStream);
-			if (currentDirHeader == null) {
+			ZipCentralDirectoryFileEntry entry = ZipCentralDirectoryFileEntry.read(inputStream);
+			if (entry == null) {
 				break;
 			}
-			if (!assignDirectoryFileEntryPermissions()) {
+			if (!assignDirectoryFileEntryPermissions(entry)) {
 				result = false;
 			}
 		}

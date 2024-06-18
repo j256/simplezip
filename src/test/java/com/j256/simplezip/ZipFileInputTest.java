@@ -8,7 +8,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -33,7 +32,6 @@ import com.j256.simplezip.format.ZipCentralDirectoryEnd;
 import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
 import com.j256.simplezip.format.ZipDataDescriptor;
 import com.j256.simplezip.format.ZipFileHeader;
-import com.j256.simplezip.format.ZipFileHeader.Builder;
 
 public class ZipFileInputTest {
 
@@ -51,7 +49,7 @@ public class ZipFileInputTest {
 
 		InputStream inputStream = new ByteArrayInputStream(baos.toByteArray());
 		ZipFileInput input = new ZipFileInput(inputStream);
-		assertFalse(input.assignDirectoryFileEntryPermissions());
+		assertFalse(input.assignDirectoryFileEntryPermissions(ZipCentralDirectoryFileEntry.builder().build()));
 		assertEquals(0, input.getNumBytesRead());
 
 		assertNull(input.getCurrentFileName());
@@ -237,7 +235,8 @@ public class ZipFileInputTest {
 		ZipFileOutput ouput = new ZipFileOutput(baos);
 		ouput.enableFileBuffering(10240, 10240);
 		String fileName = "hello";
-		Builder builder = ZipFileHeader.builder().withFileName(fileName).withCompressionMethod(CompressionMethod.NONE);
+		ZipFileHeader.Builder builder =
+				ZipFileHeader.builder().withFileName(fileName).withCompressionMethod(CompressionMethod.NONE);
 		byte[] bytes = new byte[] { 1, 2, 3 };
 		ouput.writeFileHeader(builder.build());
 		ouput.writeFileDataPart(bytes);
@@ -267,7 +266,7 @@ public class ZipFileInputTest {
 		ZipFileOutput ouput = new ZipFileOutput(baos);
 		ouput.enableFileBuffering(10240, 10240);
 		String fileName = "hello";
-		Builder builder = ZipFileHeader.builder().withFileName(fileName).withCompressionMethod(CompressionMethod.NONE);
+		ZipFileHeader.Builder builder = ZipFileHeader.builder().withFileName(fileName).withCompressionMethod(CompressionMethod.NONE);
 		byte[] bytes = new byte[] { 1, 2, 3 };
 		ouput.writeFileHeader(builder.build());
 		ouput.writeFileDataPart(bytes);
@@ -314,7 +313,7 @@ public class ZipFileInputTest {
 		byte[] fileBytes = new byte[] { (byte) 200, (byte) 200, 2, 1 };
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ZipFileOutput output = new ZipFileOutput(baos);
-		Builder builder = ZipFileHeader.builder();
+		ZipFileHeader.Builder builder = ZipFileHeader.builder();
 		builder.setCompressionMethod(CompressionMethod.DEFLATED);
 		String name = "hello.bin";
 		builder.setFileName(name);
@@ -345,7 +344,7 @@ public class ZipFileInputTest {
 		byte[] fileBytes = new byte[] { (byte) 200, (byte) 200, 2, 1 };
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ZipFileOutput output = new ZipFileOutput(baos);
-		Builder builder = ZipFileHeader.builder();
+		ZipFileHeader.Builder builder = ZipFileHeader.builder();
 		builder.setCompressionMethod(CompressionMethod.IBM_TERSE);
 		String name = "hello.bin";
 		builder.setFileName(name);
@@ -430,13 +429,9 @@ public class ZipFileInputTest {
 		input.readFileDataToFile(file1.getPath());
 		byte[] output = readFileToBytes(file1);
 		assertArrayEquals(bytes, output);
-		try {
-			input.assignDirectoryFileEntryPermissions();
-			fail("should have thrown");
-		} catch (IllegalStateException ise) {
-			// ignore
-		}
-
+		ZipCentralDirectoryFileEntry.Builder entryBuilder = ZipCentralDirectoryFileEntry.builder();
+		entryBuilder.setFileName(fileName1);
+		input.assignDirectoryFileEntryPermissions(entryBuilder.build());
 		assertNotNull(input.readFileHeader());
 		byte[] buffer = new byte[1024];
 		int num = input.readFileDataPart(buffer);
