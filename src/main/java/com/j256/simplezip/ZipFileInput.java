@@ -39,6 +39,7 @@ public class ZipFileInput implements Closeable {
 
 	private FileDataDecoder fileDataDecoder;
 	private ZipFileHeader currentFileHeader;
+	private ZipCentralDirectoryFileEntry currentDirHeader;
 	private ZipDataDescriptor currentDataDescriptor;
 	private boolean currentFileEofReached = true;
 	private ZipFileDataInputStream fileDataInputStream;
@@ -125,8 +126,7 @@ public class ZipFileInput implements Closeable {
 	/**
 	 * Read file data from the Zip stream, decode it, and write it to the file argument. This will associate the File
 	 * with the current header file-name so you can call assign the permissions for the file with a later call to
-	 * {@link #assignDirectoryFileEntryPermissions(ZipCentralDirectoryFileEntry)} or
-	 * {@link #readDirectoryFileEntriesAndAssignPermissions()}.
+	 * {@link #assignDirectoryFileEntryPermissions()} or {@link #readDirectoryFileEntriesAndAssignPermissions()}.
 	 * 
 	 * @param outputFile
 	 *            Where to write the data read from the zip stream.
@@ -208,36 +208,6 @@ public class ZipFileInput implements Closeable {
 	}
 
 	/**
-	 * Read raw file data from the Zip stream, decode it, and write it to the file path argument.
-	 * 
-	 * @param outputPath
-	 *            Where to write the data read from the zip stream.
-	 * @return THe number of bytes written into the output-stream.
-	 */
-	public long readRawFileDataToFile(String outputPath) throws IOException {
-		return readRawFileDataToFile(new File(outputPath));
-	}
-
-	/**
-	 * Read raw file data from the Zip stream, decode it, and write it to the file argument. This will associate the
-	 * File with the current header file-name so you can call assign the permissions for the file with a later call to
-	 * {@link #assignDirectoryFileEntryPermissions(ZipCentralDirectoryFileEntry)} or
-	 * {@link #readDirectoryFileEntriesAndAssignPermissions()}.
-	 * 
-	 * @param outputFile
-	 *            Where to write the data read from the zip stream.
-	 * @return THe number of bytes written into the output-stream.
-	 */
-	public long readRawFileDataToFile(File outputFile) throws IOException {
-		long numBytes = readRawFileData(new FileOutputStream(outputFile));
-		if (outputFileMap == null) {
-			outputFileMap = new HashMap<>();
-		}
-		outputFileMap.put(currentFileHeader.getFileName(), outputFile);
-		return numBytes;
-	}
-
-	/**
 	 * Read raw file data from the Zip stream, without decoding, into the buffer argument. See
 	 * {@link #readRawFileDataPart(byte[], int, int)} for more details.
 	 * 
@@ -289,8 +259,8 @@ public class ZipFileInput implements Closeable {
 	 * @return The next central-directory file-header or null if all entries have been read.
 	 */
 	public ZipCentralDirectoryFileEntry readDirectoryFileEntry() throws IOException {
-		ZipCentralDirectoryFileEntry entry = ZipCentralDirectoryFileEntry.read(inputStream);
-		return entry;
+		currentDirHeader = ZipCentralDirectoryFileEntry.read(inputStream);
+		return currentDirHeader;
 	}
 
 	/**
@@ -309,15 +279,18 @@ public class ZipFileInput implements Closeable {
 	 * 
 	 * @return True if successful otherwise false if the file was not found.
 	 */
-	public boolean assignDirectoryFileEntryPermissions(ZipCentralDirectoryFileEntry entry) {
-		if (entry.getFileName() == null) {
+	public boolean assignDirectoryFileEntryPermissions() {
+		if (outputFileMap == null) {
 			return false;
 		}
-		File file = outputFileMap.get(entry.getFileName());
+		if (currentDirHeader == null) {
+			throw new IllegalStateException("Need to call readNextHeader() before you can assign file permissions");
+		}
+		File file = outputFileMap.get(currentDirHeader.getFileName());
 		if (file == null) {
 			return false;
 		} else {
-			ExternalFileAttributesUtils.assignToFile(file, entry.getExternalFileAttributes());
+			ExternalFileAttributesUtils.assignToFile(file, currentDirHeader.getExternalFileAttributes());
 			return true;
 		}
 	}
@@ -331,11 +304,11 @@ public class ZipFileInput implements Closeable {
 	public boolean readDirectoryFileEntriesAndAssignPermissions() throws IOException {
 		boolean result = true;
 		while (true) {
-			ZipCentralDirectoryFileEntry entry = ZipCentralDirectoryFileEntry.read(inputStream);
-			if (entry == null) {
+			currentDirHeader = ZipCentralDirectoryFileEntry.read(inputStream);
+			if (currentDirHeader == null) {
 				break;
 			}
-			if (!assignDirectoryFileEntryPermissions(entry)) {
+			if (!assignDirectoryFileEntryPermissions()) {
 				result = false;
 			}
 		}
