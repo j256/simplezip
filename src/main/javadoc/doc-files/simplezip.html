@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html401/loose.dtd">
 <html>
-<!-- Created on June 14, 2024 by texi2html 1.82
+<!-- Created on June 19, 2024 by texi2html 1.82
 texi2html was written by: 
             Lionel Cons <Lionel.Cons@cern.ch> (original author)
             Karl Berry  <karl@freefriends.org>
@@ -57,7 +57,8 @@ ul.toc {list-style: none}
 <a name="index-author"></a>
 <a name="index-simple-zip"></a>
 <p>This package provides Java classes to read and write Zip files.  There are a number of different libraries that do
-this (including one built into the JDK) but I&rsquo;ve not found any that gave me precise controls over the Zip internal, persisted data structures.  This library allows you to control the output of all Zip data and should allow you to
+this (including one built into the JDK) but I&rsquo;ve not found any that gave me precise controls over the Zip internal,
+persisted data structures.  This library allows you to control the output of all Zip data and should allow you to
 read and write Zip files with full precision.
 </p>
 <p>To get started quickly using SimpleZip, see section <a href="#Quick-Start">Start Using Quickly</a>.  You can also take a look at the examples section of the
@@ -110,29 +111,31 @@ For more information, see the <a href="https://256stuff.com/sources/simplezip/">
 <p>First download SimpleZip from the <a href="http://256stuff.com/sources/simplezip/releases/">SimpleZip release page</a>.
 See section <a href="#Downloading">Downloading Jar</a>.  Or enable via maven.  See section <a href="#Maven">Using With Maven</a>.
 </p>
-<p>To read Zip files, you use the <code>ZipFileInput</code> class.  Something like the following:
+<p>To read Zip files, you use the <code>ZipFileInput</code> class.  Something like the following where <code>input</code> is a
+<code>File</code> or <code>InputStream</code>:
 </p>
 <a name="index-simple-examples"></a>
 <a name="index-examples_002c-simple"></a>
 <table><tr><td>&nbsp;</td><td><pre class="example">ZipFileInput zipInput = new ZipFileInput(input);
 // readFileHeader() will return null when no more files to read
 ZipFileHeader header = zipInput.readFileHeader();
-// read file data and write to a file (can be buffer or OutputStream)
-zipInput.readFileData(new File(header.getFileName());
+// read file data and write to File (can read to buffer or OutputStream)
+zipInput.readFileDataToFile(new File(header.getFileName());
 // repeat until readFileHeader() returns null
 // optionally read all of the directory entries and set permissions
 zipInput.readDirectoryFileHeadersAndAssignPermissions();
 zipInput.close();
 </pre></td></tr></table>
 
-<p>To write Zip files you use the <code>ZipFileOutput</code> class.  Something like:
+<p>To write Zip files you use the <code>ZipFileOutput</code> class.  Something like the following where <code>input</code> is a
+<code>File</code> or <code>OutputStream</code>:
 </p>
 <table><tr><td>&nbsp;</td><td><pre class="example">ZipFileOutput zipOutput = new ZipFileOutput(output);
 // write a file-header to the zip-file
 zipOutput.writeFileHeader(
 	ZipFileHeader.builder().withFileName(&quot;hello.txt&quot;).build());
-// write file data from file (can be buffer or InputStream)
-zipOutput.writeFileDataPart(fileBytes);
+// write file data from File (can write buffer or InputStream)
+zipOutput.writeFileData(new File(&quot;hello.txt&quot;));
 // ... repeat until all headers and file-data written
 zipOutput.close();
 </pre></td></tr></table>
@@ -224,13 +227,13 @@ are also available from the <a href="http://repo1.maven.org/maven2/com/j256/simp
 <a name="Reading-Zip-Files"></a>
 <h2 class="section">2.2 Reading Zip Files</h2>
 
-<a name="index-read-zip-files"></a>
+<a name="index-read-Zip-files"></a>
 
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top"><a href="#ZipFileInput">2.2.1 Constructing a ZipFileInput</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top"></td></tr>
 <tr><td align="left" valign="top"><a href="#Read-File-Headers">2.2.2 Reading Zip File Header Entries</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">       Reading file header entries.
 </td></tr>
-<tr><td align="left" valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data from Buffer, File, or Stream</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">          Reading file data from buffer, file, or stream
+<tr><td align="left" valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data to Buffer, File, or Stream</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">          Reading file data from buffer, file, or stream
 </td></tr>
 <tr><td align="left" valign="top"><a href="#Read-Directory-Entries">2.2.4 Reading Zip Central-Directory Entries</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">  Reading central-directory entries.
 </td></tr>
@@ -258,16 +261,16 @@ are also available from the <a href="http://repo1.maven.org/maven2/com/j256/simp
 <h3 class="subsection">2.2.1 Constructing a ZipFileInput</h3>
 
 <a name="index-ZipFileInput"></a>
-<a name="index-read-zip-files-1"></a>
+<a name="index-read-zip-files"></a>
 
 <p>The main class that reads in Zip files is <code>ZipFileInput</code>.  You can read in Zip data from a file-path string,
-<code>File</code>, or stream it in via an <code>InputStream</code>.
+<code>File</code>, or read it from an <code>InputStream</code>.
 </p>
-<table><tr><td>&nbsp;</td><td><pre class="example">// read from a file-path
+<table><tr><td>&nbsp;</td><td><pre class="example">// read a file-path
 ZipFileInput zipInput = new ZipFileInput(&quot;/tmp/file.zip&quot;);
-// read rom a file
+// read a file
 ZipFileInput zipInput = new ZipFileInput(new File(&quot;/tmp/file.zip&quot;));
-// read from an InputStream
+// read an InputStream
 ZipFileInput zipInput = new ZipFileInput(inputStream);
 </pre></td></tr></table>
 
@@ -323,7 +326,8 @@ the file-name and other metadata.
 <p>If the crc32, compressed size, or uncompressed size fields are 0 then a data-descriptor will be written after the
 file-data.  See <a href="#Data-Descriptor">Data Descriptor</a>.
 </p>
-<p>If there are no more files to be read then <code>readFileHeader()</code> will return null.  
+<p>Immediately following the file-header is the file-data.  If there are no more files to be read then
+<code>readFileHeader()</code> will return null.
 </p>
 <hr size="6">
 <a name="Read-File-Data"></a>
@@ -343,43 +347,44 @@ file-data.  See <a href="#Data-Descriptor">Data Descriptor</a>.
 <td valign="middle" align="left">[<a href="#Index-of-Concepts" title="Index">Index</a>]</td>
 <td valign="middle" align="left">[<a href="#SEC_About" title="About (help)"> ? </a>]</td>
 </tr></table>
-<a name="Reading-File-Data-from-Buffer_002c-File_002c-or-Stream"></a>
-<h3 class="subsection">2.2.3 Reading File Data from Buffer, File, or Stream</h3>
+<a name="Reading-File-Data-to-Buffer_002c-File_002c-or-Stream"></a>
+<h3 class="subsection">2.2.3 Reading File Data to Buffer, File, or Stream</h3>
 
 <a name="index-read-zip-file-data"></a>
 <a name="index-zip-file-data"></a>
 <a name="index-read-to-File"></a>
 <a name="index-read-to-OutputStream"></a>
 
-<p>After reading the header you can then read in the file data.  You can have the <code>ZipFileInput</code> write
-bytes from the Zip file out to a file-path string, <code>File</code>, or to an <code>OutputStream</code>.
+<p>After reading the header, you can then read in the file data.  You can have the <code>ZipFileInput</code> read
+the file-data and write the bytes to a file-path string, <code>File</code>, or to an <code>OutputStream</code>.
 </p>
 <table><tr><td>&nbsp;</td><td><pre class="example">// read data and write to file output-path, typically from header
-zipInput.readFileData(fileHeader.getFileName());
+zipInput.readFileDataToFile(fileHeader.getFileName());
 // or to a file directly
-zipInput.readFileData(new File(fileHeader.getFileName()));
+zipInput.readFileDataToFile(new File(fileHeader.getFileName()));
 // or to an output stream, such as
 ByteArrayOutputStream baos = new ByteArrayOutputStream();
 zipInput.readFileData(baos);
 </pre></td></tr></table>
 
-<p>You can also have <code>ZipFileInput</code> read file data as a series of buffers.  You should read until the read method
-returns EOF (-1).
+<p>You can also have <code>ZipFileInput</code> read file data as a series of buffers so you can stream large files.  You should
+call <code>readFileDataPart(...)</code> until it returns EOF (-1).
 </p>
 <table><tr><td>&nbsp;</td><td><pre class="example">byte[] buffer = new byte[4096];
 while (true) {
    // can also read at offset and length
    int numRead = zipInput.readFileDataPart(buffer);
-   if (numRead &lt; 0) { break }
-   // process bytes
+   if (numRead &lt; 0) { break; }
+   // process bytes in the buffer
 }
 </pre></td></tr></table>
 
-<p>By default you will be reading the decoded (i.e. decompressed) bytes.  You can also read the <em>raw</em> bytes without
-conversion using similar read methods with &quot;raw&quot; in the name.
+<p>By default you will be reading the decoded (i.e. decompressed) bytes.  You can also read the <em>raw</em> bytes, without
+conversion, using similar read methods with &quot;raw&quot; in the name.
 </p>
 <table><tr><td>&nbsp;</td><td><pre class="example">// read _raw_ file data and write to file output-path
-zipInput.readRawFileData(fileHeader.getFileName());
+ByteArrayOutputStream baos = new ByteArrayOutputStream();
+zipInput.readRawFileData(baos);
 </pre></td></tr></table>
 
 <p>If you would like to stream the file-data out of the Zip file, you can open up an <code>InputStream</code> on the file-data
@@ -390,8 +395,13 @@ on the <code>ZipFileInput</code>.
 // or zipInput.readRawFileData() methods
 InputStream inputStream =
     zipInput.openFileDataInputStream(false /* not raw */);
+}
 </pre></td></tr></table>
 
+<a name="index-read-zip-within-zip"></a>
+<a name="index-zip-within-zip_002c-reading"></a>
+<p>Opening an input-stream allows you to read a Zip file from within another Zip file &ndash; or a jar within a war, etc..
+</p>
 <p><a name="Data-Descriptor"></a>
 <a name="index-data-descriptor"></a>
 </p>
@@ -478,8 +488,10 @@ duplicates of the fields in the file-header.  The entries are represented by the
 <p>If you have been reading file data directly out to disk using the <code>zipInput.readFileData(File)</code> method, you can
 modify the permissions on the file from the file-entry&rsquo;s using something like the following.
 </p>
-<table><tr><td>&nbsp;</td><td><pre class="example">// assign file permissions according to previous dir entry
-zipInput.assignDirectoryFileEntryPermissions();
+<table><tr><td>&nbsp;</td><td><pre class="example">// read in a directory entry
+directoryEntry = zipInput.readDirectoryFileEntry();
+// assign file permissions according to previous entry
+zipInput.assignDirectoryFileEntryPermissions(directoryEntry);
 </pre></td></tr></table>
 
 <a name="index-central_002ddirectory-end_002c-reading"></a>
@@ -495,7 +507,7 @@ CentralDirectoryEnd directoryEnd = zipInput.readDirectoryEnd();
 <p>The end entry holds the following information.
 </p>
 <ul>
-<li> disk number;
+<li> disk number
 </li><li> disk number start
 </li><li> num records on disk
 </li><li> num records total
@@ -584,20 +596,20 @@ ZipFileOutput zipOutput = new ZipFileOutput(outputStream);
 
 <p><a name="File-Buffering"></a>
 </p>
-<p>The Zip file starts with a file-header which contains (among other things) the compressed-size and checksum information
-that may not be known ahead of time.  For files that are being deflated, these fields can be left as 0 in which case
-<code>ZipFileOutput</code> will write out a <code>ZipDataDescriptor</code> after the file data.
+<p>The Zip file data starts with a file-header which contains (among other things) the compressed-size and checksum
+information that may not be known ahead of time.  For files that are being deflated, these fields can be left as 0 in
+which case <code>ZipFileOutput</code> will write out a <code>ZipDataDescriptor</code> after the file data.
 </p>
 <p>However, you can also turn on the buffering the file-data so we can calculate the compressed-size and crc checksum
-information <em>beforehand</em> writing out a file-header with the size and checksum information filled in, which
-removes the need for a <code>ZipDataDescriptor</code>.
+information <em>beforehand</em>, writing out a file-header with the size and checksum information filled in, 
+removing the need for a <code>ZipDataDescriptor</code>.
 </p>
 <table><tr><td>&nbsp;</td><td><pre class="example">// turn on buffering
 zipOutput.enableFileBuffering(1024 * 1024 /* maxSizeBuffered */,
     100 * 1024 /* maxSizeInMemory */);
 </pre></td></tr></table>
 
-<p>See the Javadocs for this method for more information.
+<p>See the <a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/ZipFileOutput.html#enableFileBuffering-int-int-">Javadocs for the enableFileBuffering(...) method</a> for more information.
 </p>
 <hr size="6">
 <a name="Write-File-Headers"></a>
@@ -637,7 +649,7 @@ zipOutput.writeFileHeader(fileHeader);
 </pre></td></tr></table>
 
 <p>Even though the method is <code>writeFileHeader(...)</code>, the code may not write anything to disk immediately depending
-if buffering is enabled.  Once the method has been called, you can start writing the file-data.
+if buffering is enabled.  Immediately after the header as been written, you should start writing the file-data.
 </p>
 <hr size="6">
 <a name="Write-File-Data"></a>
@@ -673,7 +685,7 @@ zipOutput.writeFileData(&quot;file.txt&quot;);
 // write bytes from file to the zip output 
 zipOutput.writeFileData(new File(&quot;file.txt&quot;);
 // stream bytes from an inputStream to the zip output 
-zipOutput.writeFileData(new File(inputStream);
+zipOutput.writeFileData(inputStream);
 </pre></td></tr></table>
 
 <p>You can also have <code>ZipFileOutput</code> write file data from a series of buffers.  You will need to call
@@ -681,16 +693,18 @@ zipOutput.writeFileData(new File(inputStream);
 </p>
 <table><tr><td>&nbsp;</td><td><pre class="example">// can also write at offset and length
 zipOutput.writeFileDataPart(buffer);
+zipOutput.writeFileDataPart(buffer);
 // ... repeat until all bytes written
 // after all bytes written you must call finish
 zipOutput.finishFileData();
 </pre></td></tr></table>
 
-<p>By default you will be writing bytes that will be encoded (i.e. compressed).  You can also write the <em>raw</em> bytes
-without conversion using similar write methods with &quot;raw&quot; in the name.
+<p>By default <code>ZipFileOutput</code> will take your bytes and write them to the Zip file encoded (i.e. deflate/comopress).
+You can also write the <em>raw</em> bytes without conversion using similar write methods with &quot;raw&quot; in the name.
 </p>
 <table><tr><td>&nbsp;</td><td><pre class="example">// write _raw_ file data from the file specified by output-path
 zipInput.writeRawFileData(&quot;file.txt&quot;);
+...
 </pre></td></tr></table>
 
 <p>If you would like to stream the file-data into the Zip file, you can open up an <code>OutputStream</code> for the file-data
@@ -703,6 +717,10 @@ OutputStream outputStream =
     zipOutput.openFileDataOutputStream(false /* not raw */);
 </pre></td></tr></table>
 
+<a name="index-write-zip-within-zip"></a>
+<a name="index-zip-within-zip_002c-writing"></a>
+<p>Opening an output-stream allows you to write a Zip file from within another Zip file &ndash; or a jar within a war, etc..
+</p>
 <a name="index-data-descriptor-1"></a>
 
 <p>Once all of the data has been written for a particular file, the <code>ZipFileOutput</code> may automatically determine
@@ -742,14 +760,14 @@ zipOutput.addDirectoryFileInfo(
 	ZipCentralDirectoryFileInfo.builder().withTextFile(true).build());
 </pre></td></tr></table>
 
-<p>There are a number of other fields that can be written.  See the javadocs for the
-<code>ZipCentralDirectoryFileInfo</code> for more information.
+<p>There are a number of other fields that can be written.  See the
+<a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipCentralDirectoryFileInfo.html">javadocs for the ZipCentralDirectoryFileInfo</a> for more information.
 </p>
 <a name="index-central_002ddirectory-end_002c-writing"></a>
 <a name="index-zip-data-end_002c-reading-1"></a>
 
 <p>At the very end of the Zip file the <code>ZipFileOutput</code> will automatically write the <code>ZipCentralDirectoryEnd</code>
-information.
+information.  It will use fields from the <code>ZipCentralDirectoryFileInfo</code> as well to write out the fields.
 </p>
 <hr size="6">
 <a name="Maven"></a>
@@ -821,7 +839,7 @@ information.
 </li></ul>
 
 </li><li> file data (encoded bytes)
-</li><li> optional data-descriptor, see <a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipDataDescriptor.html">ZipDataDescriptor.java</a>
+</li><li> optional data-descriptor, either in standard or Zip64 format, see <a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipDataDescriptor.html">ZipDataDescriptor.java</a>
 <ul>
 <li> compressed size
 </li><li> uncompressed size
@@ -836,6 +854,22 @@ information.
 </li><li> internal and external attributes
 </li><li> file comment
 </li><li> ...
+</li></ul>
+
+</li><li> optional Zip64 end, see <a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/Zip64CentralDirectoryEnd.html">Zip64CentralDirectoryEnd.java</a>
+<ul>
+<li> version made
+</li><li> version needed
+</li><li> ...
+</li><li> extensible data
+</li></ul>
+
+</li><li> optional Zip64 end locator, see <a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/Zip64CentralDirectoryEndLocator.html">Zip64CentralDirectoryEndLocator.java</a>
+<ul>
+<li> disk number
+</li><li> disk number start
+</li><li> end offset
+</li><li> number of disks
 </li></ul>
 
 </li><li> central-directory end (summary information), see <a href="https://256stuff.com/sources/simplezip/javadoc/simplezip/com/j256/simplezip/format/ZipCentralDirectoryEnd.html">ZipCentralDirectoryEnd.java</a>
@@ -882,7 +916,7 @@ are welcome as long as you don&rsquo;t get piqued if we don&rsquo;t chose your&r
 <a name="simple-zip-output-example"></a>
 </li><li> SimpleZipOutput.java
 
-<p>This example writes out a zip file with a file, a directory, and a file inside of that directory.
+<p>This example writes out a Zip file with a file, a directory, and a file inside of that directory.
 See the <a href="http://256stuff.com/sources/simplezip/docs/example-simple">source code</a>.
 </p>
 <a name="index-example_002c-zip-file-copy"></a>
@@ -890,8 +924,8 @@ See the <a href="http://256stuff.com/sources/simplezip/docs/example-simple">sour
 <p><a name="zip-file-copy"></a>
 </p></li><li> ZipFileCopy.java 
 
-<p>This example reads in a zip file using ZipFileInput and writes it out with ZipFileOutput while hopefully not
-changing any of the internal structures.  Please report a zip that doesn&rsquo;t get copied perfectly with this.
+<p>This example reads in a Zip file using ZipFileInput and writes it out with ZipFileOutput while hopefully not
+changing any of the internal structures.  Please report a Zip that doesn&rsquo;t get copied perfectly with this.
 See the <a href="http://256stuff.com/sources/simplezip/docs/example-copy">source code</a>.
 </p>
 <a name="index-zip-file-info-example"></a>
@@ -1020,7 +1054,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <tr><td></td><td valign="top"><a href="#index-copy-zip-file_002c-example">copy zip file, example</a></td><td valign="top"><a href="#Examples">4. Example Code</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-D">D</a></th><td></td><td></td></tr>
-<tr><td></td><td valign="top"><a href="#index-data-descriptor">data descriptor</a></td><td valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data from Buffer, File, or Stream</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-data-descriptor">data descriptor</a></td><td valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data to Buffer, File, or Stream</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-data-descriptor-1">data descriptor</a></td><td valign="top"><a href="#Write-File-Data">2.3.3 Writing File Data to Buffer, File, or Stream</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-data-descriptor_002c-avoiding">data descriptor, avoiding</a></td><td valign="top"><a href="#ZipFileOutput">2.3.1 Constructing a ZipFileOutput</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-downloading-the-jars">downloading the jars</a></td><td valign="top"><a href="#Downloading">2.1 Downloading Jar</a></td></tr>
@@ -1066,12 +1100,13 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-R">R</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-read-from-InputStream">read from InputStream</a></td><td valign="top"><a href="#Write-File-Data">2.3.3 Writing File Data to Buffer, File, or Stream</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-read-to-File">read to File</a></td><td valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data from Buffer, File, or Stream</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read-to-File">read to File</a></td><td valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data to Buffer, File, or Stream</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-read-to-File-1">read to File</a></td><td valign="top"><a href="#Write-File-Data">2.3.3 Writing File Data to Buffer, File, or Stream</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-read-to-OutputStream">read to OutputStream</a></td><td valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data from Buffer, File, or Stream</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-read-zip-file-data">read zip file data</a></td><td valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data from Buffer, File, or Stream</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-read-zip-files">read zip files</a></td><td valign="top"><a href="#Reading">2.2 Reading Zip Files</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-read-zip-files-1">read zip files</a></td><td valign="top"><a href="#ZipFileInput">2.2.1 Constructing a ZipFileInput</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read-to-OutputStream">read to OutputStream</a></td><td valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data to Buffer, File, or Stream</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read-zip-file-data">read zip file data</a></td><td valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data to Buffer, File, or Stream</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read-zip-files">read zip files</a></td><td valign="top"><a href="#ZipFileInput">2.2.1 Constructing a ZipFileInput</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read-Zip-files">read Zip files</a></td><td valign="top"><a href="#Reading">2.2 Reading Zip Files</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-read-zip-within-zip">read zip within zip</a></td><td valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data to Buffer, File, or Stream</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-S">S</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-simple-examples">simple examples</a></td><td valign="top"><a href="#Quick-Start">1. Start Using Quickly</a></td></tr>
@@ -1085,17 +1120,20 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <tr><td></td><td valign="top"><a href="#index-where-to-get-new-jars">where to get new jars</a></td><td valign="top"><a href="#Downloading">2.1 Downloading Jar</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-write-zip-file-data">write zip file data</a></td><td valign="top"><a href="#Write-File-Data">2.3.3 Writing File Data to Buffer, File, or Stream</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-write-zip-file-header">write zip file header</a></td><td valign="top"><a href="#Write-File-Headers">2.3.2 Writing File Header Entries</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-write-zip-files">write zip files</a></td><td valign="top"><a href="#ZipFileOutput">2.3.1 Constructing a ZipFileOutput</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-write-Zip-files">write Zip files</a></td><td valign="top"><a href="#Writing">2.3 Writing Zip Files</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-write-zip-files">write zip files</a></td><td valign="top"><a href="#ZipFileOutput">2.3.1 Constructing a ZipFileOutput</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-write-zip-within-zip">write zip within zip</a></td><td valign="top"><a href="#Write-File-Data">2.3.3 Writing File Data to Buffer, File, or Stream</a></td></tr>
 <tr><td colspan="3"> <hr></td></tr>
 <tr><th><a name="Index-of-Concepts-1_cp_letter-Z">Z</a></th><td></td><td></td></tr>
 <tr><td></td><td valign="top"><a href="#index-zip-data-end_002c-reading">zip data end, reading</a></td><td valign="top"><a href="#Read-Directory-Entries">2.2.4 Reading Zip Central-Directory Entries</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-zip-data-end_002c-reading-1">zip data end, reading</a></td><td valign="top"><a href="#Write-Directory-Entries">2.3.4 Writing Central-Directory Entries</a></td></tr>
-<tr><td></td><td valign="top"><a href="#index-zip-file-data">zip file data</a></td><td valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data from Buffer, File, or Stream</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-zip-file-data">zip file data</a></td><td valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data to Buffer, File, or Stream</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-zip-file-data-1">zip file data</a></td><td valign="top"><a href="#Write-File-Data">2.3.3 Writing File Data to Buffer, File, or Stream</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-zip-file-header">zip file header</a></td><td valign="top"><a href="#Read-File-Headers">2.2.2 Reading Zip File Header Entries</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-zip-file-header_002c-writing">zip file header, writing</a></td><td valign="top"><a href="#Write-File-Headers">2.3.2 Writing File Header Entries</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-zip-file-info-example">zip file info example</a></td><td valign="top"><a href="#Examples">4. Example Code</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-zip-within-zip_002c-reading">zip within zip, reading</a></td><td valign="top"><a href="#Read-File-Data">2.2.3 Reading File Data to Buffer, File, or Stream</a></td></tr>
+<tr><td></td><td valign="top"><a href="#index-zip-within-zip_002c-writing">zip within zip, writing</a></td><td valign="top"><a href="#Write-File-Data">2.3.3 Writing File Data to Buffer, File, or Stream</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-ZipFileHeader">ZipFileHeader</a></td><td valign="top"><a href="#Read-File-Headers">2.2.2 Reading Zip File Header Entries</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-ZipFileInput">ZipFileInput</a></td><td valign="top"><a href="#ZipFileInput">2.2.1 Constructing a ZipFileInput</a></td></tr>
 <tr><td></td><td valign="top"><a href="#index-ZipFileOutput">ZipFileOutput</a></td><td valign="top"><a href="#ZipFileOutput">2.3.1 Constructing a ZipFileOutput</a></td></tr>
@@ -1162,7 +1200,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
     <ul class="toc">
       <li><a name="toc-Constructing-a-ZipFileInput" href="#ZipFileInput">2.2.1 Constructing a ZipFileInput</a></li>
       <li><a name="toc-Reading-Zip-File-Header-Entries" href="#Read-File-Headers">2.2.2 Reading Zip File Header Entries</a></li>
-      <li><a name="toc-Reading-File-Data-from-Buffer_002c-File_002c-or-Stream" href="#Read-File-Data">2.2.3 Reading File Data from Buffer, File, or Stream</a></li>
+      <li><a name="toc-Reading-File-Data-to-Buffer_002c-File_002c-or-Stream" href="#Read-File-Data">2.2.3 Reading File Data to Buffer, File, or Stream</a></li>
       <li><a name="toc-Reading-Zip-Central_002dDirectory-Entries" href="#Read-Directory-Entries">2.2.4 Reading Zip Central-Directory Entries</a></li>
     </ul></li>
     <li><a name="toc-Writing-Zip-Files" href="#Writing">2.3 Writing Zip Files</a>
@@ -1190,7 +1228,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 </tr></table>
 <h1>About This Document</h1>
 <p>
-  This document was generated by <em>Gray Watson</em> on <em>June 14, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
+  This document was generated by <em>Gray Watson</em> on <em>June 19, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
 </p>
 <p>
   The buttons in the navigation panels have the following meaning:
@@ -1292,7 +1330,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 <hr size="1">
 <p>
  <font size="-1">
-  This document was generated by <em>Gray Watson</em> on <em>June 14, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
+  This document was generated by <em>Gray Watson</em> on <em>June 19, 2024</em> using <a href="http://www.nongnu.org/texi2html/"><em>texi2html 1.82</em></a>.
  </font>
  <br>
 
