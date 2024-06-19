@@ -1,4 +1,4 @@
-2.2: 6/??/2024
+2.2: 6/19/2024
 	* Fixed the size specified of the Zip64 extra-field.
 	* Renamed the code package to be codec which does the encoding/decoding.
 	* Renamed the ZipFileDataInfo to be ZipDataInfo.

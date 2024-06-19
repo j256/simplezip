@@ -125,7 +125,8 @@ public class ZipFileInput implements Closeable {
 	/**
 	 * Read file data from the Zip stream, decode it, and write it to the file argument. This will associate the File
 	 * with the current header file-name so you can call assign the permissions for the file with a later call to
-	 * {@link #assignDirectoryFileEntryPermissions()} or {@link #readDirectoryFileEntriesAndAssignPermissions()}.
+	 * {@link #assignDirectoryFileEntryPermissions(ZipCentralDirectoryFileEntry)} or
+	 * {@link #readDirectoryFileEntriesAndAssignPermissions()}.
 	 * 
 	 * @param outputFile
 	 *            Where to write the data read from the zip stream.
@@ -220,7 +221,8 @@ public class ZipFileInput implements Closeable {
 	/**
 	 * Read raw file data from the Zip stream, decode it, and write it to the file argument. This will associate the
 	 * File with the current header file-name so you can call assign the permissions for the file with a later call to
-	 * {@link #assignDirectoryFileEntryPermissions()} or {@link #readDirectoryFileEntriesAndAssignPermissions()}.
+	 * {@link #assignDirectoryFileEntryPermissions(ZipCentralDirectoryFileEntry)} or
+	 * {@link #readDirectoryFileEntriesAndAssignPermissions()}.
 	 * 
 	 * @param outputFile
 	 *            Where to write the data read from the zip stream.
