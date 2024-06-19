@@ -3,7 +3,8 @@
 	* Renamed the code package to be codec which does the encoding/decoding.
 	* Renamed the ZipFileDataInfo to be ZipDataInfo.
 	* Added default version-needed field of 4.5 for Zip64 support.
-	* Added missing readRawFileDataToFile() methods to ZipFileInput.
+	* Added missing ZipFileInput.readRawFileDataToFile() methods.
+	* Changed ZipFileInput.assignDirectoryFileEntryPermissions() to take a ZipCentralDirectoryFileEntry argument.
 
 2.1: 6/14/2024
 	* Fixed a problem when reading file headers and getting null twice.
