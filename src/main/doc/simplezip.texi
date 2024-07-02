@@ -51,14 +51,14 @@ read and write Zip files with full precision.
 To get started quickly using SimpleZip, @pxref{Quick Start}.  You can also take a look at the examples section of the
 document which has various working code packages. @xref{Examples}.
 @ifhtml
-There is also a @uref{http://256stuff.com/sources/simplezip/docs/simplezip.pdf, PDF version of this documentation}.
+There is also a @uref{https://256stuff.com/sources/simplezip/docs/simplezip.pdf, PDF version of this documentation}.
 @end ifhtml
 @iftex
-There is also a @uref{http://256stuff.com/sources/simplezip/docs/simplezip.html, HTML version of this documentation}.
+There is also a @uref{https://256stuff.com/sources/simplezip/docs/simplezip.html, HTML version of this documentation}.
 @end iftex
 For more information, see the @uref{https://256stuff.com/sources/simplezip/,SimpleZip home page}.
 
-Gray Watson @uref{http://256stuff.com/gray/}
+Gray Watson @uref{https://256stuff.com/gray/}
 
 @menu
 * Quick Start::                Start using SimpleZip quickly.
@@ -77,7 +77,7 @@ Gray Watson @uref{http://256stuff.com/gray/}
 @cindex how to get started
 To use SimpleZip you need to do the following.  For more information, @pxref{Using}.
 
-First download SimpleZip from the @uref{http://256stuff.com/sources/simplezip/releases/, SimpleZip release page}.
+First download SimpleZip from the @uref{https://256stuff.com/sources/simplezip/releases/, SimpleZip release page}.
 @xref{Downloading}.  Or enable via maven.  @xref{Maven}.
 
 To read Zip files, you use the @code{ZipFileInput} class.  Something like the following where @code{input} is a
@@ -134,8 +134,9 @@ For more extensive instructions, @pxref{Using}.
 @cindex downloading the jars
 @cindex where to get new jars
 To get started with SimpleZip, you will need to download the jar file.  The
-@uref{http://256stuff.com/sources/simplezip/releases/, SimpleZip release page} is the default repository but the jars
-are also available from the @uref{http://repo1.maven.org/maven2/com/j256/simplezip/, central maven repository}.
+@uref{https://256stuff.com/sources/simplezip/releases/, SimpleZip release page} is the default repository but the jars
+are also available from the @uref{https://repo1.maven.org/maven2/com/j256/simplezip/simplezip/,
+central maven repository}.
 
 The code works with Java 8 or later.
 
@@ -644,7 +645,7 @@ are welcome as long as you don't get piqued if we don't chose your's.
 @item SimpleZipOutput.java
 
 This example writes out a Zip file with a file, a directory, and a file inside of that directory.
-See the @uref{http://256stuff.com/sources/simplezip/docs/example-simple, source code}.
+See the @uref{https://256stuff.com/sources/simplezip/docs/example-simple, source code}.
 
 @cindex example, zip file copy
 @cindex copy zip file, example
@@ -653,14 +654,14 @@ See the @uref{http://256stuff.com/sources/simplezip/docs/example-simple, source 
 
 This example reads in a Zip file using ZipFileInput and writes it out with ZipFileOutput while hopefully not
 changing any of the internal structures.  Please report a Zip that doesn't get copied perfectly with this.
-See the @uref{http://256stuff.com/sources/simplezip/docs/example-copy, source code}.
+See the @uref{https://256stuff.com/sources/simplezip/docs/example-copy, source code}.
 
 @cindex zip file info example
 @anchor{zip file info}
 @item ZipFileCopy.java 
 
 This example reads in a Zip file and spits out the details about the file in excruciating detail.
-See the @uref{http://256stuff.com/sources/simplezip/docs/example-info, source code}.
+See the @uref{https://256stuff.com/sources/simplezip/docs/example-info, source code}.
 
 @end itemize
 
@@ -682,8 +683,6 @@ ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUT
 DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
 WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE
 USE OR PERFORMANCE OF THIS SOFTWARE.
-
-The author may be contacted via the @uref{http://256stuff.com/sources/simplezip/, SimpleZip home page}.
 
 @c ----------------------------------------------------------------
 @node Index of Concepts,, License, Top

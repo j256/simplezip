@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Decoded for the STORED (i.e. not compressed) Zip file format.
+ * Decoder for the STORED (really raw) Zip file format.
  * 
  * @author graywatson
  */

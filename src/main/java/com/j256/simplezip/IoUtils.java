@@ -33,7 +33,7 @@ public class IoUtils {
 	}
 
 	/**
-	 * Read a short in little-endian from the input stream.
+	 * Read a 2-byte short in little-endian from the input stream.
 	 * 
 	 * @throws IOException
 	 *             If end is reached or some io problem occurs.
@@ -44,7 +44,7 @@ public class IoUtils {
 	}
 
 	/**
-	 * Read an int in little-endian from the input stream.
+	 * Read an 4-byte int in little-endian from the input stream.
 	 * 
 	 * @throws IOException
 	 *             If end is reached or some io problem occurs.
@@ -57,7 +57,8 @@ public class IoUtils {
 	}
 
 	/**
-	 * Read an int in little-endian from the input stream.
+	 * Read an 4-byte int in little-endian from the input stream as a long. This is done to handle positive integer
+	 * values larger than Integer.MAX_VALUE.
 	 * 
 	 * @throws IOException
 	 *             If end is reached or some io problem occurs.
@@ -70,7 +71,7 @@ public class IoUtils {
 	}
 
 	/**
-	 * Read a long in little-endian from the input stream.
+	 * Read a 8-byte long in little-endian from the input stream.
 	 * 
 	 * @throws IOException
 	 *             If end is reached or some io problem occurs.
@@ -108,7 +109,7 @@ public class IoUtils {
 	}
 
 	/**
-	 * Write a short in little-endian to the output stream.
+	 * Write a 2-byte short in little-endian to the output stream.
 	 */
 	public static void writeShort(OutputStream output, int value) throws IOException {
 		output.write((byte) ((value >> 0) & 0xFF));
@@ -116,7 +117,7 @@ public class IoUtils {
 	}
 
 	/**
-	 * Write an int in little-endian to the output stream.
+	 * Write a 4-byte int in little-endian to the output stream.
 	 */
 	public static void writeInt(OutputStream output, long value) throws IOException {
 		output.write((byte) ((value >> 0) & 0xFF));
@@ -126,7 +127,7 @@ public class IoUtils {
 	}
 
 	/**
-	 * Write a long in little-endian to the output stream.
+	 * Write a 8-byte long in little-endian to the output stream.
 	 */
 	public static void writeLong(OutputStream output, long value) throws IOException {
 		output.write((byte) ((value >> 0) & 0xFF));
@@ -174,7 +175,7 @@ public class IoUtils {
 	}
 
 	/**
-	 * Read all of the bytes into the buffer.
+	 * Read a complete buffer of bytes of a certain length.
 	 */
 	public static void readFully(InputStream input, byte[] bytes, int length, String label) throws IOException {
 		int offset = 0;

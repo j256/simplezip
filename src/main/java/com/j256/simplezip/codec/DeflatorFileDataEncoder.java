@@ -7,7 +7,7 @@ import java.util.zip.Deflater;
 import com.j256.simplezip.IoUtils;
 
 /**
- * Decoder for the DEFLATED Zip file format.
+ * Encoder for the DEFLATED Zip file format.
  * 
  * @author graywatson
  */

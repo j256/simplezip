@@ -9,7 +9,7 @@ import com.j256.simplezip.format.ZipCentralDirectoryEnd;
 import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
 
 /**
- * Decoded for the DEFLATED Zip file format.
+ * Decoder for the DEFLATED Zip file format.
  * 
  * @author graywatson
  */

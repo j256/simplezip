@@ -115,7 +115,8 @@ public class ZipFileOutput implements Closeable {
 	/**
 	 * Add additional information (most optional) to the Zip central-directory file-header to be associated with the
 	 * most recent file-header. This information is written to the end of the Zip-file and which holds information about
-	 * the files that is not contained in the {@link ZipFileHeader}.
+	 * the files that is not contained in the {@link ZipFileHeader}. This should be done after the
+	 * {@link #writeFileHeader(ZipFileHeader)} method and before {@link #finishFileData()} have been called.
 	 */
 	public void addDirectoryFileInfo(ZipCentralDirectoryFileInfo fileInfo) {
 		if (dirFileBuilder == null) {
@@ -149,7 +150,7 @@ public class ZipFileOutput implements Closeable {
 
 	/**
 	 * Write the contents of a file to the Zip-file stream while encoding it based on the
-	 * {@link ZipFileHeader#getCompressionMethod()}. Must be called after you write the file-header.
+	 * {@link ZipFileHeader#getCompressionMethod()}. Should be called after you write the file-header.
 	 * 
 	 * NOTE: this method calls {@link #finishFileData()} for you.
 	 * 
@@ -160,7 +161,7 @@ public class ZipFileOutput implements Closeable {
 	}
 
 	/**
-	 * Write the contents of a file to the Zip-file stream without any encoding. Must be called after you write the
+	 * Write the contents of a file to the Zip-file stream without any encoding. Should be called after you write the
 	 * file-header.
 	 * 
 	 * NOTE: this method calls {@link #finishFileData()} for you.
@@ -173,7 +174,7 @@ public class ZipFileOutput implements Closeable {
 
 	/**
 	 * Write the contents of a file to the Zip-file stream while encoding it based on the
-	 * {@link ZipFileHeader#getCompressionMethod()}. Must be called after you write the file-header.
+	 * {@link ZipFileHeader#getCompressionMethod()}. Should be called after you write the file-header.
 	 * 
 	 * NOTE: this method calls {@link #finishFileData()} for you.
 	 * 
@@ -186,7 +187,7 @@ public class ZipFileOutput implements Closeable {
 	}
 
 	/**
-	 * Write the contents of a file to the Zip-file stream without any encoding. Must be called after you write the
+	 * Write the contents of a file to the Zip-file stream without any encoding. Should be called after you write the
 	 * file-header.
 	 * 
 	 * NOTE: this method calls {@link #finishFileData()} for you.
@@ -201,7 +202,7 @@ public class ZipFileOutput implements Closeable {
 
 	/**
 	 * Read from the input-stream and write its contents to the the Zip-file stream while encoding it based on the
-	 * {@link ZipFileHeader#getCompressionMethod()}. Must be called after you write the file-header.
+	 * {@link ZipFileHeader#getCompressionMethod()}. Should be called after you write the file-header.
 	 * 
 	 * NOTE: this method calls {@link #finishFileData()} for you.
 	 * 
@@ -219,8 +220,8 @@ public class ZipFileOutput implements Closeable {
 	}
 
 	/**
-	 * Read from the input-stream and write its contents to the the Zip-file stream without any encoding. Must be called
-	 * after you write the file-header.
+	 * Read from the input-stream and write its contents to the the Zip-file stream without any encoding. Should be
+	 * called after you write the file-header.
 	 * 
 	 * NOTE: this method calls {@link #finishFileData()} for you.
 	 * 
@@ -256,7 +257,7 @@ public class ZipFileOutput implements Closeable {
 
 	/**
 	 * Write the complete file data as single byte array to the the Zip-file stream while encoding it based on the
-	 * {@link ZipFileHeader#getCompressionMethod()}. Must be called after you write the file-header. This method calls
+	 * {@link ZipFileHeader#getCompressionMethod()}. Should be called after you write the file-header. This method calls
 	 * {@link #finishFileData()} after the write.
 	 * 
 	 * @return Returns the number of bytes written to the stream so far.
@@ -268,7 +269,7 @@ public class ZipFileOutput implements Closeable {
 
 	/**
 	 * Write file data as single or multiple byte arrays to the the Zip-file stream while encoding it based on the
-	 * {@link ZipFileHeader#getCompressionMethod()}. Must be called after you write the file-header. At the end of the
+	 * {@link ZipFileHeader#getCompressionMethod()}. Should be called after you write the file-header. At the end of the
 	 * writing, you must call {@link #finishFileData()}.
 	 */
 	public void writeFileDataPart(byte[] buffer) throws IOException {
@@ -276,8 +277,8 @@ public class ZipFileOutput implements Closeable {
 	}
 
 	/**
-	 * Write file data as single or multiple byte arrays to the the Zip-file stream without any encoding. Must be called
-	 * after you write the file-header. At the end of the writing, you must call {@link #finishFileData()}.
+	 * Write file data as single or multiple byte arrays to the the Zip-file stream without any encoding. Should be
+	 * called after you write the file-header. At the end of the writing, you must call {@link #finishFileData()}.
 	 */
 	public void writeRawFileDataPart(byte[] buffer) throws IOException {
 		writeRawFileDataPart(buffer, 0, buffer.length);
@@ -285,7 +286,7 @@ public class ZipFileOutput implements Closeable {
 
 	/**
 	 * Write file data as single or multiple byte arrays to the the Zip-file stream while encoding it based on the
-	 * {@link ZipFileHeader#getCompressionMethod()}. Must be called after you write the file-header. At the end of the
+	 * {@link ZipFileHeader#getCompressionMethod()}. Should be called after you write the file-header. At the end of the
 	 * writing, you must call {@link #finishFileData()}.
 	 */
 	public void writeFileDataPart(byte[] buffer, int offset, int length) throws IOException {
@@ -296,8 +297,8 @@ public class ZipFileOutput implements Closeable {
 	}
 
 	/**
-	 * Write file data as single or multiple byte arrays to the the Zip-file stream without any encoding. Must be called
-	 * after you write the file-header. At the end of the writing, you must call {@link #finishFileData()}.
+	 * Write file data as single or multiple byte arrays to the the Zip-file stream without any encoding. Should be
+	 * called after you write the file-header. At the end of the writing, you must call {@link #finishFileData()}.
 	 */
 	public void writeRawFileDataPart(byte[] buffer, int offset, int length) throws IOException {
 		if (currentFileHeader == null) {
