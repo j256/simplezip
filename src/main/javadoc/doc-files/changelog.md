@@ -1,8 +1,8 @@
-### 2.3: 7/??/2024
+### 2.3: 2024/7/??
 * Added ZipFileInput.readFileDataAll() for reading all of the file data at once.
 * Fixed some javadocs.
 
-### 2.2: 6/19/2024
+### 2.2: 2024/6/19
 * Fixed the size specified of the Zip64 extra-field.
 * Renamed the code package to be codec which does the encoding/decoding.
 * Renamed the ZipFileDataInfo to be ZipDataInfo.
@@ -10,13 +10,13 @@
 * Added missing ZipFileInput.readRawFileDataToFile() methods.
 * Changed ZipFileInput.assignDirectoryFileEntryPermissions() to take a ZipCentralDirectoryFileEntry argument.
 
-### 2.1: 6/14/2024
+### 2.1: 2024/6/14
 * Fixed a problem when reading file headers and getting null twice.
 * Fixed a possible problem when the internal buffer sizes are increasing.
 * Added more Zip64 support around central-directory entries and the offset and disk-number.
 * Improved test coverage which help catch some possible issues that were addressed.
 
-### 2.0: 6/13/2024
+### 2.0: 2024/6/13
 * Fixed problem with buffering that would generate an improper or unnecessary data-descriptor.
 * Fixed problem when finishing Zip output file without any data.
 * Removed the ZipVersion which seemed artificial.  Replaced with major/minor numbers.
@@ -33,14 +33,14 @@
 * Renamed the ZipFileInput.readFileData(File) methods to be readFileDataToFile().
 * Added support for file-header and directory-file-entry iterators.
 
-### 1.1: 5/23/2024
+### 1.1: 2024/5/23
 * Fixed some of the logic to allow us to control all bytes in the output Zip.
 * Fixed some of the logic which determined if a data-descriptor was necessary.
 * Added ZipCentralDirectoryEndInfo to be able to control the end structure.
 * Added ZipFileCopy example program which writes identical Zip files.
 * Added some default values to couple of the structures that can be overridden.
 
-### 1.0: 5/22/2024
+### 1.0: 2024/5/22
 * Fixed a problem with early stream-closing.  Surprised I didn't catch this earlier.
 * Started to add some code examples.
 
