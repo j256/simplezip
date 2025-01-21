@@ -1,3 +1,7 @@
+2.3: 7/??/2024
+	* Added ZipFileInput.readFileDataAll() for reading all of the file data at once.
+	* Fixed some javadocs.
+
 2.2: 6/19/2024
 	* Fixed the size specified of the Zip64 extra-field.
 	* Renamed the code package to be codec which does the encoding/decoding.
