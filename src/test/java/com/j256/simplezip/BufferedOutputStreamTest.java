@@ -37,6 +37,7 @@ public class BufferedOutputStreamTest {
 		expected.write(1);
 		assertArrayEquals(expected.toByteArray(), baos.toByteArray());
 		bos.close();
+		bos.close();
 		assertFalse(file.exists());
 	}
 

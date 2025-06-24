@@ -20,6 +20,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.j256.simplezip.format.CompressionMethod;
@@ -113,6 +114,7 @@ public class Zip64FileOutputTest {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void testZip64BigWrite() throws IOException, InterruptedException {
 

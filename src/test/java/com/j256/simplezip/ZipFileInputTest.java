@@ -220,11 +220,10 @@ public class ZipFileInputTest {
 		ZipFileInput input = new ZipFileInput(inputStream);
 		ZipFileHeader header = input.readFileHeader();
 		assertEquals(CompressionMethod.NONE, header.getCompressionMethodAsEnum());
-		byte[] buffer = new byte[1024];
-		int num = input.readFileDataPart(buffer, 0, buffer.length);
-		assertEquals(bytes.length, num);
+		byte[] buffer = input.readFileDataAll();
+		assertEquals(bytes.length, buffer.length);
 		assertEquals(-1, input.readFileDataPart(buffer, 0, buffer.length));
-		assertArrayEquals(bytes, Arrays.copyOf(buffer, num));
+		assertArrayEquals(bytes, buffer);
 		input.close();
 	}
 
@@ -266,7 +265,8 @@ public class ZipFileInputTest {
 		ZipFileOutput ouput = new ZipFileOutput(baos);
 		ouput.enableFileBuffering(10240, 10240);
 		String fileName = "hello";
-		ZipFileHeader.Builder builder = ZipFileHeader.builder().withFileName(fileName).withCompressionMethod(CompressionMethod.NONE);
+		ZipFileHeader.Builder builder =
+				ZipFileHeader.builder().withFileName(fileName).withCompressionMethod(CompressionMethod.NONE);
 		byte[] bytes = new byte[] { 1, 2, 3 };
 		ouput.writeFileHeader(builder.build());
 		ouput.writeFileDataPart(bytes);
@@ -387,12 +387,11 @@ public class ZipFileInputTest {
 				new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 10240);
 		ZipFileInput input = new ZipFileInput(inputStream);
 		assertNotNull(input.readFileHeader());
-		baos.reset();
-		input.readRawFileData(baos);
+		byte[] buffer = input.readRawFileDataAll();
 
 		// now we inflate the data externally
 		Inflater inflater = new Inflater(true /* no wrap */);
-		inflater.setInput(baos.toByteArray(), 0, baos.size());
+		inflater.setInput(buffer, 0, buffer.length);
 		byte[] output = new byte[1024];
 		int numInflated = inflater.inflate(output, 0, output.length);
 		assertTrue(inflater.finished());
@@ -432,6 +431,69 @@ public class ZipFileInputTest {
 		ZipCentralDirectoryFileEntry.Builder entryBuilder = ZipCentralDirectoryFileEntry.builder();
 		entryBuilder.setFileName(fileName1);
 		input.assignDirectoryFileEntryPermissions(entryBuilder.build());
+		assertNotNull(input.readFileHeader());
+		byte[] buffer = new byte[1024];
+		int num = input.readFileDataPart(buffer);
+		assertArrayEquals(bytes, Arrays.copyOf(buffer, num));
+
+		assertNull(input.readFileHeader());
+		assertFalse(input.readDirectoryFileEntriesAndAssignPermissions());
+
+		file1.delete();
+
+		input.close();
+	}
+
+	@Test
+	public void testReadRawToFile() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		String fileName1 = "target/hello1.t";
+		ZipFileHeader fileHeader =
+				ZipFileHeader.builder().withFileName(fileName1).withCompressionMethod(CompressionMethod.STORED).build();
+		byte[] bytes = new byte[] { 1, 2, 3 };
+		ZipFileOutput zipOutput = new ZipFileOutput(baos);
+		zipOutput.enableFileBuffering(10240, 10240);
+		zipOutput.writeFileHeader(fileHeader);
+		zipOutput.writeFileDataAll(bytes);
+		// write another file
+		String fileName2 = "target/hello2.t";
+		fileHeader =
+				ZipFileHeader.builder().withFileName(fileName2).withCompressionMethod(CompressionMethod.STORED).build();
+		zipOutput.writeFileHeader(fileHeader);
+		zipOutput.writeFileDataAll(bytes);
+		// and a 3rd
+		String fileName3 = "target/hello3.bat";
+		fileHeader =
+				ZipFileHeader.builder().withFileName(fileName3).withCompressionMethod(CompressionMethod.STORED).build();
+		zipOutput.writeFileHeader(fileHeader);
+		zipOutput.writeFileDataAll(bytes);
+		zipOutput.close();
+
+		RewindableInputStream inputStream =
+				new RewindableInputStream(new ByteArrayInputStream(baos.toByteArray()), 10240);
+		ZipFileInput input = new ZipFileInput(inputStream);
+		assertNotNull(input.readFileHeader());
+		File file1 = new File(fileName1);
+		file1.getParentFile().mkdirs();
+		file1.deleteOnExit();
+		input.readRawFileDataToFile(file1.getPath());
+		byte[] output = readFileToBytes(file1);
+		assertArrayEquals(bytes, output);
+		ZipCentralDirectoryFileEntry.Builder entryBuilder = ZipCentralDirectoryFileEntry.builder();
+		entryBuilder.setFileName(fileName1);
+		input.assignDirectoryFileEntryPermissions(entryBuilder.build());
+
+		assertNotNull(input.readFileHeader());
+		File file2 = new File(fileName2);
+		file2.getParentFile().mkdirs();
+		file2.deleteOnExit();
+		input.readRawFileDataToFile(file2);
+		output = readFileToBytes(file1);
+		assertArrayEquals(bytes, output);
+		entryBuilder = ZipCentralDirectoryFileEntry.builder();
+		entryBuilder.setFileName(fileName2);
+		input.assignDirectoryFileEntryPermissions(entryBuilder.build());
+
 		assertNotNull(input.readFileHeader());
 		byte[] buffer = new byte[1024];
 		int num = input.readFileDataPart(buffer);

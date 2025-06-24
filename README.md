@@ -24,16 +24,16 @@ The following code runs through all of the Zip-file parts.  `input` could be a f
 	ZipFileInput zipInput = new ZipFileInput(input);
 	// readFileHeader() will return null when no more files to read
 	ZipFileHeader header = zipInput.readFileHeader();
-	byte[] buffer = new byte[4096];
-	// read into buffers or via InputStream until it returns -1
-	long numRead = zipInput.readFileDataPart(buffer);
-	...
-	// can also call readFileData(File) to write out a file from input
-	// NOTE: descriptor can be null if none in the zip
+	// read all of the file bytes into a buffer, can also stream
+	byte[] fileBytes = zipInput.readRawFileDataAll();
+	// can also call readFileDataToFile(File) to write out a file from input
+	// NOTE: descriptor can be null if none for this file
 	ZipDataDescriptor dataDescriptor = zipInput.getCurrentDataDescriptor();
 	// repeat reading file headers and data until readFileHeader() returns null
+	...
 	// read in the optional central-directory file-headers, null when no more
 	ZipCentralDirectoryFileEntry dirEntry = zipInput.readDirectoryFileEntry();
+	...
 	// read in the optional central-directory end data
 	ZipCentralDirectoryEnd end = zipInput.readDirectoryEnd();
 	zipInput.close();
@@ -55,10 +55,7 @@ or `OutputStream`.
 	zipOutput.addDirectoryFileInfo(
 		ZipCentralDirectoryFileInfo.builder().withTextFile(true).build());
 	// write file data from file, buffer, or InputStream
-	zipOutput.writeFileDataPart(fileBytes);
-	...
-	// must be called after all file parts written
-	zipOutput.finishFileData();
+	zipOutput.writeFileDataAll(fileBytes);
 	// can write more file-headers and data here
 	...
 	// this writes the recorded central-directory entries, end, and closes tbe zip
