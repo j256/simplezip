@@ -1,5 +1,6 @@
 package com.j256.simplezip;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -112,11 +113,22 @@ public class ZipFileInput implements Closeable {
 	}
 
 	/**
+	 * Read all of file data from the Zip stream into an internal buffer.
+	 * 
+	 * @return The byte[] read from the zip-file.
+	 */
+	public byte[] readFileDataAll() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		readFileData(baos);
+		return baos.toByteArray();
+	}
+
+	/**
 	 * Read file data from the Zip stream, decode it, and write it to the file path argument.
 	 * 
 	 * @param outputPath
 	 *            Where to write the data read from the zip stream.
-	 * @return THe number of bytes written into the output-stream.
+	 * @return The number of bytes written into the output-stream.
 	 */
 	public long readFileDataToFile(String outputPath) throws IOException {
 		return readFileDataToFile(new File(outputPath));
@@ -130,7 +142,7 @@ public class ZipFileInput implements Closeable {
 	 * 
 	 * @param outputFile
 	 *            Where to write the data read from the zip stream.
-	 * @return THe number of bytes written into the output-stream.
+	 * @return The number of bytes written into the output-stream.
 	 */
 	public long readFileDataToFile(File outputFile) throws IOException {
 		long numBytes = readFileData(new FileOutputStream(outputFile));
@@ -144,30 +156,12 @@ public class ZipFileInput implements Closeable {
 	/**
 	 * Read file data from the Zip stream, decode it, and write it to the output-steam argument.
 	 * 
-	 * @return THe number of bytes written into the output-stream.
+	 * @return The number of bytes written into the output-stream.
 	 */
 	public long readFileData(OutputStream outputStream) throws IOException {
 		long byteCount = 0;
 		while (true) {
 			int numRead = readFileDataPart(tmpBuffer, 0, tmpBuffer.length);
-			if (numRead < 0) {
-				break;
-			}
-			outputStream.write(tmpBuffer, 0, numRead);
-			byteCount += numRead;
-		}
-		return byteCount;
-	}
-
-	/**
-	 * Read raw file data from the Zip stream, no decoding, and write it to the output-steam argument.
-	 * 
-	 * @return THe number of bytes written into the output-stream.
-	 */
-	public long readRawFileData(OutputStream outputStream) throws IOException {
-		long byteCount = 0;
-		while (true) {
-			int numRead = readRawFileDataPart(tmpBuffer, 0, tmpBuffer.length);
 			if (numRead < 0) {
 				break;
 			}
@@ -208,25 +202,71 @@ public class ZipFileInput implements Closeable {
 	}
 
 	/**
-	 * Read raw file data from the Zip stream, decode it, and write it to the file path argument.
+	 * Read file data from the Zip stream and decode it into the buffer argument.
+	 * 
+	 * NOTE: This _must_ be called until it returns -1 which indicates that EOF has been reached. Until the underlying
+	 * decoders return EOF we don't know that we are done and we can't rewind over any pre-fetched bytes to continue to
+	 * process the next file or the directory at the end of the Zip file.
+	 * 
+	 * @return The number of bytes written into the buffer or -1 if the end of zipped bytes for this file have been
+	 *         reached. NOTE: This doesn't mean that the end of the complete Zip file has been reached.
+	 */
+	public int readFileDataPart(byte[] buffer, int offset, int length) throws IOException {
+		if (currentFileHeader == null) {
+			throw new IllegalStateException("Need to call readFileHeader() before you can read file data");
+		}
+		return doReadFileDataPart(buffer, offset, length, currentFileHeader.getCompressionMethod());
+	}
+
+	/**
+	 * Read all of the raw file data from the Zip stream, without decoding, into an internal buffer.
+	 * 
+	 * @return The byte[] read from the zip-file.
+	 */
+	public byte[] readRawFileDataAll() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		readRawFileData(baos);
+		return baos.toByteArray();
+	}
+
+	/**
+	 * Read raw file data from the Zip stream, no decoding, and write it to the output-steam argument.
+	 * 
+	 * @return The number of bytes written into the output-stream.
+	 */
+	public long readRawFileData(OutputStream outputStream) throws IOException {
+		long byteCount = 0;
+		while (true) {
+			int numRead = readRawFileDataPart(tmpBuffer, 0, tmpBuffer.length);
+			if (numRead < 0) {
+				break;
+			}
+			outputStream.write(tmpBuffer, 0, numRead);
+			byteCount += numRead;
+		}
+		return byteCount;
+	}
+
+	/**
+	 * Read raw file data from the Zip stream, without decoding, and write it to the file path argument.
 	 * 
 	 * @param outputPath
 	 *            Where to write the data read from the zip stream.
-	 * @return THe number of bytes written into the output-stream.
+	 * @return The number of bytes written into the output-stream.
 	 */
 	public long readRawFileDataToFile(String outputPath) throws IOException {
 		return readRawFileDataToFile(new File(outputPath));
 	}
 
 	/**
-	 * Read raw file data from the Zip stream, decode it, and write it to the file argument. This will associate the
-	 * File with the current header file-name so you can call assign the permissions for the file with a later call to
-	 * {@link #assignDirectoryFileEntryPermissions(ZipCentralDirectoryFileEntry)} or
+	 * Read raw file data from the Zip stream, without decoding, and write it to the file argument. This will associate
+	 * the File with the current header file-name so you can call assign the permissions for the file with a later call
+	 * to {@link #assignDirectoryFileEntryPermissions(ZipCentralDirectoryFileEntry)} or
 	 * {@link #readDirectoryFileEntriesAndAssignPermissions()}.
 	 * 
 	 * @param outputFile
 	 *            Where to write the data read from the zip stream.
-	 * @return THe number of bytes written into the output-stream.
+	 * @return The number of bytes written into the output-stream.
 	 */
 	public long readRawFileDataToFile(File outputFile) throws IOException {
 		long numBytes = readRawFileData(new FileOutputStream(outputFile));
@@ -241,16 +281,6 @@ public class ZipFileInput implements Closeable {
 	 * Read raw file data from the Zip stream, without decoding, into the buffer argument. See
 	 * {@link #readRawFileDataPart(byte[], int, int)} for more details.
 	 * 
-	 * @return The number of bytes written into the buffer or -1 if the end of zipped bytes for this file have been
-	 *         reached. This doesn't mean that the end of the file has been reached.
-	 */
-	public int readRawFileDataPart(byte[] buffer) throws IOException {
-		return readRawFileDataPart(buffer, 0, buffer.length);
-	}
-
-	/**
-	 * Read file data from the Zip stream and decode it into the buffer argument.
-	 * 
 	 * NOTE: This _must_ be called until it returns -1 which indicates that EOF has been reached. Until the underlying
 	 * decoders return EOF we don't know that we are done and we can't rewind over any pre-fetched bytes to continue to
 	 * process the next file or the directory at the end of the Zip file.
@@ -258,11 +288,8 @@ public class ZipFileInput implements Closeable {
 	 * @return The number of bytes written into the buffer or -1 if the end of zipped bytes for this file have been
 	 *         reached. This doesn't mean that the end of the file has been reached.
 	 */
-	public int readFileDataPart(byte[] buffer, int offset, int length) throws IOException {
-		if (currentFileHeader == null) {
-			throw new IllegalStateException("Need to call readFileHeader() before you can read file data");
-		}
-		return doReadFileDataPart(buffer, offset, length, currentFileHeader.getCompressionMethod());
+	public int readRawFileDataPart(byte[] buffer) throws IOException {
+		return readRawFileDataPart(buffer, 0, buffer.length);
 	}
 
 	/**
@@ -582,7 +609,7 @@ public class ZipFileInput implements Closeable {
 				previousFileEntry = readDirectoryFileEntry();
 			} catch (IOException ioe) {
 				previousFileEntry = null;
-				throw new RuntimeException("problems reading next file-header", ioe);
+				throw new RuntimeException("problems reading next file-entry", ioe);
 			}
 			return (previousFileEntry != null);
 		}

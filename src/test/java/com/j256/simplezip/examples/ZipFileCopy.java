@@ -8,12 +8,18 @@ import java.io.OutputStream;
 import com.j256.simplezip.IoUtils;
 import com.j256.simplezip.ZipFileInput;
 import com.j256.simplezip.ZipFileOutput;
+import com.j256.simplezip.format.Zip64CentralDirectoryEnd;
+import com.j256.simplezip.format.Zip64CentralDirectoryEndLocator;
+import com.j256.simplezip.format.ZipCentralDirectoryEnd;
+import com.j256.simplezip.format.ZipCentralDirectoryEndInfo;
+import com.j256.simplezip.format.ZipCentralDirectoryEndInfo.Builder;
 import com.j256.simplezip.format.ZipCentralDirectoryFileEntry;
 import com.j256.simplezip.format.ZipCentralDirectoryFileInfo;
 import com.j256.simplezip.format.ZipFileHeader;
 
 /**
- * Copies a zip file by reading it in with a ZipFileInput and writing it out with ZipFileOutput.
+ * Copies a zip/jar/war file by reading it in with a ZipFileInput and writing it out with ZipFileOutput. With this
+ * example you can see the mechanisms used to duplicate the Zip data while giving you full control of all fields.
  * 
  * @author graywatson
  */
@@ -38,27 +44,31 @@ public class ZipFileCopy {
 		}
 
 		// open up our Zip data from the input file
-		ZipFileInput zipInput = new ZipFileInput(inFile);
-		// write out our output Zip file
 		File outFile = new File(inFile.getPath() + ".out");
-		ZipFileOutput zipOutput = new ZipFileOutput(outFile);
-		// copy all of the file entries from the input to the output
-		copyFileEntries(zipInput, zipOutput);
-		// assign the directory entries
-		assignDirectoryFileInfo(zipInput, zipOutput);
-		// read the entire Zip input file so we can show how many bytes were read
-		zipInput.readToEndOfZip();
-		// close the input
-		zipInput.close();
-		// close the output which writes the central-directory and zip end
-		zipOutput.close();
+		long bytesRead = 0;
+		long bytesWritten = 0;
+		try (ZipFileInput zipInput = new ZipFileInput(inFile); //
+				ZipFileOutput zipOutput = new ZipFileOutput(outFile);) {
 
-		System.out.println("Read " + zipInput.getNumBytesRead() + " bytes from " + inFile);
-		System.out.println("Wrote " + zipOutput.getNumBytesWritten() + " bytes to " + outFile);
+			// copy all of the file entries from the input to the output
+			copyFileEntries(zipInput, zipOutput);
+			// assign the directory entries
+			assignDirectoryFileInfo(zipInput, zipOutput);
+
+			// extract our end information
+			ZipCentralDirectoryEndInfo endInfo = extractEndInfo(zipInput);
+			zipOutput.finishZip(endInfo);
+
+			bytesRead = zipInput.getNumBytesRead();
+			bytesWritten = zipOutput.getNumBytesWritten();
+		}
+
+		System.out.println("Read " + bytesRead + " bytes from " + inFile);
+		System.out.println("Wrote " + bytesWritten + " bytes to " + outFile);
 	}
 
 	/**
-	 * Display each of the headers with its information. It does not process any of the file data.
+	 * Read in each of the file-headers and associated file data and write them to the output.
 	 */
 	private void copyFileEntries(ZipFileInput zipInput, ZipFileOutput zipOutput) throws IOException {
 		while (true) {
@@ -70,14 +80,18 @@ public class ZipFileCopy {
 
 			// write out the header
 			zipOutput.writeFileHeader(fileHeader);
-			// copy raw bytes from the input zip stream to the output zip stream, no encoding necessary
-			try (InputStream fileDataInput = zipInput.openFileDataInputStream(false);
-					OutputStream fileDataOUtput = zipOutput.openFileDataOutputStream(false);) {
-				IoUtils.copyStream(fileDataInput, fileDataOUtput);
+			// copy raw bytes from the input stream to the output stream, raw mode so no encoding necessary
+			try (InputStream fileDataInput = zipInput.openFileDataInputStream(true);
+					OutputStream fileDataOutput = zipOutput.openFileDataOutputStream(true);) {
+				IoUtils.copyStream(fileDataInput, fileDataOutput);
 			}
 		}
 	}
 
+	/**
+	 * Read each of the central-directory file-entries and assign file-info to each of the files so that the same
+	 * entries will be written to the output at the end of the Zip file.
+	 */
 	private void assignDirectoryFileInfo(ZipFileInput zipInput, ZipFileOutput zipOutput) throws IOException {
 		while (true) {
 			// read in the central-directory entries from in the input
@@ -86,10 +100,32 @@ public class ZipFileCopy {
 				break;
 			}
 
-			// copy a couple of fields from the input central-directory and them to the output
+			// copy a couple of fields from the input central-directory entries to the output
 			ZipCentralDirectoryFileInfo fileInfo =
 					ZipCentralDirectoryFileInfo.Builder.fromCentralDirectoryFileEntry(dirHeader).build();
 			zipOutput.addDirectoryFileInfo(dirHeader.getFileName(), fileInfo);
 		}
+	}
+
+	/**
+	 * Read the structures from the end of the Zip and extract fields in the end-info class so we can write the same
+	 * structures in the output.
+	 */
+	private ZipCentralDirectoryEndInfo extractEndInfo(ZipFileInput zipInput) throws IOException {
+		ZipCentralDirectoryEndInfo endInfo;
+		Zip64CentralDirectoryEnd zip64End = zipInput.readZip64DirectoryEnd();
+		if (zip64End == null) {
+			ZipCentralDirectoryEnd zipEnd = zipInput.readDirectoryEnd();
+			Builder endInfoBuilder = ZipCentralDirectoryEndInfo.Builder.fromCentralDirectoryEnd(zipEnd);
+			endInfo = endInfoBuilder.build();
+		} else {
+			Builder endInfoBuilder = ZipCentralDirectoryEndInfo.Builder.fromCentralDirectoryEnd(zip64End);
+			Zip64CentralDirectoryEndLocator locator = zipInput.readZip64DirectoryEndLocator();
+			if (locator != null) {
+				endInfoBuilder.setNumberDisks(locator.getNumberDisks());
+			}
+			endInfo = endInfoBuilder.build();
+		}
+		return endInfo;
 	}
 }

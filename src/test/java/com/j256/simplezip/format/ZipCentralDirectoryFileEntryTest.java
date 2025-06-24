@@ -479,6 +479,27 @@ public class ZipCentralDirectoryFileEntryTest {
 				header.getExtraFieldBytes());
 	}
 
+	@Test
+	public void testNeedsZip64() {
+		Builder builder = ZipCentralDirectoryFileEntry.builder();
+		assertNull(builder.build().getZip64ExtraField());
+
+		builder.setCompressedSize(IoUtils.MAX_UNSIGNED_INT_VALUE);
+		assertNotNull(builder.build().getZip64ExtraField());
+		builder.setCompressedSize(1);
+		
+		builder.setUncompressedSize(IoUtils.MAX_UNSIGNED_INT_VALUE);
+		assertNotNull(builder.build().getZip64ExtraField());
+		builder.setUncompressedSize(1);
+
+		builder.setDiskNumberStart(IoUtils.MAX_UNSIGNED_SHORT_VALUE);
+		assertNotNull(builder.build().getZip64ExtraField());
+		builder.setDiskNumberStart(1);
+
+		builder.setRelativeOffsetOfLocalHeader(IoUtils.MAX_UNSIGNED_INT_VALUE);
+		assertNotNull(builder.build().getZip64ExtraField());
+	}
+
 	private byte[] appendBytes(byte[]... byteArrays) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		for (byte[] byteArray : byteArrays) {
