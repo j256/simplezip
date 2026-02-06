@@ -63,7 +63,7 @@ or `OutputStream`.
 
 # Maven Configuration
 
-Maven packages are published via [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.j256.simplezip/simplezip/badge.svg?style=flat-square)](https://mvnrepository.com/artifact/com.j256.simplezip/simplezip/latest)
+Maven packages are published via [Maven Central](https://mvnrepository.com/artifact/com.j256.simplezip/simplezip/latest).
 
 ``` xml
 <dependency>
@@ -79,7 +79,7 @@ SimpleZip has no runtime dependencies.
 
 # ChangeLog Release Notes
 
-See the [ChangeLog](https://github.com/j256/simplezip/blob/master/src/main/javadoc/doc-files/changelog.txt)
+See the [ChangeLog file](https://github.com/j256/simplezip/blob/master/src/main/javadoc/doc-files/changelog.txt)
 
 # References Used to Write this Library
 
