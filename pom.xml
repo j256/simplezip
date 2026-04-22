@@ -16,12 +16,11 @@
 			<url>https://opensource.org/licenses/ISC</url>
 		</license>
 	</licenses>
-	<parent>
-		<groupId>org.sonatype.oss</groupId>
-		<artifactId>oss-parent</artifactId>
-		<version>5</version>
-	</parent>
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.source>8</maven.compiler.source>
+		<maven.compiler.target>8</maven.compiler.target>
 		<!-- test dependency versions -->
 		<junit-version>4.13.2</junit-version>
 	</properties>
@@ -44,23 +43,6 @@
 			<timezone>-5</timezone>
 		</developer>
 	</developers>
-	<profiles>
-		<profile>
-			<id>st</id>
-			<distributionManagement>
-				<repository>
-					<id>sonatype-nexus-staging</id>
-					<name>Nexus Release Repository</name>
-					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-				</repository>
-				<snapshotRepository>
-					<id>sonatype-nexus-snapshots</id>
-					<name>Sonatype Nexus Snapshots</name>
-					<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-				</snapshotRepository>
-			</distributionManagement>
-		</profile>
-	</profiles>
 	<build>
 		<finalName>simplezip</finalName>
 		<!-- Test Resources -->
@@ -76,8 +58,17 @@
 				<artifactId>maven-release-plugin</artifactId>
 				<configuration>
 					<mavenExecutorId>forked-path</mavenExecutorId>
-					<useReleaseProfile>false</useReleaseProfile>
-					<arguments>-Psonatype-oss-release</arguments>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<version>0.9.0</version>
+				<extensions>true</extensions>
+				<configuration>
+					<publishingServerId>sonatype-nexus-staging</publishingServerId>
+					<!-- <autoPublish>true</autoPublish>
+					<waitUntil>published</waitUntil> -->
 				</configuration>
 			</plugin>
 			<plugin>
@@ -109,26 +100,26 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
+				<version>3.12.0</version>
 				<executions>
 					<execution>
 						<goals>
 							<goal>jar</goal>
 						</goals>
-						<configuration>
-							<additionalparam>-tag inheritDoc:X -Xdoclint:none</additionalparam>
-						</configuration>
 					</execution>
 				</executions>
 				<configuration>
+					<source>${maven.compiler.source}</source>
 					<bottom>
-						This documentation content is licensed by Gray Watson under the
+						This documentation content is licensed by Gray Watson
+						under the
 						&lt;a
-						href="https://creativecommons.org/licenses/by-sa/3.0/" &gt;Creative Commons Attribution-Share Alike 3.0 License.
+						href="https://creativecommons.org/licenses/by-sa/3.0/"
+						&gt;Creative Commons Attribution-Share Alike 3.0
+						License.
 						&lt;/a&gt; </bottom>
-					<additionalparam>-tag inheritDoc:X -Xdoclint:accessibility -Xdoclint:html -Xdoclint:reference -Xdoclint:syntax</additionalparam>
-					<excludePackageNames>
-					</excludePackageNames>
+					<doclint>none</doclint>
+					<docfilessubdirs>true</docfilessubdirs>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -191,7 +182,7 @@
 			<plugin>
 				<groupId>com.j256.testcheckpublisher</groupId>
 				<artifactId>test-check-publisher-maven-plugin</artifactId>
-				<version>1.5</version>
+				<version>1.6</version>
 			</plugin>
 		</plugins>
 	</build>
